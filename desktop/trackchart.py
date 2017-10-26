@@ -262,7 +262,7 @@ def stations(tc):
                             offset = 2+pixel_per_mile*0.01*offset
                         elif offset < 0:
                             # Below the mainline
-                            offset = -(2-pixel_per_mile*0.01*offset+1.5*box_size)
+                            offset = -(2+pixel_per_mile*0.01*abs(offset)+1.5*box_size)
 
                         # Draw symbol
                         draw.polygon((x-box_size/2, y-offset,
