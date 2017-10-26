@@ -58,29 +58,29 @@ def get_mileage(locations, lat, lon):
         (close1, close2) = swap(close1, close2)
         (distance1, distance2) = swap(distance1, distance2)
 
-    #print "d1=%f, d2=%f, d3=%f" % (distance1,distance2,distance3)
-    #print "point1=%s, point2=%s" % (locations[close1]['description'],
-    #                                locations[close2]['description'])
-    #print "point1=%f, point2=%f" % (locations[close1]['mileage'],
-    #                                locations[close2]['mileage'])
+    print "d1=%f, d2=%f, d3=%f" % (distance1,distance2,distance3)
+    print "point1=%s, point2=%s" % (locations[close1]['description'],
+                                    locations[close2]['description'])
+    print "point1=%f, point2=%f" % (locations[close1]['mileage'],
+                                    locations[close2]['mileage'])
 
     try:
         if distance1 == 0:
-            #print "point1"
+            print "point1"
             mileage = locations[close1]['mileage']
         elif distance2 == 0:
-            #print "point2"
+            print "point2"
             mileage = locations[close2]['mileage']
         elif distance3 < distance1 and distance2 < distance1:
-            #print "after"
+            print "after"
             mileage = (locations[close2]['mileage'] + distance2 +
                        locations[close1]['mileage'] + distance1) / 2.0
         elif distance3 < distance2 and distance1 < distance2:
-            #print "before"
+            print "before"
             mileage = (locations[close1]['mileage'] - distance1 +
                        locations[close2]['mileage'] - distance2) / 2.0
         elif distance1 < distance3 and distance2 < distance3:
-            #print "between"
+            print "between"
             mileage = locations[close1]['mileage'] + distance1 * (
                 locations[close2]['mileage'] - locations[close1]['mileage']) / (
                     distance1 + distance2)
@@ -124,8 +124,11 @@ def read_known(file_name):
     # Calculate Mileage for anything that didn't have it
     done = True
     for i in range(0, len(data)):
+        print data[i]['mileage']
         if data[i]['mileage'] is None:
+            print "calculating mileage"
             mileage = get_mileage(data, data[i]['latitude'], data[i]['longitude'])
+            print "mileage = %f" % mileage
             if mileage > 0:
                 data[i]['mileage'] = mileage
                 print(data[i])
@@ -331,18 +334,18 @@ def main():
     Main rountine
     """
     # Read the known locations
-    known_locations = read_known('known_negs.csv')
-    #known_locations = read_known('known_wolfeboro.csv')
+    known_locations = read_known('../data/known_negs.csv')
+    #known_locations = read_known('../data/known_wolfeboro.csv')
 
     # Start reading the raw data files
-    #for rawfile in ['201709051108_log_negs.csv']:
-    #for rawfile in ['201706052258_log_wolfeboro_a.csv']:
+    #for rawfile in ['../data/201709051108_log_negs.csv']:
+    #for rawfile in ['../data/201706052258_log_wolfeboro_a.csv']:
     (adata, cdata) = read_raw_files(known_locations,
-                                     ['201710060900_log_negs.csv'])
-    #                                ['201706231117_log_negs.csv',
-    #                                 '201707160116_log_negs.csv',
-    #                                 '201708260206_log_negs.csv',
-    #                                 '201709051108_log_negs.csv'])
+                                     ['../data/201710060900_log_negs.csv',
+                                    '../data/201706231117_log_negs.csv',
+                                     '../data/201707160116_log_negs.csv',
+                                     '../data/201708260206_log_negs.csv',
+                                     '../data/201709051108_log_negs.csv'])
     generate_gps_output(cdata)
     generate_accel_output(adata)
 

@@ -13,7 +13,7 @@ def main():
     try:
         mychart = trackchart.new([(1024, 768),
                                  20, "C", float(sys.argv[1]), float(sys.argv[2]),
-                                 None, None, "known_negs.csv", "gps_negs.csv"])
+                                 None, None, "../data/known_negs.csv", "../data/gps_negs.csv"])
     except (IndexError, ValueError):
         print("Usage: %s start_mile end_mile" % sys.argv[0])
         sys.exit()
@@ -29,6 +29,7 @@ def main():
     trackchart.townlines(mychart)
     trackchart.yardlimits(mychart)
     trackchart.controlpoints(mychart)
+    trackchart.sidings(mychart)
 
     mychart['image'].save("test.png")
 

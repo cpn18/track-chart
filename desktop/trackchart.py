@@ -259,10 +259,10 @@ def stations(tc):
                     if offset != 0:
                         if offset > 0:
                             # Above the mainline
-                            offset = 2
+                            offset = 2+pixel_per_mile*0.01*offset
                         elif offset < 0:
                             # Below the mainline
-                            offset = -(2+1.5*box_size)
+                            offset = -(2-pixel_per_mile*0.01*offset+1.5*box_size)
 
                         # Draw symbol
                         draw.polygon((x-box_size/2, y-offset,
@@ -352,7 +352,7 @@ def controlpoints(tc):
 
             x = mile_to_pixel(tc, m-first)
             y_start = y
-            y_size = mile_to_pixel(tc,0.01) - margin
+            y_size = 0.01 * pixel_per_mile
             print(y_size)
             start_offset = int(l[4])
             end_offset = int(l[5])
@@ -641,5 +641,36 @@ def accel(tc):
                     #    draw.point((x, yy+scale*l[y_index]))
                     #if l[10] > l[8] and l[10] > l[9]:
                     #    draw.point((x, yz+scale*l[z_index]))
+
+    del draw
+
+def sidings(tc):
+    """
+    Draw Siding
+    """
+    line_length = 10
+    offset = 2
+    im = tc['image']
+    margin = tc['margin']
+    (first, last, pixel_per_mile) = tc['mileposts']
+    draw = ImageDraw.Draw(im)
+
+    y = int((im.size[1]-margin)*0.625)
+    with open(tc['known_file']) as f:
+        for line in f:
+            if line[0] == "#":
+                continue
+            l = line.strip().split(",")
+            m = float(l[3])
+            if not (first <= m <= last):
+                continue
+
+            if l[0] != 'ST':
+                continue
+
+            start_x = mile_to_pixel(tc,float(l[3]) - first)
+            end_x = mile_to_pixel(tc,float(l[5]) - first)
+            y1 = y - pixel_per_mile * 0.01 * int(l[4])
+            draw.line((start_x, y1, end_x, y1))
 
     del draw

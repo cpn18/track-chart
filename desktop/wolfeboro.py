@@ -13,8 +13,8 @@ try:
        float(sys.argv[2]),
        "W",
        12,
-       "known_wolfeboro.csv",
-       "gps_wolfeboro.csv"
+       "../data/known_wolfeboro.csv",
+       "../data/gps_wolfeboro.csv"
        ])
 except (IndexError,ValueError):
   print "Usage: %s start_mile end_mile" % sys.argv[0]
