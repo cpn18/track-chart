@@ -4,6 +4,7 @@ output=/root/gps-data
 
 cd `dirname $0`
 
+mkdir -p ${output}
 date +%Y%m%d%H%M > ${output}/timestamp
 
 if [ -f ${output}/error.log ]; then

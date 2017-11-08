@@ -1,4 +1,13 @@
 #!/bin/bash
+#Precaution: Wait for DietPi Ramdisk to finish
+while [ ! -f /DietPi/.ramdisk ]
+do
+
+    /DietPi/dietpi/func/dietpi-notify 2 "Waiting for DietPi-RAMDISK to finish mounting DietPi to RAM..."
+    sleep 1
+
+done
+
 echo -e "$(cat /proc/uptime | awk '{print $1}') Seconds" > /var/log/boottime
 if (( $(cat /DietPi/dietpi/.install_stage) == 1 )); then
 
