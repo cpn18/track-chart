@@ -26,7 +26,7 @@ def gps_logger():
   session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
 
   count=0
-  a = b = speed = 0.0
+  alt = track = speed = 0.0
   while not done:
     try:
         # GPS
@@ -50,23 +50,21 @@ def gps_logger():
                     inLocSync=True
 		    lastreport = report
 
-		d = geo.great_circle(lastreport.lat,lastreport.lon,report.lat,report.lon)
+		distance = geo.great_circle(lastreport.lat,lastreport.lon,report.lat,report.lon)
 
                 if hasattr(report, 'speed'):
-                    # Convert knots to mph
-                    speed = report.speed * 1.15078
+                    speed = report.speed
 
                 if hasattr(report, 'track'):
                     # Bearing
-                    b = report.track
+                    track = report.track
 
                 if hasattr(report, 'alt'):
-                    # Convert meters to feet
-         	    a = report.alt * 3.28084
+         	    alt = report.alt
 
-                if (count % 60 == 0 or d >= threshold) and inLocSync == True:
+                if (count % 60 == 0 or distance >= threshold) and inLocSync == True:
                         lock.acquire()
-                	print ( "%s G % 02.6f % 03.6f %03f %01.2f %0.2f %0.2f *" % (report.time,report.lat,report.lon,a,d,speed,b))
+                	print ( "%s G % 02.6f % 03.6f %03f %01.2f %0.2f %0.2f *" % (report.time,report.lat,report.lon,alt,distance,speed,track))
                         lock.release()
 			lastreport = report
                         count = 0
@@ -148,7 +146,7 @@ inLocSync=False
 inTimeSync=False
 done=False
 print ""
-print "#v3"
+print "#v4"
 try:
   t1 = threading.Thread(target=gps_logger, args=())
   t1.start()

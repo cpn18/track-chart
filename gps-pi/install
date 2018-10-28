@@ -5,5 +5,5 @@ apt-get install vim
 apt-get install gpsd gpsd-clients python-gps
 apt-get install python-smbus i2c-tools git-core
 
-systemctl disable serial-getty@ttyAMA0.service
-systemctl stop serial-getty@ttyAMA0.service
+systemctl disable serial-getty@ttyAMA0
+systemctl stop serial-getty@ttyAMA0
