@@ -79,6 +79,20 @@ def parse_gps_v4(obj, a):
 def parse_accel_v4(accel, obj, a):
     return parse_accel_v3(accel, obj, a)
 
+# Version 5 File
+
+def parse_gps_v5(obj, a):
+    mps_to_mph = 2.23694
+    m_to_ft = 3.28084
+
+    obj = parse_gps_v3(obj, a)
+    obj['alt'] = float(a[4]) * m_to_ft
+    obj['speed'] = float(a[5]) * mps_to_mph
+    return obj
+
+def parse_accel_v5(accel, obj, a):
+    return parse_accel_v3(accel, obj, a)
+
 def read_data(filename):
     gps = {}
     accel = []
@@ -89,10 +103,8 @@ def read_data(filename):
             if len(a) == 0:
                 continue
 
-            if a[0] == "#v3":
-                version=3
-            if a[0] == "#v4":
-                version=4
+            if a[0].startswith('#v'):
+                version = int(a[0][2:])
 
             if a[0][0] == '<' or a[0][0] == '#' or a[-1] != '*':
                 continue
@@ -108,13 +120,17 @@ def read_data(filename):
             if obj['type'] == 'A':
                 if version == 3:
                     obj = parse_accel_v3(accel, obj, a)
-                else:
+                elif version == 4:
                     obj = parse_accel_v4(accel, obj, a)
+                else:
+                    obj = parse_accel_v5(accel, obj, a)
             elif obj['type'] == 'G':
                 if version == 3:
                     obj = parse_gps_v3(obj, a)
-                else:
+                elif version == 4:
                     obj = parse_gps_v4(obj, a)
+                else:
+                    obj = parse_gps_v5(obj, a)
                 gps[obj['time']] = obj
 
             if ok(obj):
@@ -245,5 +261,5 @@ def drawmap(accel, threshold):
     plt.title('Track')
     plt.show()
 
-line_chart(accel, noise_floor)
-#drawmap(accel, noise_floor)
+#line_chart(accel, noise_floor)
+drawmap(accel, noise_floor)
