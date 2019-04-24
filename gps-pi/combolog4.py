@@ -4,19 +4,17 @@ import gps
 import math
 import datetime
 import threading
-#import the adxl345 module
-import adxl345
 import time
 import geo
 import os
 
-lock = threading.Lock()
+import adxl345_shim as accel
 
 def gps2date(d):
     return "%s%s%s%s%s.%s" % ( d[5:7], d[8:10], d[11:13], d[14:16], d[0:4], d[17:19] )
 
 def gps_logger():
-  global inLocSync,inTimeSync
+  global inLocSync,inTimeSync,timestamp
 
   # miles
   threshold = 0.0
@@ -25,7 +23,6 @@ def gps_logger():
   session = gps.gps("localhost", "2947")
   session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
 
-  count=0
   alt = track = speed = 0.0
   while not done:
     try:
@@ -36,19 +33,25 @@ def gps_logger():
 	#print report
 
         if report['class'] == 'TPV':
-            if hasattr(report, 'time'):
-                if not inTimeSync:
-                    lock.acquire()
-                    print("%s T *" % report.time)
-                    lock.release()
-                    command = "date %s > /dev/null" % gps2date(report.time)
-                    os.system(command)
-                    inTimeSync = True
+            if not inTimeSync and hasattr(report, 'time'):
+                command = "date --utc %s > /dev/null" %  gps2date(report.time)
+                tmp_time = report.time
+                timestamp = tmp_time.replace('-','').replace(':','').replace('T','')[0:12]
+                output = open("/root/gps-data/%s_gps.csv" % timestamp ,"w")
+                output.write("%s\n" % version)
+                output.write("%s T *\n" % report.time)
+                os.system(command)
+                inTimeSync = True
+
+            if hasattr(report, 'mode'):
+                if report.mode == 1:
+                    continue
 
             if (hasattr(report, 'lat') and hasattr(report, 'lon') and hasattr(report, 'time')):
                 if not inLocSync:
                     inLocSync=True
 		    lastreport = report
+                    continue
 
 		distance = geo.great_circle(lastreport.lat,lastreport.lon,report.lat,report.lon)
 
@@ -62,13 +65,8 @@ def gps_logger():
                 if hasattr(report, 'alt'):
          	    alt = report.alt
 
-                if (count % 60 == 0 or distance >= threshold) and inLocSync == True:
-                        lock.acquire()
-                	print ( "%s G % 02.6f % 03.6f %03f %01.2f %0.2f %0.2f *" % (report.time,report.lat,report.lon,alt,distance,speed,track))
-                        lock.release()
-			lastreport = report
-                        count = 0
-                count += 1
+                output.write ( "%s G % 02.6f % 03.6f %03f %01.2f %0.2f %0.2f *\n" % (report.time,report.lat,report.lon,alt,distance,speed,track))
+		lastreport = report
             else:
                 print(report)
 
@@ -77,13 +75,11 @@ def gps_logger():
     except StopIteration:
 		session = None
 		print "GPSD has terminated"
-
+                output.close()
 
 
 def accel_logger():
   global inLocSync
-  #create ADXL345 object
-  accel = adxl345.ADXL345()
 
   max_x = max_y = max_z = -20
   min_x = min_y = min_z = 20
@@ -93,15 +89,14 @@ def accel_logger():
   while not inLocSync:
       time.sleep(5)
 
+  output = open("/root/gps-data/%s_accel.csv" % timestamp,"w")
+  output.write("%s\n" % version)
+
   next = time.time() + 1
   while not done:
     try:
 
-      #get axes as g
-      #axes = accel.getAxes(True)
-
-      # to get axes as ms^2 use
-      axes = accel.getAxes(False)
+      axes = accel.get_axes()
 
       #put the axes into variables
       x = axes['x']
@@ -130,9 +125,7 @@ def accel_logger():
         x1 = sum_x/c
         y1 = sum_y/c
         z1 = sum_z/c
-        lock.acquire()
-        print ("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *" % (acceltime,c,min_x,x1,max_x,min_y,y1,max_y,min_z,z1,max_z))
-        lock.release()
+        output.write ("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *\n" % (acceltime,c,min_x,x1,max_x,min_y,y1,max_y,min_z,z1,max_z))
         max_x = max_y = max_z = -20
         min_x = min_y = min_z = 20
         sum_x = sum_y = sum_z = 0
@@ -142,11 +135,11 @@ def accel_logger():
       pass
 
 # MAIN START
+timestamp=None
 inLocSync=False
 inTimeSync=False
 done=False
-print ""
-print "#v4"
+version="#v4"
 try:
   t1 = threading.Thread(target=gps_logger, args=())
   t1.start()
