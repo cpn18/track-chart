@@ -7,7 +7,8 @@ import threading
 import time
 import os
 
-import adxl345_shim as accel
+#import adxl345_shim as accel
+import berryimu_shim as accel
 
 def gps2date(d):
     return "%s%s%s%s%s.%s" % ( d[5:7], d[8:10], d[11:13], d[14:16], d[0:4], d[17:19] )
@@ -62,6 +63,7 @@ def gps_logger():
                 if hasattr(report, 'alt'):
          	    alt = report.alt
 
+                #print ( "%s G % 02.6f % 03.6f %03f %0.2f %0.2f *" % (report.time,report.lat,report.lon,alt,speed,track))
                 output.write ( "%s G % 02.6f % 03.6f %03f %0.2f %0.2f *\n" % (report.time,report.lat,report.lon,alt,speed,track))
 		lastreport = report
             else:
@@ -122,6 +124,7 @@ def accel_logger():
         x1 = sum_x/c
         y1 = sum_y/c
         z1 = sum_z/c
+        print ("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *" % (acceltime,c,min_x,x1,max_x,min_y,y1,max_y,min_z,z1,max_z))
         output.write ("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *\n" % (acceltime,c,min_x,x1,max_x,min_y,y1,max_y,min_z,z1,max_z))
         max_x = max_y = max_z = -20
         min_x = min_y = min_z = 20
