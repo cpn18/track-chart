@@ -53,6 +53,9 @@ def gps_logger():
 		    lastreport = report
                     continue
 
+                if hasattr(lastreport, 'time') and lastreport.time == report.time:
+                    continue
+
                 if hasattr(report, 'speed'):
                     speed = report.speed
 
@@ -124,7 +127,7 @@ def accel_logger():
         x1 = sum_x/c
         y1 = sum_y/c
         z1 = sum_z/c
-        print ("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *" % (acceltime,c,min_x,x1,max_x,min_y,y1,max_y,min_z,z1,max_z))
+        #print ("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *" % (acceltime,c,min_x,x1,max_x,min_y,y1,max_y,min_z,z1,max_z))
         output.write ("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *\n" % (acceltime,c,min_x,x1,max_x,min_y,y1,max_y,min_z,z1,max_z))
         max_x = max_y = max_z = -20
         min_x = min_y = min_z = 20
