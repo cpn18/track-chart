@@ -36,7 +36,7 @@ def gps_logger():
             #print report
 
             if report['class'] != 'TPV':
-                print(report)
+                #print(report)
                 continue
 
             if hasattr(report, 'mode'):
