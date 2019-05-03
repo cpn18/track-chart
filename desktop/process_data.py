@@ -85,9 +85,11 @@ def parse_gps_v5(obj, a):
     mps_to_mph = 2.23694
     m_to_ft = 3.28084
 
-    obj = parse_gps_v3(obj, a)
+    obj['lat'] = float(a[2])
+    obj['lon'] = float(a[3])
     obj['alt'] = float(a[4]) * m_to_ft
     obj['speed'] = float(a[5]) * mps_to_mph
+    obj['bearing'] = float(a[6])
     return obj
 
 def parse_accel_v5(accel, obj, a):
