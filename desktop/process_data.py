@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 #2018-09-21T14:44:22.000Z A 151 -2.471 -0.088  1.726 -0.863  1.081  3.138  3.138  9.596  15.024 *
 
 import math
@@ -200,7 +201,6 @@ else:
     print("noise floor = %d" % noise_floor)
 
 
-from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -238,6 +238,8 @@ def line_chart(accel, threshold):
     plt.show()
 
 def drawmap(accel, threshold):
+    import cartopy.crs as ccrs
+    import matplotlib.pyplot as plt
     lat=[]
     lon=[]
     s=[]
@@ -251,13 +253,9 @@ def drawmap(accel, threshold):
                 print("%0.6f %0.6f %d" % (a['lat'], a['lon'], a['delta']))
             else:
                 s.append(.1)
-    m = Basemap(
-            min(lon)-.01,
-            min(lat)-.01,
-            max(lon)+.01,
-            max(lat)+.01
-            )
-    m.scatter(lon, lat, s, latlon=True)
+
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.scatter(lon,lat,transform=ccrs.PlateCarree())
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
     plt.title('Track')
