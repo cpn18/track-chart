@@ -255,7 +255,8 @@ def drawmap(accel, threshold):
                 s.append(.1)
 
     ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.scatter(lon,lat,transform=ccrs.PlateCarree())
+    l = ax.scatter(lon,lat,transform=ccrs.PlateCarree())
+    l.set_sizes(s)
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
     plt.title('Track')

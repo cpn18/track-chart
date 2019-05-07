@@ -15,9 +15,31 @@ def set_date(d):
     command = "date --utc %s > /dev/null" %  d
     os.system(command)
 
-def gps_logger():
+def wait_for_timesync():
+    session = gps.gps("localhost", "2947")
+    session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
+    while True:
+        try:
+            report = session.next()
+            if report['class'] != 'TPV':
+                continue
+            if hasattr(report, 'mode'):
+                if report.mode == 1:
+                    continue
+            if hasattr(report, 'time'):
+                set_date(report.time)
+                return report.time.replace('-', '').replace(':', '').replace('T', '')[0:12]
+        except Exception as ex:
+            print ex
+            sys.exit(1)
+
+
+def gps_logger(timestamp):
     """ GPS Data Logger """
-    global INLOCSYNC, INTIMESYNC, TIMESTAMP
+    global INLOCSYNC
+
+    # Output file
+    output = open("/root/gps-data/%s_gps.csv" % timestamp, "w")
 
     # miles
     threshold = 0.0
@@ -44,14 +66,6 @@ def gps_logger():
                     continue
 
             if hasattr(report, 'lat') and hasattr(report, 'lon') and hasattr(report, 'time'):
-                if not INTIMESYNC:
-                    set_date(report.time)
-                    TIMESTAMP = report.time.replace('-', '').replace(':', '').replace('T', '')[0:12]
-                    output = open("/root/gps-data/%s_gps.csv" % TIMESTAMP, "w")
-                    output.write("%s\n" % VERSION)
-                    output.write("%s T *\n" % report.time)
-                    INTIMESYNC = True
-
                 if not INLOCSYNC:
                     INLOCSYNC = True
                     lastreport = report
@@ -81,7 +95,7 @@ def gps_logger():
             output.close()
 
 
-def accel_logger():
+def accel_logger(timestamp):
     """ Accel Data Logger """
     global INLOCSYNC
 
@@ -93,7 +107,7 @@ def accel_logger():
     while not INLOCSYNC:
         time.sleep(5)
 
-    output = open("/root/gps-data/%s_accel.csv" % TIMESTAMP, "w")
+    output = open("/root/gps-data/%s_accel.csv" % timestamp, "w")
     output.write("%s\n" % VERSION)
 
     next = time.time() + 1
@@ -138,15 +152,17 @@ def accel_logger():
             pass
 
 # MAIN START
-TIMESTAMP = None
 INLOCSYNC = False
-INTIMESYNC = False
 DONE = False
 VERSION = "#v5"
+
+# Make sure we have a time sync
+timestamp = wait_for_timesync()
+
 try:
-    T1 = threading.Thread(target=gps_logger, args=())
+    T1 = threading.Thread(target=gps_logger, args=(timestamp,))
     T1.start()
-    T2 = threading.Thread(target=accel_logger, args=())
+    T2 = threading.Thread(target=accel_logger, args=(timestamp,))
     T2.start()
 except:
     print("Error: unable to start thread")
