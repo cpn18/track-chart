@@ -1,4 +1,7 @@
 #!/usr/bin/python
+"""
+GPS / ACCEL Logger V5
+"""
 
 import os
 import sys
@@ -9,13 +12,20 @@ import gps
 #import adxl345_shim as accel
 import berryimu_shim as accel
 
-def set_date(d):
+def set_date(gps_date):
     """ Set the system clock """
-    d = "%s%s%s%s%s.%s" % (d[5:7], d[8:10], d[11:13], d[14:16], d[0:4], d[17:19])
-    command = "date --utc %s > /dev/null" %  d
+    sys_date = "%s%s%s%s%s.%s" % (
+        gps_date[5:7],
+        gps_date[8:10],
+        gps_date[11:13],
+        gps_date[14:16],
+        gps_date[0:4],
+        gps_date[17:19])
+    command = "date --utc %s > /dev/null" %  sys_date
     os.system(command)
 
 def wait_for_timesync(session):
+    """ Wait for Time Sync """
     while True:
         try:
             report = session.next()
@@ -28,7 +38,7 @@ def wait_for_timesync(session):
                 set_date(report.time)
                 return report.time.replace('-', '').replace(':', '').replace('T', '')[0:12]
         except Exception as ex:
-            print ex
+            print(ex)
             sys.exit(1)
 
 
@@ -101,7 +111,7 @@ def accel_logger(timestamp):
     output = open("/root/gps-data/%s_accel.csv" % timestamp, "w")
     output.write("%s\n" % VERSION)
 
-    next = time.time() + 1
+    next_time = time.time() + 1
     while not DONE:
         try:
             axes = accel.get_axes()
@@ -128,7 +138,7 @@ def accel_logger(timestamp):
             c += 1
 
             now = time.time()
-            if now > next and c != 0:
+            if now > next_time and c != 0:
                 acceltime = time.strftime("%Y-%m-%dT%H:%M:%S.000Z")
                 x1 = sum_x/c
                 y1 = sum_y/c
@@ -138,7 +148,7 @@ def accel_logger(timestamp):
                 min_x = min_y = min_z = 20
                 sum_x = sum_y = sum_z = 0
                 c = 0
-                next = now + 1
+                next_time = now + 1
         except IOError:
             pass
 
@@ -148,16 +158,16 @@ DONE = False
 VERSION = "#v5"
 
 # Listen on port 2947 (gpsd) of localhost
-session = gps.gps("localhost", "2947")
-session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
+SESSION = gps.gps("localhost", "2947")
+SESSION.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
 
 # Make sure we have a time sync
-timestamp = wait_for_timesync(session)
+TIMESTAMP = wait_for_timesync(SESSION)
 
 try:
-    T1 = threading.Thread(target=gps_logger, args=(timestamp,session,))
+    T1 = threading.Thread(target=gps_logger, args=(TIMESTAMP, SESSION,))
     T1.start()
-    T2 = threading.Thread(target=accel_logger, args=(timestamp,))
+    T2 = threading.Thread(target=accel_logger, args=(TIMESTAMP,))
     T2.start()
 except:
     print("Error: unable to start thread")
