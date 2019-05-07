@@ -72,7 +72,7 @@ def gps_logger(timestamp, session):
                     lastreport = report
                     continue
 
-                if hasattr(lastreport, 'time') and lastreport.time == report.time:
+                if lastreport.time == report.time:
                     continue
 
                 if hasattr(report, 'speed'):
@@ -123,18 +123,12 @@ def accel_logger(timestamp):
             sum_x += x
             sum_y += y
             sum_z += z
-            if x > max_x:
-                max_x = x
-            if y > max_y:
-                max_y = y
-            if z > max_z:
-                max_z = z
-            if x < min_x:
-                min_x = x
-            if y < min_y:
-                min_y = y
-            if z < min_z:
-                min_z = z
+            max_x = max(x, max_x)
+            max_y = max(y, max_y)
+            max_z = max(z, max_z)
+            min_x = min(x, min_x)
+            min_y = min(y, min_y)
+            min_z = min(z, min_z)
             c += 1
 
             now = time.time()
@@ -163,6 +157,8 @@ SESSION.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
 
 # Make sure we have a time sync
 TIMESTAMP = wait_for_timesync(SESSION)
+
+print(TIMESTAMP)
 
 try:
     T1 = threading.Thread(target=gps_logger, args=(TIMESTAMP, SESSION,))
