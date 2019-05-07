@@ -15,9 +15,7 @@ def set_date(d):
     command = "date --utc %s > /dev/null" %  d
     os.system(command)
 
-def wait_for_timesync():
-    session = gps.gps("localhost", "2947")
-    session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
+def wait_for_timesync(session):
     while True:
         try:
             report = session.next()
@@ -34,19 +32,12 @@ def wait_for_timesync():
             sys.exit(1)
 
 
-def gps_logger(timestamp):
+def gps_logger(timestamp, session):
     """ GPS Data Logger """
     global INLOCSYNC
 
     # Output file
     output = open("/root/gps-data/%s_gps.csv" % timestamp, "w")
-
-    # miles
-    threshold = 0.0
-
-    # Listen on port 2947 (gpsd) of localhost
-    session = gps.gps("localhost", "2947")
-    session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
 
     alt = track = speed = 0.0
     while not DONE:
@@ -156,11 +147,15 @@ INLOCSYNC = False
 DONE = False
 VERSION = "#v5"
 
+# Listen on port 2947 (gpsd) of localhost
+session = gps.gps("localhost", "2947")
+session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
+
 # Make sure we have a time sync
-timestamp = wait_for_timesync()
+timestamp = wait_for_timesync(session)
 
 try:
-    T1 = threading.Thread(target=gps_logger, args=(timestamp,))
+    T1 = threading.Thread(target=gps_logger, args=(timestamp,session,))
     T1.start()
     T2 = threading.Thread(target=accel_logger, args=(timestamp,))
     T2.start()
