@@ -12,7 +12,7 @@ fi
 
 while true; do
   date +%Y%m%d%H%M > ${output}/timestamp
-  ./combolog5.py \
+  ./combolog5_web.py \
 	  >> ${output}/`cat ${output}/timestamp`_log.csv \
 	  2>> ${output}/error.log
 done

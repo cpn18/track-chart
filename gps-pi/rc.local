@@ -1,20 +1,24 @@
-#!/bin/bash
-#Precaution: Wait for DietPi Ramdisk to finish
-while [ ! -f /DietPi/.ramdisk ]
-do
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
 
-    /DietPi/dietpi/func/dietpi-notify 2 "Waiting for DietPi-RAMDISK to finish mounting DietPi to RAM..."
-    sleep 1
-
-done
-
-echo -e "$(cat /proc/uptime | awk '{print $1}') Seconds" > /var/log/boottime
-if (( $(cat /DietPi/dietpi/.install_stage) == 1 )); then
-
-    /DietPi/dietpi/dietpi-services start
-
+# Print the IP address
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
 fi
-/DietPi/dietpi/dietpi-banner 0
+
+iptables-restore < /etc/iptables.ipv4.nat
+
 /root/gps-pi/log.sh &
-echo -e " Default Login:\n Username = root\n Password = dietpi\n"
+
 exit 0
