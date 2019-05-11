@@ -32,12 +32,64 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             s.wfile.write("<html><body>Bye</body></html")
             return
 
+        if s.path == "/gps":
+            if hasattr(CURRENT, 'lat') and hasattr(CURRENT, 'lon') and hasattr(CURRENT, 'alt'):
+                s.wfile.write("{\"lat\": %f, \"lon\": %f, \"alt\": %f}" % (CURRENT['lat'], CURRENT['lon'], CURRENT['alt']))
+            else:
+                s.wfile.write("{}")
+            return
+
+        if s.path == "/jquery-3.4.1.min.js":
+            with open("jquery-3.4.1.min.js", "r") as j:
+                s.wfile.write(j.read())
+            return
+
+        if s.path == "/gps.html":
+            s.wfile.write("""
+<html>
+<head>
+<script src="/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+<table>
+<tr><th>Latitude</th><td id="lat"></td></tr>
+<tr><th>Longitude</th><td id="lon"></td></tr>
+<tr><th>Altitude</th><td id="alt"></td></tr>
+</table>
+<script>
+var refresh=5000;
+$(document).ready(function()
+{
+  setInterval(function() {
+  $.ajax({
+    datatype: "json",
+    url: "http://192.168.4.1/gps",
+    success: function(data)
+    {
+      var obj = JSON.parse(data);
+      $('#lat').text(obj.lat);
+      $('#lon').text(obj.lon);
+      $('#alt').text(obj.alt);
+    }
+});
+}, refresh);
+});
+</script>
+</body>
+</html>
+            """)
+            return
+
+
         s.wfile.write("<html><head><meta http-equiv=\"refresh\" content=\"1\"><title>RPi/GPS/IMU</title></head>")
         s.wfile.write("<body>")
         s.wfile.write("<table>")
-        s.wfile.write("<tr><th>Latitude</th><td>%f</td></tr>" % CURRENT['lat'])
-        s.wfile.write("<tr><th>Longitude</th><td>%f</td></tr>" % CURRENT['lon'])
-        s.wfile.write("<tr><th>Altitude</th><td>%f</td></tr>" % CURRENT['alt'])
+        if hasattr(CURRENT, 'lat'):
+            s.wfile.write("<tr><th>Latitude</th><td>%f</td></tr>" % CURRENT['lat'])
+        if hasattr(CURRENT, 'lon'):
+            s.wfile.write("<tr><th>Longitude</th><td>%f</td></tr>" % CURRENT['lon'])
+        if hasattr(CURRENT, 'alt'):
+            s.wfile.write("<tr><th>Altitude</th><td>%f</td></tr>" % CURRENT['alt'])
         s.wfile.write("</table>")
         s.wfile.write("<p>You accessed path: %s</p>" % s.path)
         s.wfile.write("</body></html>")
@@ -65,6 +117,7 @@ def wait_for_timesync(session):
     while True:
         try:
             report = session.next()
+            print report
             if report['class'] != 'TPV':
                 continue
             if hasattr(report, 'mode'):
