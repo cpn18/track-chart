@@ -24,19 +24,30 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(s):
         """Respond to a GET request."""
         global CURRENT
+        global DONE
         s.send_response(200)
         s.send_header("Content-type", "text/html")
         s.end_headers()
         if s.path == "/poweroff":
-            os.system("poweroff")
             s.wfile.write("<html><body>Bye</body></html")
+            DONE = True
+            os.system("shutdown --poweroff +1")
             return
 
         if s.path == "/gps":
-            if hasattr(CURRENT, 'lat') and hasattr(CURRENT, 'lon') and hasattr(CURRENT, 'alt'):
-                s.wfile.write("{\"lat\": %f, \"lon\": %f, \"alt\": %f}" % (CURRENT['lat'], CURRENT['lon'], CURRENT['alt']))
-            else:
-                s.wfile.write("{}")
+            output = ""
+            s.wfile.write("{")
+            if hasattr(CURRENT, 'lat'):
+                output += ",\"lat\": %f" % CURRENT['lat']
+            if hasattr(CURRENT, 'lon'):
+                output += ",\"lon\": %f" % CURRENT['lon']
+            if hasattr(CURRENT, 'alt'):
+                output += ",\"alt\": %f" % CURRENT['alt']
+            if hasattr(CURRENT, 'time'):
+                output += ",\"time\": \"%s\"" % CURRENT['time']
+            if len(output) > 0:
+                s.wfile.write(output[1:])
+            s.wfile.write("}")
             return
 
         if s.path == "/jquery-3.4.1.min.js":
@@ -45,58 +56,26 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             return
 
         if s.path == "/gps.html":
-            s.wfile.write("""
-<html>
-<head>
-<script src="/jquery-3.4.1.min.js"></script>
-</head>
-<body>
-<table>
-<tr><th>Latitude</th><td id="lat"></td></tr>
-<tr><th>Longitude</th><td id="lon"></td></tr>
-<tr><th>Altitude</th><td id="alt"></td></tr>
-</table>
-<script>
-var refresh=5000;
-$(document).ready(function()
-{
-  setInterval(function() {
-  $.ajax({
-    datatype: "json",
-    url: "http://192.168.4.1/gps",
-    success: function(data)
-    {
-      var obj = JSON.parse(data);
-      $('#lat').text(obj.lat);
-      $('#lon').text(obj.lon);
-      $('#alt').text(obj.alt);
-    }
-});
-}, refresh);
-});
-</script>
-</body>
-</html>
-            """)
+            with open("gps.html", "r") as j:
+                s.wfile.write(j.read())
             return
 
+        if s.path == "/favicon.ico":
+            s.wfile.write("")
+            return
 
-        s.wfile.write("<html><head><meta http-equiv=\"refresh\" content=\"1\"><title>RPi/GPS/IMU</title></head>")
+        s.wfile.write("<html><head><title>RPi/GPS/IMU</title></head>")
         s.wfile.write("<body>")
-        s.wfile.write("<table>")
-        if hasattr(CURRENT, 'lat'):
-            s.wfile.write("<tr><th>Latitude</th><td>%f</td></tr>" % CURRENT['lat'])
-        if hasattr(CURRENT, 'lon'):
-            s.wfile.write("<tr><th>Longitude</th><td>%f</td></tr>" % CURRENT['lon'])
-        if hasattr(CURRENT, 'alt'):
-            s.wfile.write("<tr><th>Altitude</th><td>%f</td></tr>" % CURRENT['alt'])
-        s.wfile.write("</table>")
         s.wfile.write("<p>You accessed path: %s</p>" % s.path)
         s.wfile.write("</body></html>")
 
 def web_server(httpd):
     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
-    httpd.serve_forever()
+    try:
+        httpd.serve_forever()
+    except Exception as ex:
+        print ex
+    httpd.server_close()
     print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
 
 def set_date(gps_date):
@@ -117,11 +96,11 @@ def wait_for_timesync(session):
     while True:
         try:
             report = session.next()
-            print report
             if report['class'] != 'TPV':
                 continue
             if hasattr(report, 'mode'):
                 if report.mode == 1:
+                    print report
                     continue
             if hasattr(report, 'time'):
                 set_date(report.time)
@@ -150,11 +129,13 @@ def gps_logger(timestamp, session):
             #print report
 
             if report['class'] != 'TPV':
-                #print(report)
                 continue
 
             if hasattr(report, 'mode'):
                 if report.mode == 1:
+                    print report
+                    INLOCSYNC = False
+                    print "Lost location sync"
                     continue
 
             if hasattr(report, 'lat') and hasattr(report, 'lon') and hasattr(report, 'time'):
@@ -162,26 +143,29 @@ def gps_logger(timestamp, session):
                 if not INLOCSYNC:
                     INLOCSYNC = True
                     lastreport = report
+                    print "Have location sync"
                     continue
 
                 if lastreport.time == report.time:
                     continue
 
                 if hasattr(report, 'speed'):
-                    speed = report.speed
+                    speed = "%0.2f" % report.speed
+                else:
+                    speed = "-"
 
                 if hasattr(report, 'track'):
                     # Bearing
-                    track = report.track
+                    track = "%0.2f" % report.track
+                else:
+                    track = "-"
 
                 if hasattr(report, 'alt'):
-                    alt = report.alt
+                    alt = "%03f" % report.alt
+                else:
+                    alt = "-"
 
-                with open("/var/www/html/gps.html.new", "w") as web:
-                    web.write("<html><head><meta http-equiv=\"refresh\" content=\"1\"></head><body>Lat: %02.6f<br>Long: %03.6f<br>Alt: %03f</body></html>" % (report.lat, report.lon, alt))
-                os.rename("/var/www/html/gps.html.new", "/var/www/html/gps.html")
-
-                output.write("%s G % 02.6f % 03.6f %03f %0.2f %0.2f *\n" % (report.time, report.lat, report.lon, alt, speed, track))
+                output.write("%s G %02.6f %03.6f %s %s %s *\n" % (report.time, report.lat, report.lon, alt, speed, track))
                 lastreport = report
 
         except KeyError:
@@ -190,6 +174,7 @@ def gps_logger(timestamp, session):
             session = None
             print("GPSD has terminated")
             output.close()
+    print "GPS done"
 
 
 def accel_logger(timestamp):
@@ -233,7 +218,8 @@ def accel_logger(timestamp):
                 x1 = sum_x/c
                 y1 = sum_y/c
                 z1 = sum_z/c
-                output.write("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *\n" % (acceltime, c, min_x, x1, max_x, min_y, y1, max_y, min_z, z1, max_z))
+                if INLOCSYNC:
+                    output.write("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *\n" % (acceltime, c, min_x, x1, max_x, min_y, y1, max_y, min_z, z1, max_z))
                 max_x = max_y = max_z = -20
                 min_x = min_y = min_z = 20
                 sum_x = sum_y = sum_z = 0
@@ -241,11 +227,13 @@ def accel_logger(timestamp):
                 next_time = now + 1
         except IOError:
             pass
+    print "ACCEL done"
 
 # MAIN START
 INLOCSYNC = False
 DONE = False
 VERSION = "#v5"
+CURRENT = {}
 
 # Listen on port 2947 (gpsd) of localhost
 SESSION = gps.gps("localhost", "2947")
@@ -255,18 +243,19 @@ SESSION.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
 server_class = BaseHTTPServer.HTTPServer
 httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
 
+T3 = threading.Thread(name="W", target=web_server, args=(httpd,))
+T3.start()
+
 # Make sure we have a time sync
 TIMESTAMP = wait_for_timesync(SESSION)
 
 print(TIMESTAMP)
 
 try:
-    T1 = threading.Thread(target=gps_logger, args=(TIMESTAMP, SESSION,))
+    T1 = threading.Thread(name="G", target=gps_logger, args=(TIMESTAMP, SESSION,))
     T1.start()
-    T2 = threading.Thread(target=accel_logger, args=(TIMESTAMP,))
+    T2 = threading.Thread(name="A", target=accel_logger, args=(TIMESTAMP,))
     T2.start()
-    T3 = threading.Thread(target=web_server, args=(httpd,))
-    T3.start()
 except:
     print("Error: unable to start thread")
     sys.exit(-1)
