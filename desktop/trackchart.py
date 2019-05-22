@@ -407,7 +407,10 @@ def elevation(tc):
             m = float(l[3])
             if first <= m <= last:
                 if l[0] == "G":
-                    edata.append({'mileage': float(l[3]), 'elevation': float(l[4])})
+                    if l[4] != "-":
+                        edata.append({'mileage': float(l[3]), 'elevation': float(l[4])})
+                    else:
+                        edata.append({'mileage': float(l[3])})
 
     # Check for empty list
     if len(edata) == 0:
@@ -421,18 +424,27 @@ def elevation(tc):
     for i in range(0, len(edata)):
         m = edata[i]['mileage']
         c = 1
-        esum = edata[i]['elevation']
+        try:
+            esum = edata[i]['elevation']
+        except:
+            esum = 0
         # work backwards
         j = i-1
         while j >= 0 and edata[j]['mileage'] >= m-smooth/2:
-            esum += edata[j]['elevation']
-            c += 1
+            try:
+                esum += edata[j]['elevation']
+                c += 1
+            except:
+                pass
             j -= 1
         # work forwards
         j = i + 1
         while j < len(edata) and edata[j]['mileage'] <= m+smooth/2:
-            esum += edata[j]['elevation']
-            c += 1
+            try:
+                esum += edata[j]['elevation']
+                c += 1
+            except:
+                pass
             j += 1
         # average
         smooth_edata[i] = {'mileage': m, 'elevation': esum / c}

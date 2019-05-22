@@ -171,7 +171,10 @@ def build_gps_object(fields, last_gps, mileage):
     """
     # Convert numeric fields
     for i in range(2, len(fields)-1):
-        fields[i] = float(fields[i])
+        try:
+            fields[i] = float(fields[i])
+        except:
+            pass
     unixtime = time.mktime(datetime.datetime.strptime(
         fields[0], GPS_FORMAT).timetuple())
     gps_object = {'type': 'G',
@@ -301,9 +304,14 @@ def generate_gps_output(cdata):
                     continue
                 bearing = geo.bearing(lat1, lon1, point['latitude'], point['longitude'])
 
-            print("%s,%0.6f,%0.6f,%0.6f,%0.6f,%d,%0.2f" % (
-                point['type'], point['latitude'], point['longitude'],
-                point['mileage'], point['altitude'], bearing, distance))
+            if point['altitude'] == "-":
+                print("%s,%0.6f,%0.6f,%0.6f,%s,%d,%0.2f" % (
+                    point['type'], point['latitude'], point['longitude'],
+                    point['mileage'], point['altitude'], bearing, distance))
+            else:
+                print("%s,%0.6f,%0.6f,%0.6f,%0.6f,%d,%0.2f" % (
+                    point['type'], point['latitude'], point['longitude'],
+                    point['mileage'], point['altitude'], bearing, distance))
             lat1 = point['latitude']
             lon1 = point['longitude']
 
@@ -334,18 +342,19 @@ def main():
     Main rountine
     """
     # Read the known locations
-    known_locations = read_known('../data/known_negs.csv')
-    #known_locations = read_known('../data/known_wolfeboro.csv')
+    #known_locations = read_known('../data/known_negs.csv')
+    known_locations = read_known('../data/known_wolfeboro.csv')
 
     # Start reading the raw data files
     #for rawfile in ['../data/201709051108_log_negs.csv']:
     #for rawfile in ['../data/201706052258_log_wolfeboro_a.csv']:
     (adata, cdata) = read_raw_files(known_locations,
-                                     ['../data/201710060900_log_negs.csv',
-                                    '../data/201706231117_log_negs.csv',
-                                     '../data/201707160116_log_negs.csv',
-                                     '../data/201708260206_log_negs.csv',
-                                     '../data/201709051108_log_negs.csv'])
+            ['../data/cvrtc_20190518.csv'])
+    #                                 ['../data/201710060900_log_negs.csv',
+    #                                '../data/201706231117_log_negs.csv',
+    #                                 '../data/201707160116_log_negs.csv',
+    #                                 '../data/201708260206_log_negs.csv',
+    #                                 '../data/201709051108_log_negs.csv'])
     generate_gps_output(cdata)
     generate_accel_output(adata)
 
