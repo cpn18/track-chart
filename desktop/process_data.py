@@ -6,14 +6,6 @@ import math
 import sys
 
 
-
-#filename="201706052258_log_wolfeboro.csv"
-#filename="201809211444_log.csv"
-#filename="20181006_negs_log.csv"
-filename="20181013_mbrr_log.csv"
-filename="201810191857_log_csrr.csv"
-filename="201810240139_negs_log.csv"
-filename="201810251117_log.csv"
 try:
     filename = sys.argv[1]
 except:
@@ -83,17 +75,49 @@ def parse_accel_v4(accel, obj, a):
 # Version 5 File
 
 def parse_gps_v5(obj, a):
-    mps_to_mph = 2.23694
+    ms_to_mph = 2.23694
     m_to_ft = 3.28084
 
     obj['lat'] = float(a[2])
     obj['lon'] = float(a[3])
-    obj['alt'] = float(a[4]) * m_to_ft
-    obj['speed'] = float(a[5]) * mps_to_mph
+    if a[4] != "-":
+        obj['alt'] = float(a[4]) # * m_to_ft
+    obj['speed'] = float(a[5]) # * ms_to_mph
     obj['bearing'] = float(a[6])
     return obj
 
 def parse_accel_v5(accel, obj, a):
+    return parse_accel_v3(accel, obj, a)
+
+# Version 6 File
+
+def m_to_ft(v):
+    try:
+        return float(v) * 3.28084
+    except:
+        return 0
+
+def parse_gps_v6(obj, a):
+    ms_to_mph = 2.23694
+
+    obj['lat'] = float(a[2])
+    obj['lon'] = float(a[3])
+    obj['alt'] = m_to_ft(a[4])
+    obj['epy'] = m_to_ft(a[5])
+    obj['epx'] = m_to_ft(a[6])
+    obj['epz'] = m_to_ft(a[7])
+    if a[8] != "-":
+        obj['speed'] = float(a[8]) * ms_to_mph
+    else:
+        obj['speed'] = 0
+    obj['eps'] = a[9]
+    if a[10] != "-":
+        obj['bearing'] = float(a[10])
+    else:
+        obj['bearing'] = 0
+    return obj
+
+def parse_accel_v6(accel, obj, a):
     return parse_accel_v3(accel, obj, a)
 
 def read_data(filename):
@@ -125,15 +149,19 @@ def read_data(filename):
                     obj = parse_accel_v3(accel, obj, a)
                 elif version == 4:
                     obj = parse_accel_v4(accel, obj, a)
-                else:
+                elif version == 5:
                     obj = parse_accel_v5(accel, obj, a)
+                else:
+                    obj = parse_accel_v6(accel, obj, a)
             elif obj['type'] == 'G':
                 if version == 3:
                     obj = parse_gps_v3(obj, a)
                 elif version == 4:
                     obj = parse_gps_v4(obj, a)
-                else:
+                elif version == 5:
                     obj = parse_gps_v5(obj, a)
+                else:
+                    obj = parse_gps_v6(obj, a)
                 gps[obj['time']] = obj
 
             if ok(obj):
@@ -210,30 +238,38 @@ def line_chart(accel, threshold):
     y1=[]
     y2=[]
     y3=[]
+    for i in range(2, len(accel)-3):
+        max_s = max(accel[i-2]['speed'], accel[i-1]['speed'], accel[i]['speed'], accel[i+1]['speed'], accel[i+2]['speed'])
+        min_s = min(accel[i-2]['speed'], accel[i-1]['speed'], accel[i]['speed'], accel[i+1]['speed'], accel[i+2]['speed'])
+        accel[i]['speed'] = (accel[i-2]['speed'] + accel[i-1]['speed'] + accel[i]['speed'] + accel[i+1]['speed'] + accel[i+2]['speed'] - max_s - min_s) / 3
+
     for a in accel:
         if a['type'] == 'A':
-            if a['delta'] >= threshold and a['speed'] > 0:
-                y1.append(a['delta'])
-                print("%0.6f %0.6f %d" % (a['lat'], a['lon'], a['delta']))
-            else:
-                y1.append(0)
-            y2.append(a['speed'])
-            #if a['speed'] > 0:
-            #    y1.append(a['minx'])
-            #    y2.append(a['maxx'])
-            #    y3.append(a['avgx'])
+            #if a['delta'] >= threshold and a['speed'] > 0:
+            #    y1.append(a['delta'])
+            #    print("%0.6f %0.6f %d" % (a['lat'], a['lon'], a['delta']))
             #else:
             #    y1.append(0)
-            #    y2.append(0)
-            #    y3.append(0)
+            #y2.append(a['speed'])
+            if a['speed'] > 0:
+                y1.append(a['minx'])
+                y2.append(a['maxx'])
+                y3.append(a['avgx'])
+            else:
+                y1.append(0)
+                y2.append(0)
+                y3.append(0)
 
-    df = pd.DataFrame({'x': range(0,len(y1)), 'avg': y1, 'speed': y2})
-    plt.plot('x', 'avg', data=df, linestyle='-', marker='')
-    plt.plot('x', 'speed', data=df, linestyle='-', marker='')
-    #df = pd.DataFrame({'x': range(0,len(y1)), 'min': y1, 'max': y2, 'avg': y3})
-    #plt.plot('x', 'min', data=df, linestyle='-', marker='')
-    #plt.plot('x', 'max', data=df, linestyle='-', marker='')
+    dates = pd.date_range(accel[0]['time'], periods=len(y1), freq='S')
+
+    #df = pd.DataFrame({'x': range(0,len(y1)), 'avg': y1, 'speed': y2})
     #plt.plot('x', 'avg', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'speed', data=df, linestyle='-', marker='')
+    df = pd.DataFrame({'x': dates, 'min': y1, 'max': y2, 'avg': y3})
+    plt.plot('x', 'min', data=df, linestyle='-', marker='')
+    plt.plot('x', 'max', data=df, linestyle='-', marker='')
+    plt.plot('x', 'avg', data=df, linestyle='-', marker='')
+
     plt.legend()
     plt.show()
 
@@ -262,5 +298,5 @@ def drawmap(accel, threshold):
     plt.title('Track')
     plt.show()
 
-#line_chart(accel, noise_floor)
+line_chart(accel, noise_floor)
 drawmap(accel, noise_floor)
