@@ -7,14 +7,6 @@ import sys
 
 SPEED_THRESHOLD=2.0
 
-
-#filename="201706052258_log_wolfeboro.csv"
-#filename="201809211444_log.csv"
-#filename="20181006_negs_log.csv"
-filename="20181013_mbrr_log.csv"
-filename="201810191857_log_csrr.csv"
-filename="201810240139_negs_log.csv"
-filename="201810251117_log.csv"
 try:
     filename = sys.argv[1]
 except:
@@ -36,7 +28,10 @@ def ok(obj):
     return False
 
 def calc_delta(a):
-    return a['maxx'] - a['minx']
+    dx = a['maxx'] - a['minx']
+    dy = a['maxy'] - a['miny']
+    dz = a['maxz'] - a['minz']
+    return math.sqrt(dx*dx+dy*dy+dz*dz)
 
 threshold=99.5
 
@@ -100,6 +95,7 @@ def parse_accel_v5(accel, obj, a):
 
 # Version 6 File
 
+<<<<<<< HEAD
 def parse_gps_v6(obj, a):
     ms_to_mph = 2.23694
     m_to_ft = 3.28084
@@ -110,10 +106,31 @@ def parse_gps_v6(obj, a):
         obj['alt'] = float(a[4]) * m_to_ft
     else:
         obj['alt'] = 0
+=======
+def m_to_ft(v):
+    try:
+        return float(v) * 3.28084
+    except:
+        return 0
+
+def parse_gps_v6(obj, a):
+    ms_to_mph = 2.23694
+
+    obj['lat'] = float(a[2])
+    obj['lon'] = float(a[3])
+    obj['alt'] = m_to_ft(a[4])
+    obj['epy'] = m_to_ft(a[5])
+    obj['epx'] = m_to_ft(a[6])
+    obj['epz'] = m_to_ft(a[7])
+>>>>>>> b886c3030c7b681288e03334c05d864c46058da8
     if a[8] != "-":
         obj['speed'] = float(a[8]) * ms_to_mph
     else:
         obj['speed'] = 0
+<<<<<<< HEAD
+=======
+    obj['eps'] = a[9]
+>>>>>>> b886c3030c7b681288e03334c05d864c46058da8
     if a[10] != "-":
         obj['bearing'] = float(a[10])
     else:
@@ -244,6 +261,15 @@ def line_chart(accel, threshold):
     y1=[]
     y2=[]
     y3=[]
+<<<<<<< HEAD
+=======
+    y4=[]
+    y5=[]
+    y6=[]
+    y7=[]
+    y8=[]
+    y9=[]
+>>>>>>> b886c3030c7b681288e03334c05d864c46058da8
     for i in range(2, len(accel)-3):
         max_s = max(accel[i-2]['speed'], accel[i-1]['speed'], accel[i]['speed'], accel[i+1]['speed'], accel[i+2]['speed'])
         min_s = min(accel[i-2]['speed'], accel[i-1]['speed'], accel[i]['speed'], accel[i+1]['speed'], accel[i+2]['speed'])
@@ -261,18 +287,42 @@ def line_chart(accel, threshold):
                 y1.append(a['minx'])
                 y2.append(a['maxx'])
                 y3.append(a['avgx'])
+                y4.append(a['miny']+20)
+                y5.append(a['maxy']+20)
+                y6.append(a['avgy']+20)
+                y7.append(a['minz'])
+                y8.append(a['maxz'])
+                y9.append(a['avgz'])
             else:
                 y1.append(0)
                 y2.append(0)
                 y3.append(0)
+                y4.append(0)
+                y5.append(0)
+                y6.append(0)
+                y7.append(0)
+                y8.append(0)
+                y9.append(0)
+
+    dates = pd.date_range(accel[0]['time'], periods=len(y1), freq='S')
 
     #df = pd.DataFrame({'x': range(0,len(y1)), 'avg': y1, 'speed': y2})
     #plt.plot('x', 'avg', data=df, linestyle='-', marker='')
     #plt.plot('x', 'speed', data=df, linestyle='-', marker='')
-    df = pd.DataFrame({'x': range(0,len(y1)), 'min': y1, 'max': y2, 'avg': y3})
-    plt.plot('x', 'min', data=df, linestyle='-', marker='')
-    plt.plot('x', 'max', data=df, linestyle='-', marker='')
-    plt.plot('x', 'avg', data=df, linestyle='-', marker='')
+    df = pd.DataFrame({'x': dates,
+        'xmin': y1, 'xmax': y2, 'xavg': y3,
+        'ymin': y4, 'ymax': y5, 'yavg': y6,
+        'zmin': y7, 'zmax': y8, 'zavg': y9,
+    })
+    plt.plot('x', 'xmin', data=df, linestyle='-', marker='')
+    plt.plot('x', 'xmax', data=df, linestyle='-', marker='')
+    plt.plot('x', 'xavg', data=df, linestyle='-', marker='')
+    plt.plot('x', 'ymin', data=df, linestyle='-', marker='')
+    plt.plot('x', 'ymax', data=df, linestyle='-', marker='')
+    plt.plot('x', 'yavg', data=df, linestyle='-', marker='')
+    plt.plot('x', 'zmin', data=df, linestyle='-', marker='')
+    plt.plot('x', 'zmax', data=df, linestyle='-', marker='')
+    plt.plot('x', 'zavg', data=df, linestyle='-', marker='')
 
     plt.legend()
     plt.show()
