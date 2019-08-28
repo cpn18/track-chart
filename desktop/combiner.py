@@ -217,6 +217,7 @@ def read_raw_files(known_locations, file_list):
         adata_temp = []
         with open(file_name) as myfile:
             for line in myfile:
+                mileage = 0
                 if line[0] == "#":
                     continue
 
@@ -276,7 +277,10 @@ def read_raw_files(known_locations, file_list):
 
                 # If this is accelerometer data...
                 if length > 3 and fields[1] == "A":
-                    adata_temp.append(build_aobject(fields, gps_object, mileage))
+                    try:
+                        adata_temp.append(build_aobject(fields, gps_object, mileage))
+                    except:
+                        pass
 
     # Sort the final list by mileage
     adata = sorted(adata, key=lambda k: k['mileage'], reverse=False)
@@ -343,13 +347,14 @@ def main():
     """
     # Read the known locations
     #known_locations = read_known('../data/known_negs.csv')
-    known_locations = read_known('../data/known_wolfeboro.csv')
+    #known_locations = read_known('../data/known_wolfeboro.csv')
+    known_locations = read_known('../data/known_stm.csv')
 
     # Start reading the raw data files
     #for rawfile in ['../data/201709051108_log_negs.csv']:
     #for rawfile in ['../data/201706052258_log_wolfeboro_a.csv']:
     (adata, cdata) = read_raw_files(known_locations,
-            ['../data/cvrtc_20190518.csv'])
+            ['../data/stm.csv'])
     #                                 ['../data/201710060900_log_negs.csv',
     #                                '../data/201706231117_log_negs.csv',
     #                                 '../data/201707160116_log_negs.csv',

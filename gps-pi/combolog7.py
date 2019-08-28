@@ -1,12 +1,13 @@
 #!/usr/bin/python
 """
-GPS / ACCEL Logger V5
+GPS / ACCEL Logger V6
 """
 
 import os
 import sys
 import threading
 import time
+import datetime
 import gps
 import BaseHTTPServer
 
@@ -25,13 +26,27 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """Respond to a GET request."""
         global CURRENT
         global DONE
+        global RESTART
+        global MARK
         s.send_response(200)
         s.send_header("Content-type", "text/html")
         s.end_headers()
+
         if s.path == "/poweroff":
-            s.wfile.write("<html><body>Bye</body></html")
+            s.wfile.write("{\"message\": \"Shutting down...\"}");
             DONE = True
+            RESTART = False
             os.system("shutdown --poweroff +1")
+            return
+
+        if s.path == "/reset":
+            s.wfile.write("{\"message\": \"Resetting...\"}");
+            DONE = True
+            return
+
+        if s.path == "/mark":
+            MARK = True
+            s.wfile.write("{\"message\": \"Marked...\"}");
             return
 
         if s.path == "/gps":
@@ -39,12 +54,23 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             s.wfile.write("{")
             if hasattr(CURRENT, 'lat'):
                 output += ",\"lat\": %f" % CURRENT['lat']
+            if hasattr(CURRENT, 'epy'):
+                output += ",\"epy\": %f" % CURRENT['epy']
             if hasattr(CURRENT, 'lon'):
                 output += ",\"lon\": %f" % CURRENT['lon']
+            if hasattr(CURRENT, 'epx'):
+                output += ",\"epx\": %f" % CURRENT['epx']
             if hasattr(CURRENT, 'alt'):
                 output += ",\"alt\": %f" % CURRENT['alt']
+            if hasattr(CURRENT, 'epv'):
+                output += ",\"epv\": %f" % CURRENT['epv']
+            if hasattr(CURRENT, 'speed'):
+                output += ",\"speed\": %f" % CURRENT['speed']
+            if hasattr(CURRENT, 'eps'):
+                output += ",\"eps\": %f" % CURRENT['eps']
             if hasattr(CURRENT, 'time'):
                 output += ",\"time\": \"%s\"" % CURRENT['time']
+            output +=",\"temp\": %f" % TEMP
             if len(output) > 0:
                 s.wfile.write(output[1:])
             s.wfile.write("}")
@@ -70,14 +96,17 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.wfile.write("</body></html>")
 
 def web_server(httpd):
+    global DONE
     while not DONE:
-        print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
         try:
+            print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
             httpd.serve_forever()
+            print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
+        except KeyboardInterrupt:
+            DONE = True
         except Exception as ex:
             print ex
         httpd.server_close()
-        print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
 
 def set_date(gps_date):
     """ Set the system clock """
@@ -115,9 +144,12 @@ def gps_logger(timestamp, session):
     """ GPS Data Logger """
     global INLOCSYNC
     global CURRENT
+    global DONE
+    global MARK
 
     # Output file
     output = open("/root/gps-data/%s_gps.csv" % timestamp, "w")
+    output.write("%s\n" % VERSION)
 
     alt = track = speed = 0.0
     while not DONE:
@@ -150,9 +182,11 @@ def gps_logger(timestamp, session):
                     continue
 
                 if hasattr(report, 'speed'):
-                    speed = "%0.2f" % report.speed
+                    speed = "%f" % report.speed
+                    eps = "%f" % report.eps
                 else:
                     speed = "-"
+                    eps = "-"
 
                 if hasattr(report, 'track'):
                     # Bearing
@@ -161,25 +195,45 @@ def gps_logger(timestamp, session):
                     track = "-"
 
                 if hasattr(report, 'alt'):
-                    alt = "%03f" % report.alt
+                    alt = "%f" % report.alt
+                    epv = "%f" % report.epv
                 else:
                     alt = "-"
+                    epv = "-"
 
-                output.write("%s G %02.6f %03.6f %s %s %s *\n" % (report.time, report.lat, report.lon, alt, speed, track))
+                if hasattr(report, 'epx'):
+                    epx = "%f" % report.epx
+                else:
+                    epx = "-"
+
+                if hasattr(report, 'epy'):
+                    epy = "%f" % report.epy
+                else:
+                    epy = "-"
+
+                output.write("%s G %02.6f %03.6f %s %s %s %s %s %s %s *\n" % (report.time, report.lat, report.lon, alt, epy, epx, epv, speed, eps, track))
                 lastreport = report
 
+                if MARK:
+                    MARK = False
+                    with open("/root/gps-data/%s_marks.csv" % timestamp, "a") as mark:
+                        mark.write("%s M %02.6f %03.6f %s %s %s %s %s %s %s *\n" % (report.time, report.lat, report.lon, alt, epy, epx, epv, speed, eps, track))
+
+        except KeyboardInterrupt:
+            DONE = True
         except KeyError:
             pass
         except StopIteration:
             session = None
             print("GPSD has terminated")
-            output.close()
+            DONE = True 
     print "GPS done"
+    output.close()
 
 
 def accel_logger(timestamp):
     """ Accel Data Logger """
-    global INLOCSYNC
+    global INLOCSYNC, DONE
 
     max_x = max_y = max_z = -20
     min_x = min_y = min_z = 20
@@ -201,39 +255,25 @@ def accel_logger(timestamp):
             x = axes['x']
             y = axes['y']
             z = axes['z']
-            sum_x += x
-            sum_y += y
-            sum_z += z
-            max_x = max(x, max_x)
-            max_y = max(y, max_y)
-            max_z = max(z, max_z)
-            min_x = min(x, min_x)
-            min_y = min(y, min_y)
-            min_z = min(z, min_z)
-            c += 1
+            if INLOCSYNC:
+                acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                output.write("%s A % 02.3f % 02.3f % 02.3f *\n" % (acceltime, x, y, z))
+        except KeyboardInterrupt:
+            DONE = True
 
-            now = time.time()
-            if now > next_time and c != 0:
-                acceltime = time.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-                x1 = sum_x/c
-                y1 = sum_y/c
-                z1 = sum_z/c
-                if INLOCSYNC:
-                    output.write("%s A %d % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f % 02.3f *\n" % (acceltime, c, min_x, x1, max_x, min_y, y1, max_y, min_z, z1, max_z))
-                max_x = max_y = max_z = -20
-                min_x = min_y = min_z = 20
-                sum_x = sum_y = sum_z = 0
-                c = 0
-                next_time = now + 1
         except IOError:
             pass
     print "ACCEL done"
+    output.close()
 
 # MAIN START
 INLOCSYNC = False
 DONE = False
-VERSION = "#v5"
+RESTART = True
+VERSION = "#v7"
 CURRENT = {}
+TEMP = 0
+MARK = False
 
 # Listen on port 2947 (gpsd) of localhost
 SESSION = gps.gps("localhost", "2947")
@@ -262,11 +302,18 @@ except:
 
 while not DONE:
     try:
+        with open("/sys/class/thermal/thermal_zone0/temp", "r") as t:
+            TEMP = int(t.read())/1000
+            print "Temp = %0.1fC" % TEMP
         time.sleep(60)
     except KeyboardInterrupt:
         DONE = True
-        httpd.server_close()
+
+httpd.server_close()
 
 T1.join()
 T2.join()
 T3.join()
+
+while not RESTART:
+    time.sleep(60)

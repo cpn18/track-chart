@@ -85,6 +85,10 @@ def gps_logger(timestamp, session):
                 if hasattr(report, 'alt'):
                     alt = report.alt
 
+                with open("/var/www/html/gps.html.new", "w") as web:
+                    web.write("<html><head><meta http-equiv=\"refresh\" content=\"1\"></head><body>Lat: %02.6f<br>Long: %03.6f<br>Alt: %03f</body></html>" % (report.lat, report.lon, alt))
+                os.rename("/var/www/html/gps.html.new", "/var/www/html/gps.html")
+
                 output.write("%s G % 02.6f % 03.6f %03f %0.2f %0.2f *\n" % (report.time, report.lat, report.lon, alt, speed, track))
                 lastreport = report
 

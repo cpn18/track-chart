@@ -401,6 +401,7 @@ def elevation(tc):
     edata = []
     with open(tc['gps_file']) as f:
         for line in f:
+            print line
             if line[0] == "#":
                 continue
             l = line.strip().split(",")
