@@ -25,13 +25,27 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """Respond to a GET request."""
         global CURRENT
         global DONE
+        global RESTART
+        global MARK
         s.send_response(200)
         s.send_header("Content-type", "text/html")
         s.end_headers()
+
         if s.path == "/poweroff":
-            s.wfile.write("<html><body>Bye</body></html")
+            s.wfile.write("{\"message\": \"Shutting down...\"}");
             DONE = True
+            RESTART = False
             os.system("shutdown --poweroff +1")
+            return
+
+        if s.path == "/reset":
+            s.wfile.write("{\"message\": \"Resetting...\"}");
+            DONE = True
+            return
+
+        if s.path == "/mark":
+            MARK = True
+            s.wfile.write("{\"message\": \"Marked...\"}");
             return
 
         if s.path == "/gps":
@@ -130,6 +144,7 @@ def gps_logger(timestamp, session):
     global INLOCSYNC
     global CURRENT
     global DONE
+    global MARK
 
     # Output file
     output = open("/root/gps-data/%s_gps.csv" % timestamp, "w")
@@ -198,6 +213,11 @@ def gps_logger(timestamp, session):
                 output.write("%s G %02.6f %03.6f %s %s %s %s %s %s %s *\n" % (report.time, report.lat, report.lon, alt, epy, epx, epv, speed, eps, track))
                 lastreport = report
 
+                if MARK:
+                    MARK = False
+                    with open("/root/gps-data/%s_marks.csv" % timestamp, "a") as mark:
+                        mark.write("%s M %02.6f %03.6f %s %s %s %s %s %s %s *\n" % (report.time, report.lat, report.lon, alt, epy, epx, epv, speed, eps, track))
+
         except KeyboardInterrupt:
             DONE = True
         except KeyError:
@@ -205,8 +225,9 @@ def gps_logger(timestamp, session):
         except StopIteration:
             session = None
             print("GPSD has terminated")
-            output.close()
+            DONE = True 
     print "GPS done"
+    output.close()
 
 
 def accel_logger(timestamp):
@@ -263,13 +284,16 @@ def accel_logger(timestamp):
         except IOError:
             pass
     print "ACCEL done"
+    output.close()
 
 # MAIN START
 INLOCSYNC = False
 DONE = False
+RESTART = True
 VERSION = "#v6"
 CURRENT = {}
 TEMP = 0
+MARK = False
 
 # Listen on port 2947 (gpsd) of localhost
 SESSION = gps.gps("localhost", "2947")
@@ -310,3 +334,6 @@ httpd.server_close()
 T1.join()
 T2.join()
 T3.join()
+
+while not RESTART:
+    time.sleep(60)

@@ -1,6 +1,7 @@
 <html>
 <head>
 <title>RPi/GPS/IMU</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="/jquery-3.4.1.min.js"></script>
 </head>
 <body>
@@ -12,13 +13,51 @@
 <tr><th align="right">Speed:</th><td id="speed" align="right"></td><td id="eps" align="right"></td></tr>
 <tr><td colspan=3 align=center><i><p id="time"></p></i></td><tr>
 </table>
+<button onclick="mark()">&#x1F4CC;</button>
+<button onclick="reset()">&#x23FC;</button>
+<button onclick="power()">&#x2B58;</button>
 <script>
-var refresh=10000;
+var refresh=5000;
 var m_to_ft = 3.28084;
 var ms_to_mph = 2.23694;
-$(document).ready(function()
+
+function mark()
 {
-  setInterval(function() {
+  $.ajax({
+    datatype: "json",
+    url: "/mark",
+    success: function(data) {
+      var obj = JSON.parse(data);
+      $('#msg').text(obj.message);
+    }
+  });
+}
+
+function reset()
+{
+  $.ajax({
+    datatype: "json",
+    url: "/reset",
+    success: function(data) {
+      var obj = JSON.parse(data);
+      $('#msg').text(obj.message);
+    }
+  });
+}
+
+function power()
+{
+  $.ajax({
+    datatype: "json",
+    url: "/poweroff",
+    success: function(data) {
+      var obj = JSON.parse(data);
+      $('#msg').text(obj.message);
+    }
+  });
+}
+
+function update() {
   $.ajax({
     datatype: "json",
     url: "/gps",
@@ -71,14 +110,19 @@ $(document).ready(function()
       } else {
         $('#time').text("--");
       }
+      setTimeout(update,refresh);
     },
     error: function(xhr, status, error)
     {
-      var errorMessage = xhr.status + ": " + xhr.statusText;
-      $('#msg').text("ERROR: " + errorMessage);
+      $('#msg').html("&#x274C; Connecton Error");
+      setTimeout(update,refresh);
     }
 });
-}, refresh);
+}
+
+$(document).ready(function()
+{
+  update();
 });
 </script>
 </body>

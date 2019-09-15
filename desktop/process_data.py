@@ -13,6 +13,29 @@ except:
     print("Usage: %s filename" % sys.argv[0])
     sys.exit(1)
 
+def smooth(a,window=5):
+    n=[]
+    for i in range(0,len(a)):
+        minv = maxv = a[i]
+        sumv = count = 0
+        j = -window
+        while j <= window:
+            try:
+                minv = min(minv, a[i+j])
+                maxv = max(maxv, a[i+j])
+                sumv += a[i+j]
+                count += 1
+            except:
+                pass
+            j += 1
+        if count == 1:
+            n.append(sumv)
+        elif count == 2:
+            n.append(sumv/count)
+        else:
+            n.append((sumv-minv-maxv)/(count-2))
+    return n
+
 def ok(obj):
     xlimit = ylimit = zlimit = 60
 
@@ -95,18 +118,6 @@ def parse_accel_v5(accel, obj, a):
 
 # Version 6 File
 
-<<<<<<< HEAD
-def parse_gps_v6(obj, a):
-    ms_to_mph = 2.23694
-    m_to_ft = 3.28084
-
-    obj['lat'] = float(a[2])
-    obj['lon'] = float(a[3])
-    if a[4] != "-":
-        obj['alt'] = float(a[4]) * m_to_ft
-    else:
-        obj['alt'] = 0
-=======
 def m_to_ft(v):
     try:
         return float(v) * 3.28084
@@ -122,15 +133,11 @@ def parse_gps_v6(obj, a):
     obj['epy'] = m_to_ft(a[5])
     obj['epx'] = m_to_ft(a[6])
     obj['epz'] = m_to_ft(a[7])
->>>>>>> b886c3030c7b681288e03334c05d864c46058da8
     if a[8] != "-":
         obj['speed'] = float(a[8]) * ms_to_mph
     else:
         obj['speed'] = 0
-<<<<<<< HEAD
-=======
     obj['eps'] = a[9]
->>>>>>> b886c3030c7b681288e03334c05d864c46058da8
     if a[10] != "-":
         obj['bearing'] = float(a[10])
     else:
@@ -261,19 +268,22 @@ def line_chart(accel, threshold):
     y1=[]
     y2=[]
     y3=[]
-<<<<<<< HEAD
-=======
     y4=[]
     y5=[]
     y6=[]
     y7=[]
     y8=[]
     y9=[]
->>>>>>> b886c3030c7b681288e03334c05d864c46058da8
+    y10=[]
     for i in range(2, len(accel)-3):
         max_s = max(accel[i-2]['speed'], accel[i-1]['speed'], accel[i]['speed'], accel[i+1]['speed'], accel[i+2]['speed'])
         min_s = min(accel[i-2]['speed'], accel[i-1]['speed'], accel[i]['speed'], accel[i+1]['speed'], accel[i+2]['speed'])
         accel[i]['speed'] = (accel[i-2]['speed'] + accel[i-1]['speed'] + accel[i]['speed'] + accel[i+1]['speed'] + accel[i+2]['speed'] - max_s - min_s) / 3
+
+    for a in accel:
+        if a['type'] == 'A':
+            y10.append(a['maxz'] - a['minz'] - a['avgz'])
+    y11 = smooth(y10)
 
     for a in accel:
         if a['type'] == 'A':
@@ -297,9 +307,9 @@ def line_chart(accel, threshold):
                 y1.append(0)
                 y2.append(0)
                 y3.append(0)
-                y4.append(0)
-                y5.append(0)
-                y6.append(0)
+                y4.append(20)
+                y5.append(20)
+                y6.append(20)
                 y7.append(0)
                 y8.append(0)
                 y9.append(0)
@@ -310,19 +320,22 @@ def line_chart(accel, threshold):
     #plt.plot('x', 'avg', data=df, linestyle='-', marker='')
     #plt.plot('x', 'speed', data=df, linestyle='-', marker='')
     df = pd.DataFrame({'x': dates,
-        'xmin': y1, 'xmax': y2, 'xavg': y3,
-        'ymin': y4, 'ymax': y5, 'yavg': y6,
-        'zmin': y7, 'zmax': y8, 'zavg': y9,
+     #   'xmin': y1, 'xmax': y2, 'xavg': y3,
+     #   'ymin': y4, 'ymax': y5, 'yavg': y6,
+     #'zmin': y7, 'zmax': y8, 'zavg': y9,
+     'zraw': y10, 'zsmooth': y11,
     })
-    plt.plot('x', 'xmin', data=df, linestyle='-', marker='')
-    plt.plot('x', 'xmax', data=df, linestyle='-', marker='')
-    plt.plot('x', 'xavg', data=df, linestyle='-', marker='')
-    plt.plot('x', 'ymin', data=df, linestyle='-', marker='')
-    plt.plot('x', 'ymax', data=df, linestyle='-', marker='')
-    plt.plot('x', 'yavg', data=df, linestyle='-', marker='')
-    plt.plot('x', 'zmin', data=df, linestyle='-', marker='')
-    plt.plot('x', 'zmax', data=df, linestyle='-', marker='')
-    plt.plot('x', 'zavg', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'xmin', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'xmax', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'xavg', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'ymin', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'ymax', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'yavg', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'zmin', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'zmax', data=df, linestyle='-', marker='')
+    #plt.plot('x', 'zavg', data=df, linestyle='-', marker='')
+    plt.plot('x', 'zraw', data=df, linestyle='-', marker='')
+    plt.plot('x', 'zsmooth', data=df, linestyle='-', marker='')
 
     plt.legend()
     plt.show()
