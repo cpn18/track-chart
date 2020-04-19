@@ -13,6 +13,7 @@
 <tr><th align="right">Speed:</th><td id="speed" align="right"></td><td id="eps" align="right"></td></tr>
 <tr><td colspan=3 align=center><i><p id="time"></p></i></td><tr>
 </table>
+<input type=text id="memo" placeholder="Memo"><br>
 <button onclick="mark()">&#x1F4CC;</button>
 <button onclick="reset()">&#x23FC;</button>
 <button onclick="power()">&#x2B58;</button>
@@ -25,10 +26,11 @@ function mark()
 {
   $.ajax({
     datatype: "json",
-    url: "/mark",
+    url: "/mark?memo="+$('#memo').val(),
     success: function(data) {
       var obj = JSON.parse(data);
       $('#msg').text(obj.message);
+      $('#memo').val('');
     }
   });
 }

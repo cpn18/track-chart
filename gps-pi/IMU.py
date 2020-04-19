@@ -24,10 +24,10 @@ def detectIMU():
         LSM9DS0_WHO_G_response = (bus.read_byte_data(LSM9DS0_GYR_ADDRESS, LSM9DS0_WHO_AM_I_G))
         LSM9DS0_WHO_XM_response = (bus.read_byte_data(LSM9DS0_ACC_ADDRESS, LSM9DS0_WHO_AM_I_XM))
     except IOError as e:
-        print ''        #need to do something here, so we just print a space
+        pass
     else:
         if (LSM9DS0_WHO_G_response == 0xd4) and (LSM9DS0_WHO_XM_response == 0x49):
-            print "Found LSM9DS0"
+            print("Found LSM9DS0")
             LSM9DS0 = 1
 
 
@@ -39,10 +39,10 @@ def detectIMU():
         LSM9DS1_WHO_M_response = (bus.read_byte_data(LSM9DS1_MAG_ADDRESS, LSM9DS1_WHO_AM_I_M))
 
     except IOError as f:
-        print ''        #need to do something here, so we just print a space
+        pass
     else:
         if (LSM9DS1_WHO_XG_response == 0x68) and (LSM9DS1_WHO_M_response == 0x3d):
-            print "Found LSM9DS1"
+            print("Found LSM9DS1")
             LSM9DS0 = 0
 
     time.sleep(1)
@@ -73,32 +73,32 @@ def writeGRY(register,value):
 def readACCx():
         acc_l = bus.read_byte_data(ACC_ADDRESS, OUT_X_L_XL)
         acc_h = bus.read_byte_data(ACC_ADDRESS, OUT_X_H_XL)
-	acc_combined = (acc_l | acc_h <<8)
+        acc_combined = (acc_l | acc_h <<8)
 
-	return acc_combined  if acc_combined < 32768 else acc_combined - 65536
+        return acc_combined  if acc_combined < 32768 else acc_combined - 65536
 
 
 def readACCy():
         acc_l = bus.read_byte_data(ACC_ADDRESS, OUT_Y_L_XL)
         acc_h = bus.read_byte_data(ACC_ADDRESS, OUT_Y_H_XL)
-	acc_combined = (acc_l | acc_h <<8)
+        acc_combined = (acc_l | acc_h <<8)
 
-	return acc_combined  if acc_combined < 32768 else acc_combined - 65536
+        return acc_combined  if acc_combined < 32768 else acc_combined - 65536
 
 
 def readACCz():
         acc_l = bus.read_byte_data(ACC_ADDRESS, OUT_Z_L_XL)
         acc_h = bus.read_byte_data(ACC_ADDRESS, OUT_Z_H_XL)
-	acc_combined = (acc_l | acc_h <<8)
+        acc_combined = (acc_l | acc_h <<8)
 
-	return acc_combined  if acc_combined < 32768 else acc_combined - 65536
+        return acc_combined  if acc_combined < 32768 else acc_combined - 65536
 
 
 def readMAGx():
-		mag_l = bus.read_byte_data(MAG_ADDRESS, OUT_X_L_M)
-		mag_h = bus.read_byte_data(MAG_ADDRESS, OUT_X_H_M)
-		mag_combined = (mag_l | mag_h <<8)
-		return mag_combined  if mag_combined < 32768 else mag_combined - 65536
+                mag_l = bus.read_byte_data(MAG_ADDRESS, OUT_X_L_M)
+                mag_h = bus.read_byte_data(MAG_ADDRESS, OUT_X_H_M)
+                mag_combined = (mag_l | mag_h <<8)
+                return mag_combined  if mag_combined < 32768 else mag_combined - 65536
 
 
 def readMAGy():
@@ -202,7 +202,7 @@ def readACCz():
     else:
         acc_l = bus.read_byte_data(LSM9DS1_ACC_ADDRESS, LSM9DS1_OUT_Z_L_XL)
         acc_h = bus.read_byte_data(LSM9DS1_ACC_ADDRESS, LSM9DS1_OUT_Z_H_XL)
-	
+        
     acc_combined = (acc_l | acc_h <<8)
     return acc_combined  if acc_combined < 32768 else acc_combined - 65536
 

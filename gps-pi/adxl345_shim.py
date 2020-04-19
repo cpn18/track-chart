@@ -12,5 +12,12 @@ def get_axes():
       # to get axes as ms^2 use
       axes = accel.getAxes(False)
 
-      return {'x': axes['x'], 'y': axes['y'], 'z': axes['z']}
+      return {
+          'ACCx': axes['x'],
+          'ACCy': axes['y'],
+          'ACCz': axes['z'],
+          'GYRx': 0,
+          'GYRy': 0,
+          'GYRz': 0,
+      }
 

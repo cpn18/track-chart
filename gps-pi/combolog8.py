@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """
-GPS / ACCEL Logger V6
+GPS / ACCEL LIDAR Logger V9
 """
 
 import os
@@ -9,7 +9,9 @@ import threading
 import time
 import datetime
 import gps
-import BaseHTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+from rplidar import RPLidar
 
 #import adxl345_shim as accel
 import berryimu_shim as accel
@@ -17,7 +19,7 @@ import berryimu_shim as accel
 HOST_NAME = ''
 PORT_NUMBER = 80
 
-class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class MyHandler(BaseHTTPRequestHandler):
     def do_HEAD(s):
         s.send_response(200)
         s.send_header("Content-type", "text/html")
@@ -28,30 +30,22 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         global DONE
         global RESTART
         global MARK
-        s.send_response(200)
-        s.send_header("Content-type", "text/html")
-        s.end_headers()
+        global MEMO
 
         if s.path == "/poweroff":
-            s.wfile.write("{\"message\": \"Shutting down...\"}");
+            outout = "{\"message\": \"Shutting down...\"}"
             DONE = True
             RESTART = False
             os.system("shutdown --poweroff +1")
-            return
-
-        if s.path == "/reset":
-            s.wfile.write("{\"message\": \"Resetting...\"}");
+        elif s.path == "/reset":
+            output = "{\"message\": \"Resetting...\"}"
             DONE = True
-            return
-
-        if s.path == "/mark":
+        elif s.path.startswith("/mark?memo="):
             MARK = True
-            s.wfile.write("{\"message\": \"Marked...\"}");
-            return
-
-        if s.path == "/gps":
+            MEMO = s.path.replace("/mark?memo=", "")
+            output = "{\"message\": \"Marked...\"}"
+        elif s.path == "/gps":
             output = ""
-            s.wfile.write("{")
             if hasattr(CURRENT, 'lat'):
                 output += ",\"lat\": %f" % CURRENT['lat']
             if hasattr(CURRENT, 'epy'):
@@ -72,40 +66,39 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 output += ",\"time\": \"%s\"" % CURRENT['time']
             output +=",\"temp\": %f" % TEMP
             if len(output) > 0:
-                s.wfile.write(output[1:])
-            s.wfile.write("}")
-            return
-
-        if s.path == "/jquery-3.4.1.min.js":
+                output = output[1:]
+            output = "{" + output + "}"
+        elif s.path == "/jquery-3.4.1.min.js":
             with open("jquery-3.4.1.min.js", "r") as j:
-                s.wfile.write(j.read())
-            return
-
-        if s.path == "/gps.html":
+                output = j.read()
+        elif s.path == "/gps.html":
             with open("gps.html", "r") as j:
-                s.wfile.write(j.read())
-            return
+                output = j.read()
+        elif s.path == "/favicon.ico":
+            output = ""
+        else:
+            output = "<html><head><title>RPi/GPS/IMU</title></head>"
+            output += "<body>"
+            output += "<p>You accessed path: %s</p>" % s.path
+            output += "</body></html>"
 
-        if s.path == "/favicon.ico":
-            s.wfile.write("")
-            return
-
-        s.wfile.write("<html><head><title>RPi/GPS/IMU</title></head>")
-        s.wfile.write("<body>")
-        s.wfile.write("<p>You accessed path: %s</p>" % s.path)
-        s.wfile.write("</body></html>")
+        s.send_response(200)
+        s.send_header("Content-type", "text/html; charset=utf-8")
+        s.send_header("Content-length", str(len(output)))
+        s.end_headers()
+        s.wfile.write(output.encode('utf-8'))
 
 def web_server(httpd):
     global DONE
     while not DONE:
         try:
-            print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
+            print(time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER))
             httpd.serve_forever()
-            print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
+            print(time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER))
         except KeyboardInterrupt:
             DONE = True
         except Exception as ex:
-            print ex
+            print(ex)
         httpd.server_close()
 
 def set_date(gps_date):
@@ -165,9 +158,9 @@ def gps_logger(timestamp, session):
 
             if hasattr(report, 'mode'):
                 if report.mode == 1:
-                    print report
+                    print(report)
                     INLOCSYNC = False
-                    print "Lost location sync"
+                    print("Lost location sync")
                     continue
 
             if hasattr(report, 'lat') and hasattr(report, 'lon') and hasattr(report, 'time'):
@@ -175,7 +168,7 @@ def gps_logger(timestamp, session):
                 if not INLOCSYNC:
                     INLOCSYNC = True
                     lastreport = report
-                    print "Have location sync"
+                    print("Have location sync")
                     continue
 
                 if lastreport.time == report.time:
@@ -217,7 +210,7 @@ def gps_logger(timestamp, session):
                 if MARK:
                     MARK = False
                     with open("/root/gps-data/%s_marks.csv" % timestamp, "a") as mark:
-                        mark.write("%s M %02.6f %03.6f %s %s %s %s %s %s %s *\n" % (report.time, report.lat, report.lon, alt, epy, epx, epv, speed, eps, track))
+                        mark.write("%s M %02.6f %03.6f \"%s\" *\n" % (report.time, report.lat, report.lon, MEMO))
 
         except KeyboardInterrupt:
             DONE = True
@@ -227,7 +220,7 @@ def gps_logger(timestamp, session):
             session = None
             print("GPSD has terminated")
             DONE = True 
-    print "GPS done"
+    print("GPS done")
     output.close()
 
 
@@ -257,31 +250,64 @@ def accel_logger(timestamp):
             z = axes['ACCz']
             if INLOCSYNC:
                 acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                output.write("%s A % 02.3f % 02.3f % 02.3f *\n" % (acceltime, x, y, z))
+                output.write("%s A %02.3f %02.3f %02.3f %02.3f %02.3f %02.3f *\n" % (acceltime, x, y, z, axes['GYRx'], axes['GYRy'], axes['GYRz']))
         except KeyboardInterrupt:
             DONE = True
 
         except IOError:
             pass
-    print "ACCEL done"
+    print("ACCEL done")
     output.close()
+
+def lidar_logger(timestamp):
+    global INLOCSYNC, DONE
+
+    port_name = '/dev/ttyUSB0'
+
+    while not INLOCSYNC:
+        time.sleep(5)
+
+    while not DONE:
+        try:
+            lidar = RPLidar(port_name)
+            with open("/root/gps-data/%s_lidar.csv" % timestamp, "w") as f:
+                f.write("%s\n" % VERSION)
+                for i, scan in enumerate(lidar.iter_scans(max_buf_meas=1000)):
+                    t = time.time()
+                    lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    f.write("%s L [" % (lidartime))
+                    for (_, angle, distance) in scan:
+                        f.write("(%0.4f,%0.2f)," % (angle, distance))
+                    f.write("] *\n")
+                    if DONE:
+                        break
+            lidar.stop()
+            lidar.stop_motor()
+            lidar.disconnect()
+        except KeyboardInterrupt:
+            DONE = True
+        except Exception as ex:
+            print("WARNING: %s" % ex)
+        time.sleep(5)
+        timestamp = time.strftime("%Y%m%d%H%M", time.gmtime(time.time()))
+    print("LIDAR Done")
 
 # MAIN START
 INLOCSYNC = False
 DONE = False
 RESTART = True
-VERSION = "#v7"
+VERSION = "#v9"
 CURRENT = {}
 TEMP = 0
 MARK = False
+MEMO = ""
 
 # Listen on port 2947 (gpsd) of localhost
 SESSION = gps.gps("localhost", "2947")
 SESSION.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
 
 # Web Server
-server_class = BaseHTTPServer.HTTPServer
-httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
+httpd = HTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
 
 T3 = threading.Thread(name="W", target=web_server, args=(httpd,))
 T3.start()
@@ -296,6 +322,8 @@ try:
     T1.start()
     T2 = threading.Thread(name="A", target=accel_logger, args=(TIMESTAMP,))
     T2.start()
+    T3 = threading.Thread(name="L", target=lidar_logger, args=(TIMESTAMP,))
+    T3.start()
 except:
     print("Error: unable to start thread")
     sys.exit(-1)
@@ -304,7 +332,7 @@ while not DONE:
     try:
         with open("/sys/class/thermal/thermal_zone0/temp", "r") as t:
             TEMP = int(t.read())/1000
-            print "Temp = %0.1fC" % TEMP
+            print("Temp = %0.1fC" % TEMP)
         time.sleep(60)
     except KeyboardInterrupt:
         DONE = True
