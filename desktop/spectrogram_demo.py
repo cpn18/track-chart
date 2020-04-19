@@ -1,6 +1,8 @@
+#!/usr/bin/env python
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import sys
 
 # Fixing random state for reproducibility
 np.random.seed(19680801)
@@ -9,7 +11,7 @@ x_data=[]
 y_data=[]
 z_data=[]
 t_stamp=[]
-with open("../data/201909011244_accel_100sec.csv", "r") as f:
+with open(sys.argv[1], "r") as f:
     for line in f:
         if line[0] == "#":
             continue
