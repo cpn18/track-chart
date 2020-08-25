@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
+"""
+Calculates the average measurement [0..359]
+
+Useful when trying to calibrate the angles for a new LIDAR position
+"""
 import sys
 import math
-import gps_to_mileage
+import statistics
 
-OFFSET=2.6
+RANGE = 360
+OFFSET = 0
 
 def main(filename):
-    data = [0] * 360
-    count = [0] * 360
+    data = []
+    for a in range(RANGE):
+        data.append([])
 
     with open(sys.argv[1], "r") as f:
         for line in f:
@@ -20,15 +27,20 @@ def main(filename):
                 timestamp, datatype, scan_data = line.split(" ", 2)
                 scan_data = eval(scan_data.replace('*', ''))
                 for angle, distance in scan_data:
-                    i = round(float(angle+OFFSET)) % 360
-                    data[i] += float(distance)
-                    count[i] += 1 
+                    a = round(float(angle+OFFSET)) % RANGE
+                    d = float(distance)
+                    if d > 0:
+                        data[a].append(d)
 
-    for a in range(360):
-        d = data[a]/count[a]
-        x = d * math.sin(math.radians(a))
-        y = d * math.cos(math.radians(a))
-
-        print("%d %f %f %f" % (a, d, x, y))
+    with open("average_lidar.csv", "w") as f:
+        f.write("Angle,Distance,X,Y\n")
+        for a in range(RANGE):
+            if len(data[a]) > 0:
+                d = statistics.mean(data[a]) 
+            else:
+                d = 0
+            x = d * math.sin(math.radians(a))
+            y = d * math.cos(math.radians(a))
+            f.write("%d,%f,%f,%f\n" % (a, d, x, y))
 
 main(sys.argv[1])
