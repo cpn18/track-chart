@@ -99,9 +99,9 @@ def accel_logger():
       axes = accel.get_axes()
 
       #put the axes into variables
-      x = axes['ACCx']
-      y = axes['ACCy']
-      z = axes['ACCz']
+      x = axes['x']
+      y = axes['y']
+      z = axes['z']
       sum_x += x
       sum_y += y
       sum_z += z

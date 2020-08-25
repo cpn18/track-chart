@@ -16,18 +16,22 @@ with open(sys.argv[1], "r") as f:
         if line[0] == "#":
             continue
         items = line.split()
-        if items[1] != "A":
+        if not items[1].startswith("A"):
             continue
-        x = float(items[2])
-        y = float(items[3])
-        z = float(items[4])
-        t_stamp.append(np.datetime64(items[0]))
-        x_data.append(x)
-        y_data.append(y)
-        z_data.append(z)
+        ax = float(items[2])
+        ay = float(items[3])
+        az = float(items[4])
+        gx = float(items[5])
+        gy = float(items[6])
+        gz = float(items[7])
+        t_stamp.append(np.datetime64(items[0].replace("Z", "")))
+        x_data.append(ax)
+        y_data.append(ay)
+        z_data.append(az)
 
-dt = 0.01
+dt = 0.02
 t = np.arange(0.0, dt*len(t_stamp), dt)
+#t = np.array(t_stamp)
 
 NFFT = 1024  # the length of the windowing segments
 Fs = int(1.0 / dt)  # the sampling frequency

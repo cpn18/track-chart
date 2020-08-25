@@ -14,7 +14,7 @@ def main():
     try:
         mychart = trackchart.new([(1024, 768),
                                  20, float(sys.argv[1]), float(sys.argv[2]),
-                                 "../known/negs.csv", None])
+                                 "../known/negs.csv", sys.argv[3]])
     except (IndexError, ValueError):
         print("Usage: %s start_mile end_mile" % sys.argv[0])
         sys.exit()
@@ -36,8 +36,8 @@ def main():
     print("curvature")
     #trackchart.curvature(mychart)
     print("accel")
-    #trackchart.accel(mychart)
-    print("lidar-gage")
+    trackchart.accel(mychart)
+    #print("lidar-gage")
     #trackchart.gage(mychart)
     print("townlines")
     trackchart.townlines(mychart)
@@ -51,7 +51,7 @@ def main():
     trackchart.draw_title(mychart)
 
 
-    filename = "images/negs_%s_%s.png" % (sys.argv[1], sys.argv[2])
+    filename = "images/pl_%s_%s.png" % (sys.argv[1], sys.argv[2])
     mychart['image'].save(filename)
     os.system("eog %s" % filename)
 

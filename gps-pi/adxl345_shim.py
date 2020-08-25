@@ -13,11 +13,11 @@ def get_axes():
       axes = accel.getAxes(False)
 
       return {
-          'ACCx': axes['x'],
-          'ACCy': axes['y'],
-          'ACCz': axes['z'],
-          'GYRx': 0,
-          'GYRy': 0,
-          'GYRz': 0,
+         'ACCx': axes['x'],
+         'ACCy': axes['y'],
+         'ACCz': axes['z'],
+         'GYRx': 0, 
+         'GYRy': 0, 
+         'GYRz': 0, 
       }
 

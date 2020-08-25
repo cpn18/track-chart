@@ -15,7 +15,7 @@ LIDAR_RADIUS = .4 * WIDTH
 
 SCALE=10
 
-DIRECTION=1
+DIRECTION=-1        # -1=backwards, 1=forwards
 ANGLE_OFFSET = 0 
 TOTAL_SLOPE = 0
 TOTAL_SLOPE_COUNT = 0
@@ -25,11 +25,19 @@ MIN_SPEED = 0.1
 GHOST = 3
 
 def cvt_point(point):
-    return (int(LIDAR_X + DIRECTION*(point[0] / SCALE)),
+    return (int(LIDAR_X - DIRECTION*(point[0] / SCALE)),
             int(LIDAR_Y - (point[1] / SCALE)))
 
-LOW_RANGE = range(120, 110, -1)
-HIGH_RANGE = range(240, 250)
+# average 113.665, 241.342
+#LOW_RANGE = range(120, 110, -1)
+#HIGH_RANGE = range(240, 250)
+# Front Mount
+#LOW_RANGE = range(115, 111, -1)
+#HIGH_RANGE = range(239, 243)
+# Rear Mount
+LOW_RANGE = range(127, 120, -1)
+HIGH_RANGE = range(239, 252)
+
 def calc_gage(data):
     min_dist_left = min_dist_right = 999999
     min_dist_left_i = min_dist_right_i = -1
@@ -53,6 +61,9 @@ def calc_gage(data):
     z = math.sqrt(x*x + y*y) / 25.4  # Convert to inches
 
     slope = math.degrees(math.atan(y / x))
+
+    if 56 < z < 57:
+        print("A %d %d" % (min_dist_left_i, min_dist_right_i))
 
     return (z, slope, p1,p2)
 
@@ -168,12 +179,20 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
     p1 = cvt_point(p1)
     p2 = cvt_point(p2)
 
-    if gage < fra_class.min_gage or gage > fra_class.max_gage:
+    if fra_class.min_gage <= gage <= fra_class.max_gage:
+        gage_c = (0,0,0)
+        draw.text((5,55), "GAGE: %0.2f in" % gage, fill=gage_c)
+    #elif gage < fra_class.min_gage-1 or gage > fra_class.max_gage+1:
+  #      gage_c = (0,0,0)
+  #      draw.text((5,55), "GAGE: *ERROR*", fill=(255,0,0))
+    elif gage == 0:
+        gage_c = (0,0,0)
+        draw.text((5,55), "GAGE: *ERROR*", fill=(255,0,0))
+    else:
         gage_c = (255,0,0)
         gage_error = True
         draw.line((p1,p2), fill=gage_c)
-    else:
-        gage_c = (0,0,0)
+        draw.text((5,55), "GAGE: %0.2f in" % gage, fill=gage_c)
 
     draw.text((5,5), "UTC: %s" % timestamp, fill=(0,0,0))
     draw.text((5,15), "LAT: %0.6f" % latitude, fill=(0,0,0))
@@ -183,10 +202,6 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
         draw.text((5,45), "SPEED: %0.1f mph" % speed, fill=(0,0,0))
     else:
         draw.text((5,45), "SPEED: %d mph" % int(speed), fill=(0,0,0))
-    if gage == 0:
-        draw.text((5,55), "GAGE: *ERROR*", fill=(255,0,0))
-    else:
-        draw.text((5,55), "GAGE: %0.2f in" % gage, fill=gage_c)
 
     if OUTPUT:
         image.save("slices/slice_%08d.png" % slice)
@@ -194,8 +209,8 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
     return {'gage_error': gage_error, 'plate_error': plate_error, 'gage': gage, 'plate_score': score}
 
 def main(filename):
-    G = gps_to_mileage.Gps2Miles("../data/known_negs.csv")
-    G.sanity_check(update=True)
+    G = gps_to_mileage.Gps2Miles("../known/negs.csv")
+    #G.sanity_check(update=True)
     last_lat = last_lon = speed = latitude = longitude = mileage = 0
     slice = 0
     data = [0] * 360

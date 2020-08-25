@@ -9,9 +9,6 @@ import threading
 import time
 import datetime
 import gps
-import json
-import nmea
-import statistics
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from rplidar import RPLidar
@@ -33,11 +30,10 @@ class MyHandler(BaseHTTPRequestHandler):
         global DONE
         global RESTART
         global MARK
-        global HOLD
         global MEMO
 
         if s.path == "/poweroff":
-            output = "{\"message\": \"Shutting down...\"}"
+            outout = "{\"message\": \"Shutting down...\"}"
             DONE = True
             RESTART = False
             os.system("shutdown --poweroff +1")
@@ -48,10 +44,6 @@ class MyHandler(BaseHTTPRequestHandler):
             MARK = True
             MEMO = s.path.replace("/mark?memo=", "")
             output = "{\"message\": \"Marked...\"}"
-        elif s.path.startswith("/hold?memo="):
-            HOLD = 15 
-            MEMO = s.path.replace("/hold?memo=", "")
-            output = "{\"message\": \"Holding...\"}"
         elif s.path == "/gps":
             output = ""
             if hasattr(CURRENT, 'lat'):
@@ -74,11 +66,8 @@ class MyHandler(BaseHTTPRequestHandler):
                 output += ",\"time\": \"%s\"" % CURRENT['time']
             output +=",\"temp\": %f" % TEMP
             output +=",\"gps_status\": %d" % GPS_STATUS
-            output +=",\"gps_num_sat\": %d" % GPS_NUM_SAT
-            output +=",\"gps_num_used\": %d" % GPS_NUM_USED
             output +=(",\"acc_status\": %s" % ACC_STATUS).lower()
             output +=(",\"lidar_status\": %s" % LIDAR_STATUS).lower()
-            output +=(",\"hold\": %s" % HOLD).lower()
             if len(output) > 0:
                 output = output[1:]
             output = "{" + output + "}"
@@ -146,22 +135,18 @@ def wait_for_timesync(session):
             print(ex)
             sys.exit(1)
 
+
 def gps_logger(timestamp, session):
     """ GPS Data Logger """
     global INLOCSYNC
     global CURRENT
     global DONE
-    global MARK, HOLD
-    global GPS_STATUS, GPS_NUM_SAT, GPS_NUM_USED
-
-    hold_lat = []
-    hold_lon = []
+    global MARK
+    global GPS_STATUS
 
     # Output file
     output = open("/root/gps-data/%s_gps.csv" % timestamp, "w")
     output.write("%s\n" % VERSION)
-
-    last_sky = None
 
     alt = track = speed = 0.0
     while not DONE:
@@ -173,12 +158,7 @@ def gps_logger(timestamp, session):
             #print report
 
             if report['class'] != 'TPV':
-                if report['class'] == 'SKY':
-                    last_sky = nmea.sky_to_json(report)
-                    (GPS_NUM_USED, GPS_NUM_SAT) = nmea.calc_used(last_sky)
                 continue
-
-            output.write("%s %s %s *\n" % (report.time, report['class'], json.dumps(nmea.tpv_to_json(report))))
 
             if hasattr(report, 'mode'):
                 GPS_STATUS = report.mode
@@ -198,9 +178,6 @@ def gps_logger(timestamp, session):
 
                 if lastreport.time == report.time:
                     continue
-
-                if last_sky is not None:
-                    output.write("%s %s %s *\n" % (report.time, last_sky['class'], json.dumps(last_sky)))
 
                 if hasattr(report, 'speed'):
                     speed = "%f" % report.speed
@@ -235,17 +212,6 @@ def gps_logger(timestamp, session):
                 output.write("%s G %02.6f %03.6f %s %s %s %s %s %s %s *\n" % (report.time, report.lat, report.lon, alt, epy, epx, epv, speed, eps, track))
                 lastreport = report
 
-                if HOLD == 0:
-                    with open("/root/gps-data/%s_marks.csv" % timestamp, "a") as mark:
-                        mark.write("%s M %02.6f %03.6f \"%s\" *\n" % (report.time, statistics.mean(hold_lat), statistics.mean(hold_lon), MEMO))
-                    hold_lat = []
-                    hold_lon = []
-                    HOLD = -1
-                elif HOLD > 0:
-                    hold_lat.append(report.lat)
-                    hold_lon.append(report.lon)
-                    HOLD -= 1
-
                 if MARK:
                     MARK = False
                     with open("/root/gps-data/%s_marks.csv" % timestamp, "a") as mark:
@@ -263,7 +229,7 @@ def gps_logger(timestamp, session):
     output.close()
 
 
-def imu_logger(timestamp):
+def accel_logger(timestamp):
     """ Accel Data Logger """
     global INLOCSYNC, DONE, ACC_STATUS
 
@@ -278,42 +244,31 @@ def imu_logger(timestamp):
     output = open("/root/gps-data/%s_accel.csv" % timestamp, "w")
     output.write("%s\n" % VERSION)
 
+    next_time = time.time() + 1
     while not DONE:
         try:
             axes = accel.get_axes()
-            acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-            att_obj = {
-                "class": "ATT",
-                "device": "LSM9DS1",
-                "time": acceltime,
-                "acc_x": axes['ACCx'],
-                "acc_y": axes['ACCy'],
-                "acc_z": axes['ACCz'],
-                "gyro_x": axes['GYRx'],
-                "gyro_y": axes['GYRy'],
-                "gyro_z": axes['GYRz'],
-            }
 
             #put the axes into variables
+            x = axes['ACCx']
+            y = axes['ACCy']
+            z = axes['ACCz']
             if INLOCSYNC:
-                output.write("%s ATT %s *\n" % (acceltime, json.dumps(att_obj)))
-                #output.write("%s A %02.3f %02.3f %02.3f %02.3f %02.3f %02.3f *\n" % (acceltime, axes['ACCx'], axes['ACCy'], axes['ACCz'], axes['GYRx'], axes['GYRy'], axes['GYRz']))
+                acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                output.write("%s A %02.3f %02.3f %02.3f %02.3f %02.3f %02.3f *\n" % (acceltime, x, y, z, axes['GYRx'], axes['GYRy'], axes['GYRz']))
                 ACC_STATUS = True
         except KeyboardInterrupt:
             DONE = True
+
         except IOError:
             pass
-
-    ACC_STATUS = False
     print("ACCEL done")
     output.close()
 
 def lidar_logger(timestamp):
     global INLOCSYNC, DONE, LIDAR_STATUS
 
-    port_name = '/dev/lidar'
-    lidar = None
+    port_name = '/dev/ttyUSB0'
 
     while not INLOCSYNC:
         time.sleep(5)
@@ -323,27 +278,25 @@ def lidar_logger(timestamp):
             lidar = RPLidar(port_name)
             with open("/root/gps-data/%s_lidar.csv" % timestamp, "w") as f:
                 f.write("%s\n" % VERSION)
-                for i, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
-                    if INLOCSYNC:
-                        lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                        f.write("%s L [" % (lidartime))
-                        for (_, angle, distance) in scan:
-                            f.write("(%0.4f,%0.2f)," % (angle, distance))
-                        f.write("] *\n")
+                for i, scan in enumerate(lidar.iter_scans(max_buf_meas=1000)):
+                    t = time.time()
+                    lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    f.write("%s L [" % (lidartime))
+                    for (_, angle, distance) in scan:
+                        f.write("(%0.4f,%0.2f)," % (angle, distance))
+                    f.write("] *\n")
                     LIDAR_STATUS = True
                     if DONE:
                         break
-        except KeyboardInterrupt:
-            DONE = True
-        except Exception as ex:
-            lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            print("%s WARNING: %s" % (lidartime, ex))
-        if lidar is not None:
+                LIDAR_STATUS = False
             lidar.stop()
             lidar.stop_motor()
             lidar.disconnect()
-        LIDAR_STATUS = False
-        time.sleep(1)
+        except KeyboardInterrupt:
+            DONE = True
+        except Exception as ex:
+            print("WARNING: %s" % ex)
+        time.sleep(5)
         timestamp = time.strftime("%Y%m%d%H%M", time.gmtime(time.time()))
     print("LIDAR Done")
 
@@ -355,12 +308,9 @@ VERSION = "#v9"
 CURRENT = {}
 TEMP = 0
 MARK = False
-HOLD = -1
 MEMO = ""
 
 GPS_STATUS = 0
-GPS_NUM_SAT = 0
-GPS_NUM_USED = 0
 ACC_STATUS = False
 LIDAR_STATUS = False
 
@@ -371,8 +321,8 @@ SESSION.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
 # Web Server
 httpd = HTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
 
-Twww = threading.Thread(name="W", target=web_server, args=(httpd,))
-Twww.start()
+T3 = threading.Thread(name="W", target=web_server, args=(httpd,))
+T3.start()
 
 # Make sure we have a time sync
 TIMESTAMP = wait_for_timesync(SESSION)
@@ -380,12 +330,12 @@ TIMESTAMP = wait_for_timesync(SESSION)
 print(TIMESTAMP)
 
 try:
-    Tgps = threading.Thread(name="G", target=gps_logger, args=(TIMESTAMP, SESSION,))
-    Tgps.start()
-    Timu = threading.Thread(name="A", target=imu_logger, args=(TIMESTAMP,))
-    Timu.start()
-    Tlidar = threading.Thread(name="L", target=lidar_logger, args=(TIMESTAMP,))
-    Tlidar.start()
+    T1 = threading.Thread(name="G", target=gps_logger, args=(TIMESTAMP, SESSION,))
+    T1.start()
+    T2 = threading.Thread(name="A", target=accel_logger, args=(TIMESTAMP,))
+    T2.start()
+    T3 = threading.Thread(name="L", target=lidar_logger, args=(TIMESTAMP,))
+    T3.start()
 except:
     print("Error: unable to start thread")
     sys.exit(-1)
@@ -399,13 +349,11 @@ while not DONE:
     except KeyboardInterrupt:
         DONE = True
 
-httpd.shutdown()
 httpd.server_close()
 
-Twww.join()
-Tgps.join()
-Timu.join()
-Tlidar.join()
+T1.join()
+T2.join()
+T3.join()
 
 while not RESTART:
     time.sleep(60)

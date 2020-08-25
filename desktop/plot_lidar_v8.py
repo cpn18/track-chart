@@ -148,7 +148,7 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
     return {'gage_error': gage_error, 'plate_error': plate_error, 'gage': gage}
 
 def main(filename):
-    G = gps_to_mileage.Gps2Miles("../data/known_negs.csv")
+    G = gps_to_mileage.Gps2Miles("../known/negs.csv")
     G.sanity_check(update=True)
     last_lat = last_lon = 0
     slice = 0
@@ -160,6 +160,8 @@ def main(filename):
             count = 0
             for line in f:
                 fields = line.split(" ")
+                if line[0] == '#':
+                    continue
                 if fields[1] == "A":
                     pass
                 elif fields[1] == "G":

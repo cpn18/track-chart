@@ -252,9 +252,9 @@ def accel_logger(timestamp):
             axes = accel.get_axes()
 
             #put the axes into variables
-            x = axes['ACCx']
-            y = axes['ACCy']
-            z = axes['ACCz']
+            x = axes['x']
+            y = axes['y']
+            z = axes['z']
             if INLOCSYNC:
                 acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 output.write("%s A % 02.3f % 02.3f % 02.3f *\n" % (acceltime, x, y, z))

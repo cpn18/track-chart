@@ -20,7 +20,11 @@ def bearing(lat1,lon1,lat2,lon2):
 
   x = sin(dl) * cos(lat2)
   y = cos(lat1) * sin(lat2) - (sin(lat1) * cos(lat2) * cos(dl))
-  return (int(degrees(atan2(x,y))) + 360) % 360
+  ret = degrees(atan2(x,y))
+  if ret < 0:
+      ret += 360
+  return ret
+ 
 
 def great_circle(lat1,lon1,lat2,lon2):
   return haversine(lon1,lat1,lon2,lat2)

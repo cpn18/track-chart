@@ -120,11 +120,11 @@ def accel_logger():
       axes = accel.getAxes(False)
 
       #put the axes into variables
-      x = axes['ACCx']
+      x = axes['x']
       xv.append(x)
-      y = axes['ACCy']
+      y = axes['y']
       yv.append(y)
-      z = axes['ACCz']
+      z = axes['z']
       zv.append(z)
       x1 += x
       y1 += y

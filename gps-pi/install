@@ -5,12 +5,5 @@ apt-get install vim
 apt-get install gpsd gpsd-clients python-gps
 apt-get install python-smbus i2c-tools git-core
 
-sudo apt install dnsmasq hostapd
-
-sudo apt install python3-pip
-sudo pip3 install adafruit_rplidar
-sudo pip3 install pyserial
-sudo pip3 install gps
-
 systemctl disable serial-getty@ttyAMA0
 systemctl stop serial-getty@ttyAMA0

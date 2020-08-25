@@ -14,7 +14,7 @@ def main():
     try:
         mychart = trackchart.new([(1024, 768),
                                  20, float(sys.argv[1]), float(sys.argv[2]),
-                                 "../known/negs.csv", None])
+                                 "../known/mb.csv", sys.argv[3]])
     except (IndexError, ValueError):
         print("Usage: %s start_mile end_mile" % sys.argv[0])
         sys.exit()
@@ -26,18 +26,18 @@ def main():
     print("mainline")
     trackchart.mainline(mychart)
     print("mileposts")
-    trackchart.mileposts(mychart, from_file=False)
+    trackchart.mileposts(mychart, from_file=True)
     print("bridges")
     trackchart.bridges_and_crossings(mychart)
     print("stations")
     trackchart.stations(mychart)
     print("elevation")
-    #trackchart.elevation(mychart)
+    trackchart.elevation(mychart)
     print("curvature")
-    #trackchart.curvature(mychart)
+    trackchart.curvature(mychart)
     print("accel")
-    #trackchart.accel(mychart)
-    print("lidar-gage")
+    trackchart.accel(mychart)
+    #print("lidar-gage")
     #trackchart.gage(mychart)
     print("townlines")
     trackchart.townlines(mychart)
@@ -51,7 +51,7 @@ def main():
     trackchart.draw_title(mychart)
 
 
-    filename = "images/negs_%s_%s.png" % (sys.argv[1], sys.argv[2])
+    filename = "images/mb%s_%s.png" % (sys.argv[1], sys.argv[2])
     mychart['image'].save(filename)
     os.system("eog %s" % filename)
 

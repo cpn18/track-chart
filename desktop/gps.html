@@ -15,12 +15,10 @@
 <tr><th align="right">GPS:</th><td id="gps_status" align="right"></td><td></td></tr>
 <tr><th align="right">ACCEL:</th><td id="acc_status" align="right"></td><td></td></tr>
 <tr><th align="right">LIDAR:</th><td id="lidar_status" align="right"></td><td></td></tr>
-<tr><th align="right">Hold:</th><td id="hold" align="right"></td><td></td></tr>
 <tr><td colspan=3 align=center><i><p id="time"></p></i></td><tr>
 </table>
 <input type=text id="memo" placeholder="Memo"><br>
 <button onclick="mark()">&#x1F4CC;</button>
-<button onclick="hold()">&#x1F6D1;</button>
 <button onclick="reset()">&#x23FC;</button>
 <button onclick="power()">&#x2B58;</button>
 <script>
@@ -33,19 +31,6 @@ function mark()
   $.ajax({
     datatype: "json",
     url: "/mark?memo="+$('#memo').val(),
-    success: function(data) {
-      var obj = JSON.parse(data);
-      $('#msg').text(obj.message);
-      $('#memo').val('');
-    }
-  });
-}
-
-function hold()
-{
-  $.ajax({
-    datatype: "json",
-    url: "/hold?memo="+$('#memo').val(),
     success: function(data) {
       var obj = JSON.parse(data);
       $('#msg').text(obj.message);
@@ -137,7 +122,7 @@ function update() {
         $('#temp').text("--");
       }
       if (typeof obj.gps_status !== 'undefined') {
-        $('#gps_status').text(obj.gps_status + " " + obj.gps_num_used + "/" + obj.gps_num_sat);
+        $('#gps_status').text(obj.gps_status);
       } else {
         $('#gps_status').text("--");
       }
@@ -150,15 +135,6 @@ function update() {
         $('#lidar_status').text(obj.lidar_status);
       } else {
         $('#lidar_status').text("--");
-      }
-      if (typeof obj.hold !== 'undefined') {
-	if (obj.hold < 0) {
-          $('#hold').text("OFF");
-	} else {
-          $('#hold').text(obj.hold);
-	}
-      } else {
-        $('#hold').text("--");
       }
       setTimeout(update,refresh);
     },

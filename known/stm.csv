@@ -1,0 +1,42 @@
+- K 43.430869 -70.489926 1.68 S '{"offset": 0, "name": "End of Track"}' *
+#		Talbott Park
+#		Loop Switch
+- K 43.429483 -70.490754 1.58 CRF '{"start": 0, "end": -1, "name": "Biddeford Switch"}' *
+- K 43.428536 -70.491291 1.51 X '{"offset": 0, "name": "Gregoires Curve"}' *
+- K 43.425665 -70.491637 1.31 X '{"offset": 0, "name": "Gregoires Crossing"}' *
+- K 43.423201 -70.491875 1.14 S '{"offset": 0, "name": "Tower 8"}' *
+- K 43.422336 -70.491951 1.08 S '{"offset": 0, "name": "Tower 7"}' *
+- K 43.421549 -70.492026 1.02 S '{"offset": 0, "name": "Tower 6"}' *
+- K 43.421177 -70.492057 1.00 MP '{"name": "1"}' *
+- K 43.420723 -70.492101 0.96 S '{"offset": 0, "name": "Tower 5"}' *
+- K 43.419906 -70.492179 0.91 S '{"offset": 0, "name": "Tower 4"}' *
+- K 43.419088 -70.492249 0.85 S '{"offset": 0, "name": "Tower 3"}' *
+- K 43.418262 -70.492329 0.79 S '{"offset": 0, "name": "Tower 2"}' *
+- K 43.417448 -70.492399 0.74 S '{"offset": 0, "name": "Tower 1"}' *
+- K 43.416760 -70.492464 0.69 S '{"offset": 0, "name": "Stop Sign"}' *
+- K 43.414540 -70.492563 0.54 S '{"offset": 1, "name": "Meserves Crossing"}' *
+- K 43.412849 -70.492040 0.42 CLT '{"start": 0, "end": -1, "name": "Freight switch"}' *
+- K 43.411580 -70.491456 0.32 X '{"name": "McKays Boulevard"}' *
+- K 43.411424 -70.491383 0.31 CRT '{"start": 0, "end": 1, "name": "Doherty Switch"}' *
+- K 43.410396 -70.490257 0.22 S '{"offset": -1, "name": "Morrison Hill"}' *
+- K 43.409969 -70.489997 0.19 CRF '{"start": 0, "end": -1, "name": "Shop Switch"}' *
+- K 43.409922 -70.489986 0.18 CLT '{"start": 0, "end":-1, "name": "North Loop Switch"}' *
+- K 43.409513 -70.489905 0.15 S '{"offset": -1, "name": "Arundel Station"}' *
+#		Visitors’ Center
+- K 43.409349 -70.489868 0.14 CLF '{"start":0,"end":1, "name": "South Loop Switch"}' *
+- K 43.409349 -70.489868 0.14 CLT '{"start":0,"end":-1, "name": "South Loop Switch"}' *
+- K 43.409176 -70.489836 0.13 X '{"name": "Library Grade Crossing"}' *
+- K 43.409041 -70.489806 0.12 S '{"offset": 0, "name": "Tower C"}' *
+- K 43.408262 -70.489669 0.06 CLF '{"start":0,"end":1, "name": "Well Switch"}' *
+- K - - 0.06 S '{"offset": 0, "name": "The Well"}' *
+- K - - 0.05 S '{"offset": 0, "name": "The Deep Well"}' *
+- K 43.407779 -70.489600 0.04 CLF '{"start":0,"end":1, "name": "Shop 1 Switch"}' *
+- K 43.407606 -70.489648 0.02 X '{"name": "Service Road"}' *
+- K 43.407333 -70.489852 0.00 MP '{"name": "0"}' *
+- K - - 0.17 SIG '{"name": "A17", "offset": -0.5}' *
+- K - - 0.17 SIG '{"name": "B17", "offset": -1.5}' *
+- K - - 0.23 SIG '{"name": "23", "offset": -0.5}' *
+- K - - 0.29 SIG '{"name": "29", "offset": -0.5}' *
+- K - - 0.54 SIG '{"name": "54", "offset": 0.5}' *
+- K - - 0.34 SIG '{"name": "34", "offset": 0.5}' *
+- K - - 0.22 SIG '{"name": "34", "offset": 0.5}' *
