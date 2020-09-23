@@ -22,6 +22,8 @@ import berryimu_shim as accel
 HOST_NAME = ''
 PORT_NUMBER = 80
 
+ALWAYS_LOG = True
+
 class MyHandler(BaseHTTPRequestHandler):
     def do_HEAD(s):
         s.send_response(200)
@@ -265,7 +267,9 @@ def gps_logger(timestamp, session):
 
 def imu_logger(timestamp):
     """ Accel Data Logger """
-    global INLOCSYNC, DONE, ACC_STATUS
+    global DONE, ACC_STATUS
+
+    device = accel.device()
 
     max_x = max_y = max_z = -20
     min_x = min_y = min_z = 20
@@ -279,13 +283,14 @@ def imu_logger(timestamp):
     output.write("%s\n" % VERSION)
 
     while not DONE:
+        #now = time.time()
         try:
             axes = accel.get_axes()
             acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
             att_obj = {
                 "class": "ATT",
-                "device": "LSM9DS1",
+                "device": device,
                 "time": acceltime,
                 "acc_x": axes['ACCx'],
                 "acc_y": axes['ACCy'],
@@ -296,21 +301,23 @@ def imu_logger(timestamp):
             }
 
             #put the axes into variables
-            if INLOCSYNC:
+            if INLOCSYNC or ALWAYS_LOG:
                 output.write("%s ATT %s *\n" % (acceltime, json.dumps(att_obj)))
-                #output.write("%s A %02.3f %02.3f %02.3f %02.3f %02.3f %02.3f *\n" % (acceltime, axes['ACCx'], axes['ACCy'], axes['ACCz'], axes['GYRx'], axes['GYRy'], axes['GYRz']))
                 ACC_STATUS = True
         except KeyboardInterrupt:
             DONE = True
         except IOError:
             pass
 
+        #while (time.time() - now < 0.02):
+        #    time.sleep(0.001)
+
     ACC_STATUS = False
     print("ACCEL done")
     output.close()
 
 def lidar_logger(timestamp):
-    global INLOCSYNC, DONE, LIDAR_STATUS
+    global DONE, LIDAR_STATUS
 
     port_name = '/dev/lidar'
     lidar = None
@@ -324,7 +331,7 @@ def lidar_logger(timestamp):
             with open("/root/gps-data/%s_lidar.csv" % timestamp, "w") as f:
                 f.write("%s\n" % VERSION)
                 for i, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
-                    if INLOCSYNC:
+                    if INLOCSYNC or ALWAYS_LOG:
                         lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                         f.write("%s L [" % (lidartime))
                         for (_, angle, distance) in scan:
@@ -384,8 +391,8 @@ try:
     Tgps.start()
     Timu = threading.Thread(name="A", target=imu_logger, args=(TIMESTAMP,))
     Timu.start()
-    Tlidar = threading.Thread(name="L", target=lidar_logger, args=(TIMESTAMP,))
-    Tlidar.start()
+    #Tlidar = threading.Thread(name="L", target=lidar_logger, args=(TIMESTAMP,))
+    #Tlidar.start()
 except:
     print("Error: unable to start thread")
     sys.exit(-1)
@@ -405,7 +412,7 @@ httpd.server_close()
 Twww.join()
 Tgps.join()
 Timu.join()
-Tlidar.join()
+#Tlidar.join()
 
 while not RESTART:
     time.sleep(60)
