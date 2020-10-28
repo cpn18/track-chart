@@ -13,6 +13,9 @@ g_gain = 0.070
 
 lsb *= 9.80665
 
+def device():
+    return "LSM9DS1"
+
 def get_axes():
     return {
         'ACCx': lsb*IMU.readACCx(),

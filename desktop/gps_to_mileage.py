@@ -10,7 +10,7 @@ class Gps2Miles:
         data = []
         with open(known_points, "r") as f:
             for line in csv.reader(f, delimiter=' ', quotechar="'"):
-                print("LINE", line)
+                #print("LINE", line)
                 if line[0][0] == "#" or line[-1] != '*' or line[1] != "K":
                     continue
 
@@ -47,9 +47,9 @@ class Gps2Miles:
         self.points = sorted(data, key=lambda k: k['mileage'], reverse=False)
         for i in range(len(self.points)):
             if self.points[i]['mileage'] == -1:
-                self.points[i]['mileage'] = self.find_mileage(self.points[i]['lat'], self.points[i]['lon'], ignore=True)
-                print(self.points[i])
-        print(self.points)
+                self.points[i]['mileage'], self.points[i]['certainty'] = self.find_mileage(self.points[i]['lat'], self.points[i]['lon'], ignore=True)
+                #print(self.points[i])
+        #print(self.points)
 
     def get_points(self, ktype=None, kclass=None):
         if ktype is None and kclass is None:
@@ -115,6 +115,7 @@ class Gps2Miles:
         print(self.points[close2])
         print(distance1)
         print(distance2)
+        print(distance3)
 
         try:
             if distance1 == 0:
@@ -143,7 +144,12 @@ class Gps2Miles:
             print(ex)
             pass
 
-        return mileage
+        a = [ distance1, distance2, distance3 ]
+        a.sort()
+        certainty = a[2]/(a[0]+a[1])
+
+        print(mileage, certainty)
+        return (mileage, certainty)
 
     def sanity_check(self, update=False):
         retval = True
@@ -163,7 +169,7 @@ class Gps2Miles:
         return retval
 
 if __name__ == "__main__":
-    G = Gps2Miles("../known/mb.csv")
+    G = Gps2Miles("../known/negs.csv")
     #print(G.sanity_check(update=True))
     #G.dump()
-    print(G.find_mileage(42.986304,-71.936522, ignore=True))
+    print(G.find_mileage(43+29/60.0+16.7597/3600.0, -(71+30/60.0+26.8901/3600.0), ignore=True))

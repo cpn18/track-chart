@@ -24,6 +24,12 @@ PORT_NUMBER = 80
 
 ALWAYS_LOG = True
 
+try:
+    with open("axis_config.json", "r") as f:
+        AXIS_CONFIG = json.loads(f.read())
+except:
+    AXIS_CONFIG = {"x": "x", "y": "y", "z": "z"}
+
 class MyHandler(BaseHTTPRequestHandler):
     def do_HEAD(s):
         s.send_response(200)
@@ -53,6 +59,14 @@ class MyHandler(BaseHTTPRequestHandler):
             HOLD = 15 
             MEMO = s.path.replace("/hold?memo=", "")
             output = "{\"message\": \"Holding...\"}"
+        elif s.path.startswith("/setup?"):
+            for var in s.path.split("?")[1].split("&"):
+                key, value = var.split("=")
+                AXIS_CONFIG[key]=value.lower()
+            output = "{\"message\": \"Stored...\"}"
+            with open("axis_config.json", "w") as f:
+                f.write(json.dumps(AXIS_CONFIG))
+            DONE = True
         elif s.path == "/gps":
             output ="\"temp\": %f" % TEMP
             output +=",\"gps_status\": %d" % GPS_STATUS
@@ -83,6 +97,9 @@ class MyHandler(BaseHTTPRequestHandler):
                 output = j.read()
         elif s.path == "/gps.html":
             with open("gps.html", "r") as j:
+                output = j.read()
+        elif s.path == "/setup.html":
+            with open("setup.html", "r") as j:
                 output = j.read()
         elif s.path == "/favicon.ico":
             output = ""
@@ -231,6 +248,8 @@ def imu_logger(timestamp):
 
     output = open("/root/gps-data/%s_accel.csv" % timestamp, "w")
     output.write("%s\n" % VERSION)
+    acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    output.write("%s ATTCFG %s *\n" % (acceltime, json.dumps(AXIS_CONFIG)))
 
     while not DONE:
         #now = time.time()
@@ -242,12 +261,12 @@ def imu_logger(timestamp):
                 "class": "ATT",
                 "device": device,
                 "time": acceltime,
-                "acc_x": axes['ACCx'],
-                "acc_y": axes['ACCy'],
-                "acc_z": axes['ACCz'],
-                "gyro_x": axes['GYRx'],
-                "gyro_y": axes['GYRy'],
-                "gyro_z": axes['GYRz'],
+                "acc_x": axes['ACC'+AXIS_CONFIG['x']],
+                "acc_y": axes['ACC'+AXIS_CONFIG['y']],
+                "acc_z": axes['ACC'+AXIS_CONFIG['z']],
+                "gyro_x": axes['GYR'+AXIS_CONFIG['x']],
+                "gyro_y": axes['GYR'+AXIS_CONFIG['y']],
+                "gyro_z": axes['GYR'+AXIS_CONFIG['z']],
             }
 
             #put the axes into variables

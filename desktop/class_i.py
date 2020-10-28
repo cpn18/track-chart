@@ -3,5 +3,6 @@
 full_name = "FRA Class I"
 short_name = "I"
 
-min_gage = 56.0
-max_gage = 58.0
+min_gauge = 56.0
+standard_gauge = 56.5
+max_gauge = 58.0

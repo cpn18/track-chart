@@ -1,0 +1,33 @@
+<html>
+<head>
+<title>PiRail Setup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+<table>
+<tr><td colspan=2 align=center id="msg">Loading...</td><tr>
+<tr><td>X-axis</td><td><select id="xaxis"><option selected="selected">X</option><option>Y</option><option>Z</option></select></td></tr>
+<tr><td>Y-axis</td><td><select id="yaxis"><option>X</option><option selected="selected">Y</option><option>Z</option></select></td></tr>
+<tr><td>Z-axis</td><td><select id="zaxis"><option>X</option><option>Y</option><option selected="selected">Z</option></select></td></tr>
+</table>
+<button onclick="setup()">Setup</button>
+<br>
+<a href="gps.html">GPS View</a>
+<script>
+
+function setup()
+{
+  $.ajax({
+    datatype: "json",
+    url: "/setup?x="+$('#xaxis').val()+"&y="+$('#yaxis').val()+"&z="+$('#zaxis').val(),
+    success: function(data) {
+      var obj = JSON.parse(data);
+      $('#msg').text(obj.message);
+    }
+  });
+}
+
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import sys
+import json
 
 # Fixing random state for reproducibility
 np.random.seed(19680801)
@@ -16,14 +17,23 @@ with open(sys.argv[1], "r") as f:
         if line[0] == "#":
             continue
         items = line.split()
-        if not items[1].startswith("A"):
+        if items[1] == "ATT":
+            obj = json.loads(" ".join(items[2:-1]))
+            ax = obj['acc_x']
+            ay = obj['acc_y']
+            az = obj['acc_z']
+            ax = obj['gyro_x']
+            ay = obj['gyro_y']
+            az = obj['gyro_z']
+        elif items[1].startswith("A"):
+            ax = float(items[2])
+            ay = float(items[3])
+            az = float(items[4])
+            gx = float(items[5])
+            gy = float(items[6])
+            gz = float(items[7])
+        else:
             continue
-        ax = float(items[2])
-        ay = float(items[3])
-        az = float(items[4])
-        gx = float(items[5])
-        gy = float(items[6])
-        gz = float(items[7])
         t_stamp.append(np.datetime64(items[0].replace("Z", "")))
         x_data.append(ax)
         y_data.append(ay)

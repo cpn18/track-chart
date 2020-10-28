@@ -182,7 +182,7 @@ def main(filename):
                         speed = float(fields[8]) * 2.23694 # convert to mph
                     except ValueError:
                         pass
-                    mileage = G.find_mileage(latitude, longitude)
+                    mileage, certainty = G.find_mileage(latitude, longitude)
                 elif fields[1] == "L" and speed >= 0.1:
                     timestamp, datatype, data = line.split(" ", 2)
                     data = eval(data.replace('*', ''))

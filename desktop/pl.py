@@ -32,7 +32,7 @@ def main():
     print("stations")
     trackchart.stations(mychart)
     print("elevation")
-    #trackchart.elevation(mychart)
+    trackchart.elevation(mychart)
     print("curvature")
     #trackchart.curvature(mychart)
     print("accel")

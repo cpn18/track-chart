@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import sys
 import math
+import json
 import gps_to_mileage
 from PIL import Image, ImageDraw, ImageOps
-import plate_f as aar_plate
+import plate_c as aar_plate
 import class_i as fra_class
 
 WIDTH=500
@@ -16,13 +17,16 @@ LIDAR_RADIUS = .4 * WIDTH
 SCALE=10
 
 DIRECTION=-1        # -1=backwards, 1=forwards
-ANGLE_OFFSET = 0 
+ANGLE_OFFSET = -0.73 
 TOTAL_SLOPE = 0
 TOTAL_SLOPE_COUNT = 0
 
-MIN_SPEED = 0.1
+MIN_SPEED = 0.5
 
 GHOST = 3
+
+ERROR=1
+ERROR=.9511
 
 def cvt_point(point):
     return (int(LIDAR_X - DIRECTION*(point[0] / SCALE)),
@@ -35,10 +39,10 @@ def cvt_point(point):
 #LOW_RANGE = range(115, 111, -1)
 #HIGH_RANGE = range(239, 243)
 # Rear Mount
-LOW_RANGE = range(127, 120, -1)
-HIGH_RANGE = range(239, 252)
+LOW_RANGE = range(123, 119, -1)
+HIGH_RANGE = range(238, 242)
 
-def calc_gage(data):
+def calc_gauge(data):
     min_dist_left = min_dist_right = 999999
     min_dist_left_i = min_dist_right_i = -1
     for i in LOW_RANGE:
@@ -58,7 +62,7 @@ def calc_gage(data):
 
     x = p1[0] - p2[0]
     y = p1[1] - p2[1]
-    z = math.sqrt(x*x + y*y) / 25.4  # Convert to inches
+    z = (1/ERROR) * math.sqrt(x*x + y*y) / 25.4  # Convert to inches
 
     slope = math.degrees(math.atan(y / x))
 
@@ -82,6 +86,11 @@ def score_points(point, box):
 
 def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
     global TOTAL_SLOPE, TOTAL_SLOPE_COUNT
+
+    if latitude != 0 and longitude != 0:
+        labels = True
+    else:
+        labels = False
 
     image = Image.new("RGB", (WIDTH, HEIGHT), "white")
     draw = ImageDraw.Draw(image)
@@ -122,7 +131,7 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
     
     # Draw Data
     new_data = [(0,0,0)] * len(data)
-    plate_error = gage_error = False
+    plate_error = gauge_error = False
     score = 0
     for angle in range(0,len(data)):
         x = data[angle] * math.sin(math.radians(angle+ANGLE_OFFSET))
@@ -151,12 +160,12 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
         draw.point((px, py), fill=pc)
     
     # Trackcar
-    #plate_c=(128,128,128)
-    #draw.line((min_tc_x,max_tc_y,max_tc_x,max_tc_y), fill=plate_c)
-    #draw.line((min_tc_x,min_tc_y,max_tc_x,min_tc_y), fill=plate_c)
-    #draw.line((min_tc_x,max_tc_y,min_tc_x,min_tc_y), fill=plate_c)
-    #draw.line((max_tc_x,max_tc_y,max_tc_x,min_tc_y), fill=plate_c)
-    #draw.text((min_tc_x+5,min_tc_y+5), "Trackcar", fill=plate_c)
+    plate_c=(128,128,128)
+    draw.line((min_tc_x,max_tc_y,max_tc_x,max_tc_y), fill=plate_c)
+    draw.line((min_tc_x,min_tc_y,max_tc_x,min_tc_y), fill=plate_c)
+    draw.line((min_tc_x,max_tc_y,min_tc_x,min_tc_y), fill=plate_c)
+    draw.line((max_tc_x,max_tc_y,max_tc_x,min_tc_y), fill=plate_c)
+    draw.text((min_tc_x+5,min_tc_y+5), "Trackcar", fill=plate_c)
 
     # Draw the clearance box
     if plate_error:
@@ -171,7 +180,7 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
     draw.text((min_x+5,min_y+5), aar_plate.full_name, fill=plate_c)
 
     # Calculate Gage
-    gage,slope,p1,p2 = calc_gage(new_data)
+    gauge,slope,p1,p2 = calc_gauge(new_data)
 
     TOTAL_SLOPE += slope
     TOTAL_SLOPE_COUNT += 1
@@ -179,47 +188,76 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
     p1 = cvt_point(p1)
     p2 = cvt_point(p2)
 
-    if fra_class.min_gage <= gage <= fra_class.max_gage:
-        gage_c = (0,0,0)
-        draw.text((5,55), "GAGE: %0.2f in" % gage, fill=gage_c)
-    #elif gage < fra_class.min_gage-1 or gage > fra_class.max_gage+1:
-  #      gage_c = (0,0,0)
+    if fra_class.min_gauge <= gauge <= fra_class.max_gauge:
+        gauge_c = (0,0,0)
+        if labels:
+            draw.text((5,55), "GAGE: %0.2f in" % gauge, fill=gauge_c)
+    #elif gauge < fra_class.min_gauge-1 or gauge > fra_class.max_gauge+1:
+  #      gauge_c = (0,0,0)
   #      draw.text((5,55), "GAGE: *ERROR*", fill=(255,0,0))
-    elif gage == 0:
-        gage_c = (0,0,0)
-        draw.text((5,55), "GAGE: *ERROR*", fill=(255,0,0))
+    elif gauge == 0:
+        gauge_c = (0,0,0)
+        if labels:
+            draw.text((5,55), "GAGE: *ERROR*", fill=(255,0,0))
     else:
-        gage_c = (255,0,0)
-        gage_error = True
-        draw.line((p1,p2), fill=gage_c)
-        draw.text((5,55), "GAGE: %0.2f in" % gage, fill=gage_c)
+        gauge_c = (255,0,0)
+        gauge_error = True
+        if labels:
+            draw.line((p1,p2), fill=gauge_c)
+            draw.text((5,55), "GAGE: %0.2f in" % gauge, fill=gauge_c)
 
-    draw.text((5,5), "UTC: %s" % timestamp, fill=(0,0,0))
-    draw.text((5,15), "LAT: %0.6f" % latitude, fill=(0,0,0))
-    draw.text((5,25), "LONG: %0.6f" % longitude, fill=(0,0,0))
-    draw.text((5,35), "MILEAGE: %0.2f" % mileage, fill=(0,0,0))
-    if speed < 10:
-        draw.text((5,45), "SPEED: %0.1f mph" % speed, fill=(0,0,0))
-    else:
-        draw.text((5,45), "SPEED: %d mph" % int(speed), fill=(0,0,0))
+    if labels:
+        draw.text((5,5), "UTC: %s" % timestamp, fill=(0,0,0))
+        draw.text((5,15), "LAT: %0.6f" % latitude, fill=(0,0,0))
+        draw.text((5,25), "LONG: %0.6f" % longitude, fill=(0,0,0))
+        draw.text((5,35), "MILEAGE: %0.2f" % mileage, fill=(0,0,0))
+        if speed < 10:
+            draw.text((5,45), "SPEED: %0.1f mph" % speed, fill=(0,0,0))
+        else:
+            draw.text((5,45), "SPEED: %d mph" % int(speed), fill=(0,0,0))
 
     if OUTPUT:
         image.save("slices/slice_%08d.png" % slice)
     
-    return {'gage_error': gage_error, 'plate_error': plate_error, 'gage': gage, 'plate_score': score}
+    return {'gauge_error': gauge_error, 'plate_error': plate_error, 'gauge': gauge, 'plate_score': score}
 
-def main(filename):
-    G = gps_to_mileage.Gps2Miles("../known/negs.csv")
+def clearance(filename):
+    data = [99999]*360
+    print(data)
+    latitude = longitude = mileage = speed = 0
+    with open(filename, "r") as f:
+        for line in f:
+            if line[0] == "#" or line[-2] != "*":
+                continue
+            fields = line.split(" ")
+            if fields[1] == "L":
+                timestamp, datatype, scan_data = line.split(" ", 2)
+                scan_data = eval(scan_data.replace('*', ''))
+                for angle, distance in scan_data:
+                    i = round(float(angle)) % 360
+                    if distance > 1000 and speed > .5:
+                        data[i] = min(data[i], float(distance))
+            elif fields[1] == "TPV":
+                obj = json.loads(" ".join(fields[2:-1]))
+                if 'speed' in obj:
+                    speed = obj['speed'] * 2.23694 # convert to mph
+                    print(speed)
+
+    report = plot(data, timestamp, latitude, longitude, mileage, speed, 0)
+    print(report)
+
+def main(filename, known):
+    G = gps_to_mileage.Gps2Miles(known)
     #G.sanity_check(update=True)
     last_lat = last_lon = speed = latitude = longitude = mileage = 0
     slice = 0
     data = [0] * 360
     ghost = [0] * 360
-    with open(sys.argv[1].split('.')[0]+".kml","w") as k:
+    with open(filename.split('.')[0]+".kml","w") as k:
         k.write('<xml version="1.0" encoding="UTF-8"?>\n')
         k.write('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
         k.write('<Document>\n')
-        with open(sys.argv[1], "r") as f:
+        with open(filename, "r") as f:
             count = 0
             for line in f:
                 if line[0] == "#":
@@ -229,6 +267,25 @@ def main(filename):
                 fields = line.split(" ")
                 if fields[1] == "A":
                     pass
+                elif fields[1] == "TPV":
+                    obj = json.loads(" ".join(fields[2:-1]))
+                    try:
+                        latitude = obj['lat']
+                    except KeyError:
+                        pass
+                    try:
+                        longitude = obj['lon']
+                    except KeyError:
+                        pass
+                    try:
+                        altitude = obj['alt']
+                    except KeyError:
+                        pass
+                    try:
+                        speed = obj['speed'] * 2.23694 # convert to mph
+                    except KeyError:
+                        pass
+                    mileage, certainty = G.find_mileage(latitude, longitude)
                 elif fields[1] == "G":
                     fields = line.split(' ')
                     try:
@@ -247,7 +304,7 @@ def main(filename):
                         speed = float(fields[8]) * 2.23694 # convert to mph
                     except ValueError:
                         pass
-                    mileage = G.find_mileage(latitude, longitude)
+                    mileage, certainty = G.find_mileage(latitude, longitude)
                 elif fields[1] == "L" and speed >= MIN_SPEED:
                     #print(line)
                     timestamp, datatype, scan_data = line.split(" ", 2)
@@ -263,17 +320,17 @@ def main(filename):
                         ghost[i] = GHOST
 
                     report = plot(data, timestamp, latitude, longitude, mileage, speed, slice)
-                    if report['gage_error'] or report['plate_error']:
+                    if report['gauge_error'] or report['plate_error']:
                         count += 1
                         if OUTPUT:
                             if last_lat != latitude or last_lon != longitude:
-                                print("%d %0.6f %0.6f %0.6f %0.2f %d" % (slice, latitude, longitude, mileage, report['gage'], report['plate_score']))
+                                print("%d %0.6f %0.6f %0.6f %0.2f %d" % (slice, latitude, longitude, mileage, report['gauge'], report['plate_score']))
                                 k.write('<Placemark>\n')
                                 k.write('<name>Point %d</name>\n' % slice)
                                 k.write('<description>\n')
                                 k.write('Mileage = %0.2f\n' % mileage)
-                                if report['gage_error']:
-                                    k.write('Gage = %0.f in\n' % report['gage'])
+                                if report['gauge_error']:
+                                    k.write('Gage = %0.f in\n' % report['gauge'])
                                 if report['plate_error']:
                                     k.write('Plate F obstruction')
                                 k.write('</description>\n')
@@ -291,10 +348,14 @@ def main(filename):
         k.write('</Document>\n')
         k.write('</kml>\n')
 
+#OUTPUT=True
+#clearance(sys.argv[1])
+#sys.exit(0)
+
 if ANGLE_OFFSET == 0:
     print("Calculating Angle Offset...")
     OUTPUT = False
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
     try:
        ANGLE_OFFSET = TOTAL_SLOPE/TOTAL_SLOPE_COUNT
     except ZeroDivisionError:
@@ -305,4 +366,4 @@ print("Angle Offset = %0.2f" % ANGLE_OFFSET)
 print("Generating Images...")
 OUTPUT = True
 TOTAL_SLOPE = TOTAL_SLOPE_COUNT = 0
-main(sys.argv[1])
+main(sys.argv[1], sys.argv[2])

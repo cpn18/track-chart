@@ -15,7 +15,7 @@ mii-tool eth0 >> ${output}/error.log
 #if [ "`mii-tool eth0`" == "eth0: no link" ]; then
   while true; do
     date +%Y%m%d%H%M > ${output}/timestamp
-    ./combolog8.py \
+    ./combolog9.py \
 	    >> ${output}/`cat ${output}/timestamp`_log.csv \
 	    2>> ${output}/error.log
   done

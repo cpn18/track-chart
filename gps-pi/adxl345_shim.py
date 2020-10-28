@@ -4,6 +4,8 @@ import adxl345
 #create ADXL345 object
 accel = adxl345.ADXL345()
 
+def device():
+    return "ADXL345"
 
 def get_axes():
       #get axes as g

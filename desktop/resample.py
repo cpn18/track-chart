@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import json
 
 #            2019-09-01T12:44:05.016682Z A -0.931  1.070  9.681 *
 
@@ -54,12 +55,21 @@ if __name__ == "__main__":
     with open(sys.argv[1], "r") as f:
         for line in f:
             items = line.split()
+            if items[-1] != "*":
+                continue
             try:
-                if items[1] != "A":
-                    continue
-                if items[8] != "*":
-                    continue
-                data.append((items[0], float(items[2]),  float(items[3]),  float(items[4]), float(items[5]), float(items[6]), float(items[7])))
+                if items[1] == "A":
+                    data.append((items[0], float(items[2]),  float(items[3]),  float(items[4]), float(items[5]), float(items[6]), float(items[7])))
+                elif items[1] == "ATT":
+                    obj = json.loads(" ".join(items[2:-1]))
+                    data.append((items[0],
+                        obj['acc_x'],
+                        obj['acc_y'],
+                        obj['acc_z'],
+                        obj['gyro_x'],
+                        obj['gyro_y'],
+                        obj['gyro_z'],
+                    ))
             except IndexError:
                 pass
 

@@ -3,6 +3,7 @@ Track chart drawing methods
 """
 import sys
 import math
+import datetime
 from PIL import Image, ImageDraw, ImageOps
 import geo
 import csv
@@ -12,6 +13,11 @@ import dateutil.parser as dp
 import pickle
 import lidar_util
 import class_i as aar
+
+GPS_THRESHOLD = 9
+RAD_TO_DEG = 57.29578
+M_PI = 3.14159265358979323846
+AA = 0.40 # Complementary filter constant
 
 def new(args):
     """
@@ -40,9 +46,9 @@ def draw_title(tc, title="PiRail"):
 
 def parse_line(line):
     if line[1] == "SKY":
-        return None
+        obj = json.loads(" ".join(line[2:-1]))
     elif line[1] == "TPV":
-        return None
+        obj = json.loads(" ".join(line[2:-1]))
     elif line[1] == "G":
         obj = {
             'lat': float(line[2]),
@@ -104,6 +110,9 @@ def parse_line(line):
 
     return obj
 
+def parse_time(time_string):
+    return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
+
 def read_data(tc):
     tc['D'] = []
     queue = []
@@ -121,19 +130,23 @@ def read_data(tc):
 
     with open(tc['data_file']) as f:
         for line in csv.reader(f, delimiter=' ', quotechar="'"):
+            print(line)
             if line[0][0] == "#" or line[-1] != '*':
                 continue
-            if line[1] == "G":
+            if line[1] == "TPV":
+                obj = json.loads(" ".join(line[2:-1]))
+                if not('lat' in obj and 'lon' in obj and 'time' in obj):
+                    continue
                 if first is None:
-                    first = line
+                    first = obj
                 else:
-                    last = line
-                    start_time = dp.parse(first[0]).timestamp()
-                    start_lat = float(first[2])
-                    start_lon = float(first[3])
-                    end_time = dp.parse(last[0]).timestamp()
-                    end_lat = float(last[2])
-                    end_lon = float(last[3])
+                    last = obj
+                    start_time = dp.parse(first['time']).timestamp()
+                    start_lat = first['lat']
+                    start_lon = first['lon']
+                    end_time = dp.parse(last['time']).timestamp()
+                    end_lat = last['lat']
+                    end_lon = last['lon']
                     for q in queue:
                         q_time = dp.parse(q[0]).timestamp()
                         # time ratio
@@ -154,10 +167,42 @@ def read_data(tc):
             else:
                 queue.append(line)
 
+    # Calculate Yaw/Pitch/Roll
+    # Based on:
+    # https://github.com/ozzmaker/BerryIMU/blob/master/python-BerryIMU-gryo-accel-compass/berryIMU-simple.py
+    gyroXangle = gyroYangle = gyroZangle = CFangleX = CFangleY = CFangleZ = 0
+    last_time = None
+    for obj in tc['D']:
+        if obj['type'] != "ATT":
+            continue
+        if 'roll' in obj:
+            continue
+        if last_time is not None:
+            DT = (parse_time(obj['time']) - parse_time(last_time)).total_seconds()
+            last_time = obj['time']
+        else:
+            DT = 0
+
+        gyroXangle+=obj['gyro_x']*DT;
+        gyroYangle+=obj['gyro_y']*DT;
+        gyroZangle+=obj['gyro_z']*DT;
+        AccXangle = (float) (math.atan2(obj['acc_y'],obj['acc_z'])+M_PI)*RAD_TO_DEG;
+        AccYangle = (float) (math.atan2(obj['acc_z'],obj['acc_x'])+M_PI)*RAD_TO_DEG;
+        AccZangle = (float) (math.atan2(obj['acc_y'],obj['acc_x'])+M_PI)*RAD_TO_DEG;
+        # Complementary Filter
+        CFangleX=AA*(CFangleX+obj['gyro_x']*DT) +(1 - AA) * AccXangle;
+        CFangleY=AA*(CFangleY+obj['gyro_y']*DT) +(1 - AA) * AccYangle;
+        CFangleZ=AA*(CFangleZ+obj['gyro_z']*DT) +(1 - AA) * AccZangle;
+
+        obj['roll'] = CFangleY
+        obj['pitch'] = CFangleX
+        obj['yaw'] = CFangleZ
+
+
+    # Calculate Mileage
     for obj in tc['D']:
         if 'mileage' not in obj:
-            mileage = tc['G'].find_mileage(obj['lat'], obj['lon'])
-            obj['mileage'] = mileage
+            obj['mileage'], obj['certainty'] = tc['G'].find_mileage(obj['lat'], obj['lon'])
 
     tc['D'] = sorted(tc['D'], key=lambda k: k['mileage'], reverse=False)
 
@@ -338,13 +383,17 @@ def bridges_and_crossings(tc, xing_type=None):
         elif 'street' in metadata:
             text = metadata['street']
         else:
-            text = "pvt"
+            if xtype == 'X':
+                text = "pvt"
+            else:
+                text = ""
         if 'crossing' in metadata:
             text += " (" + metadata['crossing'] + ")"
 
-        description = ("%s %s" % (mileage_to_string(mileage), text)).strip()
-        (w, x_size, y_size) = rotated_text(draw, description, 90)
-        im.paste(w, (int(x-y_size/2), int(y-1.5*margin-x_size)))
+        if len(text) > 0:
+            description = ("%s %s" % (mileage_to_string(mileage), text)).strip()
+            (w, x_size, y_size) = rotated_text(draw, description, 90)
+            im.paste(w, (int(x-y_size/2), int(y-1.5*margin-x_size)))
     del draw
 
 def townlines(tc):
@@ -504,6 +553,8 @@ def controlpoints(tc):
             continue
         mileage = obj['mileage']
         metadata = obj['metadata']
+
+        #print(obj)
         
         if not(first <= mileage <= last):
             continue
@@ -545,10 +596,27 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
         input_data = tc['D']
 
     print("Input=%d" % len(input_data))
-    data =[]
+    data = []
+    used = 0
     for obj in input_data:
-        if obj['type'] != "G":
+        if obj['type'] == "SKY":
+            used=0
+            for s in obj['satellites']:
+                if s['used']:
+                    used += 1
+            print(used, len(obj['satellites']))
             continue
+        elif obj['type'] != "TPV":
+            continue
+
+        if used < GPS_THRESHOLD:
+            print(used, "less than", GPS_THRESHOLD)
+            continue
+
+        print(obj)
+
+        used = 0
+
         mileage = obj['mileage']
         if not (first <= mileage <= last):
             continue
@@ -599,6 +667,7 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
         new_lat = avg_3_of_5(lat)
         new_lon = avg_3_of_5(lon)
         new_alt = avg_3_of_5(alt)
+        mileage, certainty = tc['G'].find_mileage(new_lat, new_lon)
         obj = {
             'type': data[i]['type'],
             'speed': data[i]['speed'],
@@ -606,7 +675,8 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
             'lat': new_lat,
             'lon': new_lon,
             'alt': new_alt,
-            'mileage': tc['G'].find_mileage(new_lat, new_lon),
+            'mileage': mileage,
+            'certainty': certainty,
             'track': data[i]['track']
         }
 
@@ -631,7 +701,8 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
         b = geo.bearing(smooth_data[i-1]['lat'], smooth_data[i-1]['lon'],
                         smooth_data[i]['lat'], smooth_data[i]['lon'])
         smooth_data[i]['track'] = b
-    smooth_data[0]['track'] = smooth_data[1]['track']
+    if len(smooth_data) > 2:
+        smooth_data[0]['track'] = smooth_data[1]['track']
 
     # save result
     if write_file:
@@ -736,7 +807,7 @@ def curvature(tc):
         if abs(bdiff) > 45:
             continue
         x = mile_to_pixel(tc, cdata[i]['mileage']-first)
-        yval = y + bdiff
+        yval = y - bdiff
         #print(cdata[i]['mileage'],cdata[last_i]['track'], cdata[i]['track'],bdiff)
         draw.line((last_x,last_y,x,yval))
         draw.point((x, y))
@@ -789,6 +860,7 @@ def accel(tc):
     last_x = None
 
     accel_file = open("accel.csv", "w")
+    accel_file.write("mileage acc_x acc_y acc_z gyro_x gyro_y gyro_z\n")
 
     # Read from file
     for obj in tc['D']:
@@ -798,7 +870,7 @@ def accel(tc):
 
         x = mile_to_pixel(tc, mileage-first)
 
-        if obj['type'] == "G":
+        if obj['type'] == "G" or obj['type'] == "TPV":
             # Speed
             speed = obj['speed']
             #draw.point((x, ys-speed))
@@ -828,25 +900,6 @@ def accel(tc):
                 if abs(GYRz) > GYRzp[x]:
                     GYRzp[x] = GYRz
                 accel_file.write("%f %f %f %f %f %f %f\n" %( obj['mileage'], obj['acc_x'], obj['acc_y'], obj['acc_z'], obj['gyro_x'], obj['gyro_y'], obj['gyro_z']))
-
-                #if abs(ACCx) > accel_threshold:
-                #    draw.point((x, yx-scale*ACCx))
-                #else:
-                #    draw.point((x, yx))
-
-                #if abs(ACCy) > accel_threshold:
-                #    draw.point((x, yy-scale*ACCy))
-                #else:
-                #    draw.point((x, yy))
-
-                #if abs(ACCz) > accel_threshold:
-                #    draw.point((x, yz-scale*ACCz))
-                #else:
-                #    draw.point((x, yz))
-
-                #draw.point((x, ygx-scale*GYRx))
-                #draw.point((x, ygy-scale*GYRy))
-                #draw.point((x, ygz-scale*GYRz))
 
     for x in range(margin, len(ACCxp)-2*margin):
         draw.line((x,yx-scale*ACCxp[x],x-1,yx-scale*ACCxp[x-1]))
@@ -915,9 +968,9 @@ def gage(tc):
 
         gage,slope,p1,p2 = lidar_util.calc_gage(new_data)
 
-        if not(aar.min_gage <= gage <= aar.max_gage):
+        if not(aar.min_gauge <= gage <= aar.max_gauge):
             print(mileage, gage)
-            draw.point((x,y+(gage-56.5)*2))
+            draw.point((x,y+(gage-aar.standard_gauge)*2))
         else:
             #draw.point((x,y))
             pass

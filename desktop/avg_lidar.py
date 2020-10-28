@@ -11,6 +11,13 @@ import statistics
 RANGE = 360
 OFFSET = 0
 
+def my_min(data, threshold):
+    retval = 999999
+    for d in data:
+        if d > threshold and d < retval:
+            retval = d
+    return retval
+
 def main(filename):
     data = []
     for a in range(RANGE):
@@ -27,7 +34,7 @@ def main(filename):
                 timestamp, datatype, scan_data = line.split(" ", 2)
                 scan_data = eval(scan_data.replace('*', ''))
                 for angle, distance in scan_data:
-                    a = round(float(angle+OFFSET)) % RANGE
+                    a = round(angle+OFFSET) % RANGE
                     d = float(distance)
                     if d > 0:
                         data[a].append(d)
@@ -37,6 +44,17 @@ def main(filename):
         for a in range(RANGE):
             if len(data[a]) > 0:
                 d = statistics.mean(data[a]) 
+            else:
+                d = 0
+            x = d * math.sin(math.radians(a))
+            y = d * math.cos(math.radians(a))
+            f.write("%d,%f,%f,%f\n" % (a, d, x, y))
+
+    with open("min_lidar.csv", "w") as f:
+        f.write("Angle,Distance,X,Y\n")
+        for a in range(RANGE):
+            if len(data[a]) > 0:
+                d = my_min(data[a],500) 
             else:
                 d = 0
             x = d * math.sin(math.radians(a))

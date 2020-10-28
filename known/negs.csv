@@ -41,6 +41,8 @@
 - K 43.462532 -71.547783 21 MP '{"name": "C21"}' *
 - K 43.517296 -71.496011 26 MP '{"name": "C26"}' *
 - K 43.521573 -71.477162 27 MP '{"name": "C27"}' *
+- K 43.714547 -71.658927 48 MP '{"name": "C48"}' *
+- K 43.726672 -71.668801 49 MP '{"name": "C49"}' *
 - K 43.225599 -71.536875 1.53 O '{"name": "Wannatunnams Brook"}' *
 - K 43.470296 -71.540863 21.65 O '{"name": "Winding Hill Brook"}' *
 - K 43.463947 -71.546619 21.12 O '{"name": "Brook"}' *
@@ -162,3 +164,31 @@
 - K - - 29.04 S '{"offset": 1, "name": "Lakeport"}' *
 - K - - 33.77 S '{"offset": -1, "name": "Weirs Beach"}' *
 - K - - 37.60 S '{"offset": -1, "name": "Meredith"}' *
+- K 43.651206 -71.525953 39.13 X '{"name": "Rennicke (926743K)"}' *
+- K 43.651854 -71.52705 39.22 X '{"name": "Frickman (926744S)"}' *
+- K 43.652452 -71.52808 39.25 X '{"name": "Trauring (926745Y)"}' *
+- K 43.6569571 -71.5348322 39.61 X '{"name": "Wionna Shores Rd (845495N)"}' *
+- K 43.6618701 -71.5463726 40.43 X '{"name": "Waukewan Rd (845494G)"}' *
+- K 43.6660685 -71.5581688 41.10 O '{"name": "Wionna Rd (845496V)"}' *
+- K 43.686792 -71.601507 44.05 X '{"name": "Boynton Rd (845499R)"}' *
+- K 43.6901373 -71.6336974 45.85 X '{"name": "Depot Rd (845504K)"}' *
+- K 43.6943485 -71.6432452 46.49 U '{"name": "Styles Bridges Hw (845507F)"}' *
+- K 43.712326 -71.658073 47.83 X '{"name": "Siding Rd (845510N)"}' *
+- K 43.715681 -71.659813 48.09 X '{"name": "Bridgewater Power (927609C)"}' *
+- K 43.716424 -71.660449 48.12 X '{"name": "Deer Farm South (926760B)"}' *
+- K 43.756251 -71.686605 51.30 X '{"name": "Ped (926761H)"}' *
+- K - - 48.48 X '{"name": "Deer Farm North"}' *
+- K - - 49.10 X '{"name": "Christmas Tree Farm"}' *
+- K - - 49.48 X '{"name": "Farm"}' *
+- K - - 51.07 X '{"name": "DPW"}' *
+- K - - 51.32 X '{"name": "Green St"}' *
+- K - - 51.54 X '{"name": "Bridge St"}' *
+- K - - 51.81 X '{"name": "Ped"}' *
+- K - - 51.3 S '{"offset": 1, "name": "Plymouth"}' *
+- K - - 47.9 S '{"offset": 0, "name": "Bridgewater"}' *
+- K - - 45.8 S '{"offset": -1, "name": "Ashland"}' *
+- K - - 41.0 S '{"offset": 0, "name": "Winona"}' *
+- K 43.732055 -71.671590 - O '{"name": "Glove Hollow Brook"}' *
+- K 43.733989 -71.672556 - O '{"name": "brook"}' *
+- K 43.723721 -71.667237 - O '{"name": "brook"}' *
+- K 43.728858 -71.669912 - X '{"name": "Glove Hollow Farm"}' *
