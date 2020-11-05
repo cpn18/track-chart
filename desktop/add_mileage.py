@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import json
 import sys
 import gps_to_mileage
@@ -12,7 +13,15 @@ with open(sys.argv[1]) as f:
         items = line.split()
         if items[-1] != "*":
             continue
-        if items[1] == "TPV":
+        if items[1] == "L":
+            lidar = {
+                'scan': eval(items[2]),
+                'time': items[0],
+                'class': 'LIDAR',
+                'device': 'A1M8', 
+            }
+            acclist.append(lidar)
+        elif items[1] == "TPV":
             tpv = json.loads(" ".join(items[2:-1]))
             if tpv['mode'] < 3:
                 continue
@@ -39,11 +48,16 @@ with open(sys.argv[1]) as f:
 
 data = sorted(data, key=lambda k: k['mileage'], reverse=False)
 
+with open("with_mileage.json", "w") as f:
+    for obj in data:
+        f.write(json.dumps(obj)+"\n")
+
 new_data = []
 accset = []
 current = 0
+step = 0.001
 start_mileage = round(data[0]['mileage'],2)
-next_mileage = start_mileage + 0.001
+next_mileage = start_mileage + step
 while current < len(data):
     if round(data[current]['mileage'],2) < next_mileage:
         accset.append(data[current])
@@ -60,7 +74,7 @@ while current < len(data):
             new_data.append({'class': "ATT", 'mileage': start_mileage, 'acc_z': acc_z, 'lat': data[current]['lat'], 'lon': data[current]['lon']})
         accset = []
         start_mileage = next_mileage
-        next_mileage += 0.001
+        next_mileage += step
 
 print(new_data)
 
@@ -69,4 +83,4 @@ with open("acc_by_mileage.csv", "w") as f:
     f.write("Mileage Latitude Longitude ACCz\n")
     for d in new_data:
         if d['class'] == "ATT":
-            f.write("%0.2f %f %f %f\n" % (d['mileage'],d['lat'], d['lon'], d['acc_z']))
+            f.write("%0.3f %f %f %f\n" % (d['mileage'],d['lat'], d['lon'], d['acc_z']))
