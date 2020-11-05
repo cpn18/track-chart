@@ -43,31 +43,42 @@ class MyHandler(BaseHTTPRequestHandler):
         global HOLD
         global MEMO
 
+        content_type = "text/html; charset=utf-8"
+
         if s.path == "/poweroff":
+            content_type = "application/json"
             output = "{\"message\": \"Shutting down...\"}"
             DONE = True
             RESTART = False
             os.system("shutdown --poweroff +1")
         elif s.path == "/reset":
+            content_type = "application/json"
             output = "{\"message\": \"Resetting...\"}"
             DONE = True
         elif s.path.startswith("/mark?memo="):
             HOLD = 1
             MEMO = s.path.replace("/mark?memo=", "")
+            content_type = "application/json"
             output = "{\"message\": \"Marked...\"}"
         elif s.path.startswith("/hold?memo="):
             HOLD = 15 
             MEMO = s.path.replace("/hold?memo=", "")
+            content_type = "application/json"
             output = "{\"message\": \"Holding...\"}"
         elif s.path.startswith("/setup?"):
             for var in s.path.split("?")[1].split("&"):
                 key, value = var.split("=")
                 AXIS_CONFIG[key]=value.lower()
+            content_type = "application/json"
             output = "{\"message\": \"Stored...\"}"
             with open("axis_config.json", "w") as f:
                 f.write(json.dumps(AXIS_CONFIG))
             DONE = True
+        elif s.path == "/lidar":
+            content_type = "application/json"
+            output = json.dumps(LIDAR_DATA)
         elif s.path == "/gps":
+            content_type = "application/json"
             output ="\"temp\": %f" % TEMP
             output +=",\"gps_status\": %d" % GPS_STATUS
             output +=",\"gps_num_sat\": %d" % GPS_NUM_SAT
@@ -89,11 +100,16 @@ class MyHandler(BaseHTTPRequestHandler):
             # Strings Fields
             for key in ['time']:
                 if key in CURRENT:
-                    output += ",\""+key+"\": \"%s\"" % CURRENT[key]
+                    output += ",\"gps"+key+"\": \"%s\"" % CURRENT[key]
+
+            output += ",\"time\": \"" + datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ") + "\""
 
             output = "{" + output + "}"
         elif s.path == "/jquery-3.4.1.min.js":
             with open("jquery-3.4.1.min.js", "r") as j:
+                output = j.read()
+        elif s.path == "/lidar.html":
+            with open("lidar.html", "r") as j:
                 output = j.read()
         elif s.path == "/gps.html":
             with open("gps.html", "r") as j:
@@ -110,7 +126,7 @@ class MyHandler(BaseHTTPRequestHandler):
             output += "</body></html>"
 
         s.send_response(200)
-        s.send_header("Content-type", "text/html; charset=utf-8")
+        s.send_header("Content-type", content_type)
         s.send_header("Content-length", str(len(output)))
         s.end_headers()
         s.wfile.write(output.encode('utf-8'))
@@ -252,7 +268,7 @@ def imu_logger(timestamp):
     output.write("%s ATTCFG %s *\n" % (acceltime, json.dumps(AXIS_CONFIG)))
 
     while not DONE:
-        #now = time.time()
+        now = time.time()
         try:
             axes = accel.get_axes()
             acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -271,22 +287,22 @@ def imu_logger(timestamp):
 
             #put the axes into variables
             if INLOCSYNC or ALWAYS_LOG:
-                output.write("%s ATT %s *\n" % (acceltime, json.dumps(att_obj)))
+                output.write("%s %s %s *\n" % (att_obj['time'], att_obj['class'], json.dumps(att_obj)))
                 ACC_STATUS = True
         except KeyboardInterrupt:
             DONE = True
         except IOError:
             pass
 
-        #while (time.time() - now < 0.02):
-        #    time.sleep(0.001)
+        while (time.time() - now < 0.02):
+            time.sleep(0.001)
 
     ACC_STATUS = False
     print("ACCEL done")
     output.close()
 
 def lidar_logger(timestamp):
-    global DONE, LIDAR_STATUS
+    global DONE, LIDAR_STATUS, LIDAR_DATA
 
     port_name = '/dev/lidar'
     lidar = None
@@ -297,15 +313,25 @@ def lidar_logger(timestamp):
     while not DONE:
         try:
             lidar = RPLidar(port_name)
+            print(lidar.get_info())
+            print(lidar.get_health())
             with open("/root/gps-data/%s_lidar.csv" % timestamp, "w") as f:
                 f.write("%s\n" % VERSION)
                 for i, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
                     if INLOCSYNC or ALWAYS_LOG:
                         lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                        f.write("%s L [" % (lidartime))
+                        data = []
                         for (_, angle, distance) in scan:
-                            f.write("(%0.4f,%0.2f)," % (angle, distance))
-                        f.write("] *\n")
+                            if distance > 0:
+                                data.append((int(angle)%360, int(distance)))
+                        lidar_data = {
+                            'class': 'LIDAR',
+                            'device': 'RPLidar',
+                            'time': lidartime,
+                            'scan': data,
+                        }
+                        f.write("%s %s %s *\n" % (lidar_data['time'], lidar_data['class'], json.dumps(lidar_data)))
+                        LIDAR_DATA = lidar_data
                     LIDAR_STATUS = True
                     if DONE:
                         break
@@ -338,6 +364,7 @@ GPS_NUM_SAT = 0
 GPS_NUM_USED = 0
 ACC_STATUS = False
 LIDAR_STATUS = False
+LIDAR_DATA = {}
 
 # Listen on port 2947 (gpsd) of localhost
 SESSION = gps.gps("localhost", "2947")
@@ -359,8 +386,8 @@ try:
     Tgps.start()
     Timu = threading.Thread(name="A", target=imu_logger, args=(TIMESTAMP,))
     Timu.start()
-    #Tlidar = threading.Thread(name="L", target=lidar_logger, args=(TIMESTAMP,))
-    #Tlidar.start()
+    Tlidar = threading.Thread(name="L", target=lidar_logger, args=(TIMESTAMP,))
+    Tlidar.start()
 except:
     print("Error: unable to start thread")
     sys.exit(-1)
@@ -380,7 +407,7 @@ httpd.server_close()
 Twww.join()
 Tgps.join()
 Timu.join()
-#Tlidar.join()
+Tlidar.join()
 
 while not RESTART:
     time.sleep(60)

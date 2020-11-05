@@ -26,7 +26,7 @@
 <br>
 <a href="setup.html">Setup</a>
 <script>
-var refresh=5000;
+var refresh=1000;
 var m_to_ft = 3.28084;
 var ms_to_mph = 2.23694;
 
@@ -35,8 +35,7 @@ function mark()
   $.ajax({
     datatype: "json",
     url: "/mark?memo="+$('#memo').val(),
-    success: function(data) {
-      var obj = JSON.parse(data);
+    success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
     }
@@ -48,8 +47,7 @@ function hold()
   $.ajax({
     datatype: "json",
     url: "/hold?memo="+$('#memo').val(),
-    success: function(data) {
-      var obj = JSON.parse(data);
+    success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
     }
@@ -61,8 +59,7 @@ function reset()
   $.ajax({
     datatype: "json",
     url: "/reset",
-    success: function(data) {
-      var obj = JSON.parse(data);
+    success: function(obj) {
       $('#msg').text(obj.message);
     }
   });
@@ -73,8 +70,7 @@ function power()
   $.ajax({
     datatype: "json",
     url: "/poweroff",
-    success: function(data) {
-      var obj = JSON.parse(data);
+    success: function(obj) {
       $('#msg').text(obj.message);
     }
   });
@@ -84,9 +80,8 @@ function update() {
   $.ajax({
     datatype: "json",
     url: "/gps",
-    success: function(data)
+    success: function(obj)
     {
-      var obj = JSON.parse(data);
       if (typeof obj.lat !== 'undefined') {
         $('#lat').text(obj.lat);
       } else {
@@ -129,7 +124,7 @@ function update() {
       }
       $('#msg').text("");
       if (typeof obj.time !== 'undefined') {
-        $('#time').text(obj.time.replace('T', ' ').split('.')[0]);
+        $('#time').text(obj.time.replace('T', ' '));
       } else {
         $('#time').text("--");
       }
