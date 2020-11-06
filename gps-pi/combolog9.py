@@ -326,7 +326,7 @@ def lidar_logger(timestamp):
                                 data.append((int(angle)%360, int(distance)))
                         lidar_data = {
                             'class': 'LIDAR',
-                            'device': 'RPLidar',
+                            'device': 'A1M8',
                             'time': lidartime,
                             'scan': data,
                         }
