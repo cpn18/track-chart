@@ -21,5 +21,9 @@ collect()
 }
 
 while true; do
-	collect
+	if [ `arecord -l | wc -l` -gt 1 ]; then
+	    collect
+	else
+	    sleep 30
+	fi
 done
