@@ -6,14 +6,17 @@
 	<script type="text/javascript" src="/jquery-3.4.1.min.js"></script>
 </head>
 <body>
-	<table>
-		<tr><td id="msg">Loading...</td></tr>
-		<tr><td><canvas id="viewport" width="512" height="512"></canvas></td></tr>
-	</table>
-	<script>
+<h1>LIDAR</h1>
+<button onclick="window.location.href='/gps.html'">GPS</button>
+<button onclick="window.location.href='/setup.html'">SETUP</button>
+<table>
+<tr><td id="msg">Loading...</td></tr>
+<tr><td><canvas id="viewport" width="512" height="512"></canvas></td></tr>
+</table>
+<script>
 var refresh=1000;
 var scale=0.1;
-var scanline=0;
+var decay=10;
 function do_update(name, imagedata)
 {
 	$.ajax({
@@ -38,21 +41,18 @@ function update(name, imagedata, obj) {
 	var canvas = document.getElementById(name);
 	var context = canvas.getContext("2d");
 
-	//for (var pixel=0; pixel<canvas.height*canvas.width*4; pixel++) {
-//		imagedata.data[pixel] = 0;
-	//}
-	pixel = scanline * canvas.width * 4
-	for (var i=0; i<3*canvas.width; i++) {
-		imagedata.data[pixel] = 255;
-		imagedata.data[pixel+1] = 255;
-		imagedata.data[pixel+2] = 255;
-		imagedata.data[pixel+3] = 255;
-		pixel = pixel + 4;
+	for (var i=0; i<canvas.width*canvas.height*4; i += 4) {
+		if (imagedata.data[i] < 255) {
+		    imagedata.data[i] = Math.min(imagedata.data[i] + decay, 255);
+		}
+		if (imagedata.data[i+1] < 255) {
+		    imagedata.data[i+1] = Math.min(imagedata.data[i+1] + decay, 255);
+		}
+		if (imagedata.data[i+2] < 255) {
+		    imagedata.data[i+2] = Math.min(imagedata.data[i+2] + decay, 255);
+		}
 	}
-	scanline = scanline + 3;
-	if (scanline == canvas.height) {
-		scanline = 0;
-	}
+
 	for (var i=0; i<obj.scan.length; i++) {
 		a = obj.scan[i][0];
 		d = obj.scan[i][1] * scale;

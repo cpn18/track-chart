@@ -5,6 +5,9 @@
 <script src="/jquery-3.4.1.min.js"></script>
 </head>
 <body>
+<h1>GPS</h1>
+<button onclick="window.location.href='/setup.html'">SETUP</button>
+<button onclick="window.location.href='/lidar.html'">LIDAR</button>
 <table>
 <tr><td colspan=2 align=center id="msg">Loading...</td><tr>
 <tr><th align="right">Latitude:</th><td id="lat" align="right"></td><td id="epy" align="right"></td></tr>
@@ -24,7 +27,6 @@
 <button onclick="reset()">&#x23FC;</button>
 <button onclick="power()">&#x2B58;</button>
 <br>
-<a href="setup.html">Setup</a>
 <script>
 var refresh=1000;
 var m_to_ft = 3.28084;

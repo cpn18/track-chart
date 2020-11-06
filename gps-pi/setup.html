@@ -5,6 +5,9 @@
 <script src="/jquery-3.4.1.min.js"></script>
 </head>
 <body>
+<h1>SETUP</h1>
+<button onclick="window.location.href='/gps.html'">GPS</button>
+<button onclick="window.location.href='/lidar.html'">LIDAR</button>
 <table>
 <tr><td colspan=2 align=center id="msg">Loading...</td><tr>
 <tr><td>X-axis</td><td><select id="xaxis"><option selected="selected">X</option><option>Y</option><option>Z</option></select></td></tr>
@@ -13,7 +16,6 @@
 </table>
 <button onclick="setup()">Setup</button>
 <br>
-<a href="gps.html">GPS View</a>
 <script>
 
 function setup()
