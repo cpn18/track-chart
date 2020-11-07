@@ -13,7 +13,7 @@ fi
 mii-tool eth0 >> ${output}/error.log
 
 #if [ "`mii-tool eth0`" == "eth0: no link" ]; then
-  ./audio_capture.sh &
+  ./audio_collect.sh &
   while true; do
     date +%Y%m%d%H%M > ${output}/timestamp
     ./combolog9.py \
