@@ -97,6 +97,10 @@ def parse_line(line):
         obj = {
             'lidar': eval(line[2]),
         }
+    elif line[1] == "ATTCFG":
+        return None
+    elif line[1] == "LIDAR":
+        return None
     elif line[1] == "M":
         return None
     else:

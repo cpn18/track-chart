@@ -21,6 +21,9 @@ with open(sys.argv[1]) as f:
                 'device': 'A1M8', 
             }
             acclist.append(lidar)
+        elif items[1] == "LIDAR":
+            lidar = json.loads(" ".join(items[2:-1]))
+            acclist.append(lidar)
         elif items[1] == "TPV":
             tpv = json.loads(" ".join(items[2:-1]))
             if tpv['mode'] < 3:

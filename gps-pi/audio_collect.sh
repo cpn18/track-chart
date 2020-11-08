@@ -20,10 +20,11 @@ collect()
   wait
 }
 
-while true; do
-	if [ `arecord -l | wc -l` -gt 1 ]; then
-	    collect
-	else
-	    sleep 30
-	fi
-done
+if [ `arecord -l | wc -l` -gt 1 ]; then
+    collect
+    retval=0
+else
+    retval=1
+fi
+
+exit ${retval}

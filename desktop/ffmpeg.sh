@@ -1,4 +1,9 @@
 #!/bin/bash
+if [ "$1" == "" ]; then
+	echo "USGAGE: $0 output_file"
+	exit 1
+fi
+
 ffmpeg \
   -framerate 12 \
   -start_number 0 \
@@ -7,5 +12,5 @@ ffmpeg \
   -pix_fmt yuv420p \
   -preset veryslow \
   -tune zerolatency \
-  pl_20201009.mp4
+  ${1}
 

@@ -111,29 +111,29 @@ class Gps2Miles:
             (close1, close2) = util.swap(close1, close2)
             (distance1, distance2) = util.swap(distance1, distance2)
 
-        print(self.points[close1])
-        print(self.points[close2])
-        print(distance1)
-        print(distance2)
-        print(distance3)
+        #print(self.points[close1])
+        #print(self.points[close2])
+        #print(distance1)
+        #print(distance2)
+        #print(distance3)
 
         try:
             if distance1 == 0:
-                print("point1")
+                #print("point1")
                 mileage = self.points[close1]['mileage']
             elif distance2 == 0:
-                print("point2")
+                #print("point2")
                 mileage = self.points[close2]['mileage']
             elif distance3 < distance1 and distance2 < distance1:
-                print("after")
+                #print("after")
                 mileage = (self.points[close2]['mileage'] + distance2 +
                            self.points[close1]['mileage'] + distance1) / 2.0
             elif distance3 < distance2 and distance1 < distance2:
-                print("before")
+                #print("before")
                 mileage = (self.points[close1]['mileage'] - distance1 +
                            self.points[close2]['mileage'] - distance2) / 2.0
             elif distance1 < distance3 and distance2 < distance3:
-                print("between")
+                #print("between")
                 mileage = self.points[close1]['mileage'] + \
                     distance1 * (self.points[close2]['mileage'] -
                                  self.points[close1]['mileage']) / \
@@ -148,7 +148,7 @@ class Gps2Miles:
         a.sort()
         certainty = a[2]/(a[0]+a[1])
 
-        print(mileage, certainty)
+        #print(mileage, certainty)
         return (mileage, certainty)
 
     def sanity_check(self, update=False):

@@ -5,6 +5,7 @@ Calculates the average measurement [0..359]
 Useful when trying to calibrate the angles for a new LIDAR position
 """
 import sys
+import json
 import math
 import statistics
 
@@ -30,9 +31,14 @@ def main(filename):
             if line[-2] != "*":
                 continue
             fields = line.split(" ")
-            if fields[1] == "L":
-                timestamp, datatype, scan_data = line.split(" ", 2)
-                scan_data = eval(scan_data.replace('*', ''))
+            if fields[1] == "L" or fields[1] == "LIDAR":
+                if fields[1] == "LIDAR":
+                    lidar = json.loads(" ".join(fields[2:-1]))
+                    timestamp = lidar['time']
+                    scan_data = lidar['scan']
+                else:
+                    timestamp, datatype, scan_data = line.split(" ", 2)
+                    scan_data = eval(scan_data.replace('*', ''))
                 for angle, distance in scan_data:
                     a = round(angle+OFFSET) % RANGE
                     d = float(distance)

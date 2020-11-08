@@ -349,6 +349,27 @@ def lidar_logger(timestamp):
         timestamp = time.strftime("%Y%m%d%H%M", time.gmtime(time.time()))
     print("LIDAR Done")
 
+def audio_logger(timestamp):
+    global DONE, AUDIO_STATUS
+
+    while not INLOCSYNC:
+        time.sleep(5)
+
+    print("AUDIO Start")
+    while not DONE:
+        try:
+            AUDIO_STATUS = True
+            if os.system("./audio_collect.sh") != 0:
+                AUDIO_STATUS = False
+                time.sleep(30)
+        except KeyboardInterrupt:
+            DONE = True
+        except Exception as ex:
+            logtime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            print("%s WARNING: %s" % (logtime, ex))
+        AUDIO_STATUS = False
+    print("AUDIO Done")
+
 # MAIN START
 INLOCSYNC = False
 DONE = False
@@ -365,6 +386,7 @@ GPS_NUM_USED = 0
 ACC_STATUS = False
 LIDAR_STATUS = False
 LIDAR_DATA = {}
+AUDIO_STATUS = False
 
 # Listen on port 2947 (gpsd) of localhost
 SESSION = gps.gps("localhost", "2947")
@@ -388,6 +410,8 @@ try:
     Timu.start()
     Tlidar = threading.Thread(name="L", target=lidar_logger, args=(TIMESTAMP,))
     Tlidar.start()
+    Taudio = threading.Thread(name="F", target=audio_logger, args=(TIMESTAMP,))
+    Taudio.start()
 except:
     print("Error: unable to start thread")
     sys.exit(-1)
@@ -408,6 +432,7 @@ Twww.join()
 Tgps.join()
 Timu.join()
 Tlidar.join()
+Taudio.join()
 
 while not RESTART:
     time.sleep(60)

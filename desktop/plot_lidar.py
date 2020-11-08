@@ -17,7 +17,7 @@ LIDAR_RADIUS = .4 * WIDTH
 SCALE=10
 
 DIRECTION=-1        # -1=backwards, 1=forwards
-ANGLE_OFFSET = -0.73 
+ANGLE_OFFSET = 3.51
 TOTAL_SLOPE = 0
 TOTAL_SLOPE_COUNT = 0
 
@@ -27,6 +27,9 @@ GHOST = 3
 
 ERROR=1
 ERROR=.9511
+
+def to_mph(speed):
+    return speed * 2.23694 # convert to mph
 
 def cvt_point(point):
     return (int(LIDAR_X - DIRECTION*(point[0] / SCALE)),
@@ -39,8 +42,13 @@ def cvt_point(point):
 #LOW_RANGE = range(115, 111, -1)
 #HIGH_RANGE = range(239, 243)
 # Rear Mount
-LOW_RANGE = range(123, 119, -1)
-HIGH_RANGE = range(238, 242)
+#LOW_RANGE = range(123, 119, -1)
+#HIGH_RANGE = range(238, 242)
+LOW_CENTER = 114
+HIGH_CENTER = 240
+DELTA = 2
+LOW_RANGE = range(LOW_CENTER + DELTA, LOW_CENTER - DELTA, -1)
+HIGH_RANGE = range(HIGH_CENTER - DELTA, HIGH_CENTER + DELTA)
 
 def calc_gauge(data):
     min_dist_left = min_dist_right = 999999
@@ -66,8 +74,8 @@ def calc_gauge(data):
 
     slope = math.degrees(math.atan(y / x))
 
-    if 56 < z < 57:
-        print("A %d %d" % (min_dist_left_i, min_dist_right_i))
+    #if 56 < z < 57:
+    #    print("A %d %d" % (min_dist_left_i, min_dist_right_i))
 
     return (z, slope, p1,p2)
 
@@ -230,7 +238,14 @@ def clearance(filename):
             if line[0] == "#" or line[-2] != "*":
                 continue
             fields = line.split(" ")
-            if fields[1] == "L":
+            if fields[1] == "LIDAR":
+                lidar = json.loads(" ".join(fields[2:-1]))
+                timestamp = lidar['time']
+                for angle, distance in lidar['scan']:
+                    i = round(float(angle)) % 360
+                    if distance > 1000 and speed > .5:
+                        data[i] = min(data[i], float(distance))
+            elif fields[1] == "L":
                 timestamp, datatype, scan_data = line.split(" ", 2)
                 scan_data = eval(scan_data.replace('*', ''))
                 for angle, distance in scan_data:
@@ -240,7 +255,7 @@ def clearance(filename):
             elif fields[1] == "TPV":
                 obj = json.loads(" ".join(fields[2:-1]))
                 if 'speed' in obj:
-                    speed = obj['speed'] * 2.23694 # convert to mph
+                    speed = to_mph(obj['speed'])
                     print(speed)
 
     report = plot(data, timestamp, latitude, longitude, mileage, speed, 0)
@@ -282,7 +297,7 @@ def main(filename, known):
                     except KeyError:
                         pass
                     try:
-                        speed = obj['speed'] * 2.23694 # convert to mph
+                        speed = to_mph(obj['speed'])
                     except KeyError:
                         pass
                     mileage, certainty = G.find_mileage(latitude, longitude)
@@ -301,14 +316,19 @@ def main(filename, known):
                     except ValueError:
                         pass
                     try:
-                        speed = float(fields[8]) * 2.23694 # convert to mph
+                        speed = to_mph(float(fields[8]))
                     except ValueError:
                         pass
                     mileage, certainty = G.find_mileage(latitude, longitude)
-                elif fields[1] == "L" and speed >= MIN_SPEED:
+                elif (fields[1] == "L" or fields[1] == "LIDAR") and speed >= MIN_SPEED:
                     #print(line)
-                    timestamp, datatype, scan_data = line.split(" ", 2)
-                    scan_data = eval(scan_data.replace('*', ''))
+                    if fields[1] == "LIDAR":
+                        lidar = json.loads(" ".join(fields[2:-1]))
+                        timestamp = lidar['time']
+                        scan_data = lidar['scan']
+                    else:
+                        timestamp, datatype, scan_data = line.split(" ", 2)
+                        scan_data = eval(scan_data.replace('*', ''))
                     data = [0]*360
                     for i in range(0,360):
                         ghost[i] -= 1
