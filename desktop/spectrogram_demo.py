@@ -17,6 +17,7 @@ with open(sys.argv[1], "r") as f:
         if line[0] == "#":
             continue
         items = line.split()
+
         if items[1] == "ATT":
             obj = json.loads(" ".join(items[2:-1]))
             ax = obj['acc_x']
@@ -25,21 +26,16 @@ with open(sys.argv[1], "r") as f:
             ax = obj['gyro_x']
             ay = obj['gyro_y']
             az = obj['gyro_z']
-        elif items[1].startswith("A"):
-            ax = float(items[2])
-            ay = float(items[3])
-            az = float(items[4])
-            gx = float(items[5])
-            gy = float(items[6])
-            gz = float(items[7])
+            ts = np.datetime64(obj['time'].replace("Z", ""))
         else:
             continue
-        t_stamp.append(np.datetime64(items[0].replace("Z", "")))
+
+        t_stamp.append(ts)
         x_data.append(ax)
         y_data.append(ay)
         z_data.append(az)
 
-dt = 0.02
+dt = 0.01
 t = np.arange(0.0, dt*len(t_stamp), dt)
 #t = np.array(t_stamp)
 

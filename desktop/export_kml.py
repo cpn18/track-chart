@@ -7,6 +7,7 @@ import os
 import sys
 import json
 
+THRESHOLD=10
 
 #with open(sys.argv[1]+".pickle","rb") as f:
 #    data = pickle.load(f)
@@ -28,7 +29,6 @@ with open(sys.argv[1], "r") as f:
         obj['type'] = items[1]
         data.append(obj)
 
-
 with open(sys.argv[1]+".kml", "w") as kml:
     kml.write('<?xml version="1.0" encoding="UTF-8"?>\n')
     kml.write('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
@@ -41,19 +41,27 @@ with open(sys.argv[1]+".kml", "w") as kml:
     sumx = sumy = count = 0
     alt = 0
     used = 0
+    last_speed = 0
     for obj in data:
         if obj['type'] == 'SKY':
             used=0
             for s in obj['satellites']:
                 if s['used']:
                     used += 1
-            print(used, len(obj['satellites']))
+            print("%s %d/%d" % (obj['time'], used, len(obj['satellites'])))
 
-        elif used >= 10 and obj['type'] == 'TPV':
+        elif used >= THRESHOLD and obj['type'] == 'TPV':
             if 'speed' in obj and 'epx' in obj and 'epy' in obj:
-                if obj['speed'] < 0.5:
+                delta = abs(obj['speed'] - last_speed)
+                last_speed = obj['speed']
+                #if obj['speed'] < 0.5:
+                #    continue
+
+                if delta > 5.0:
+                    print("reject, delta=%f" % delta)
                     continue
-                print(obj['epx'],obj['epy'])
+
+                print("%s %f %f %f" % (obj['time'], obj['epx'], obj['epy'], obj['speed']))
                 sumx += obj['epx']
                 sumy += obj['epy']
                 count += 1

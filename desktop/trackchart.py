@@ -103,6 +103,8 @@ def parse_line(line):
         return None
     elif line[1] == "M":
         return None
+    elif line[1] == "LOG":
+        return None
     else:
         print(line)
         sys.exit(1)
@@ -133,12 +135,22 @@ def read_data(tc):
         return
 
     with open(tc['data_file']) as f:
+        used = current = 0
         for line in csv.reader(f, delimiter=' ', quotechar="'"):
             print(line)
             if line[0][0] == "#" or line[-1] != '*':
                 continue
-            if line[1] == "TPV":
+            if line[1] == "SKY":
                 obj = json.loads(" ".join(line[2:-1]))
+                used = count = 0
+                for s in obj['satellites']:
+                    count += 1
+                    if s['used']:
+                        used += 1
+            elif line[1] == "TPV":
+                obj = json.loads(" ".join(line[2:-1]))
+                if used < 10:
+                    continue
                 if not('lat' in obj and 'lon' in obj and 'time' in obj):
                     continue
                 if first is None:

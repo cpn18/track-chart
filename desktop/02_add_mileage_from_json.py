@@ -10,7 +10,7 @@ def parse_time(time_string):
 
 
 if len(sys.argv) != 3:
-    print("USAGE: %s data_file known_file" % sys.argv[0])
+    print("USAGE: %s json_file known_file" % sys.argv[0])
     sys.exit(1)
 
 GPS_THRESHOLD = 0
@@ -23,19 +23,10 @@ last_tpv = None
 used = count = 0
 with open(sys.argv[1]) as f:
     for line in f:
-        items = line.split()
-        if items[-1] != "*":
+        obj = json.loads(line)
+        if 'class' not in obj:
             continue
-        if items[1] == "L":
-            obj = {
-                'scan': eval(items[2]),
-                'time': items[0],
-                'class': 'LIDAR',
-                'device': 'A1M8', 
-            }
-            acclist.append(obj)
-        elif items[1] == "SKY":
-            obj = json.loads(" ".join(items[2:-1]))
+        if obj['class'] == "SKY":
             acclist.append(obj)
             used = 0
             count = len(obj['satellites'])
@@ -44,15 +35,11 @@ with open(sys.argv[1]) as f:
                     used += 1
             print("%d/%d" % (used,count))
             data.append(obj)
-        elif items[1] == "LIDAR":
-            obj = json.loads(" ".join(items[2:-1]))
+        elif obj['class'] == "LIDAR":
             acclist.append(obj)
-        elif items[1] == "WAV":
-            obj = json.loads(" ".join(items[2:-1]))
-            obj['time'] = items[0] 
+        elif obj['class'] == "WAV":
             acclist.append(obj)
-        elif items[1] == "TPV" and used >= GPS_THRESHOLD:
-            obj = json.loads(" ".join(items[2:-1]))
+        elif obj['class'] == "TPV" and used >= GPS_THRESHOLD:
             if obj['mode'] < 3:
                 continue
             print(obj)
@@ -91,39 +78,35 @@ with open(sys.argv[1]) as f:
 
             last_tpv = obj
             acclist = []
-        elif items[1] == "ATT":
-            att = json.loads(" ".join(items[2:-1]))
-            acclist.append(att)
+        elif obj['class'] == "ATT":
+            acclist.append(obj)
 
 print("Leftover elements = %d" % len(acclist))
 
-for obj in acclist:
-    if obj['class'] == "ATT":
-        current = parse_time(obj['time'])
-        DT = (current - last_time).total_seconds()
-
-        y_speed += -obj['acc_y'] * DT
-        z_bearing += obj['gyro_z'] * DT
-        while z_bearing > 360:
-            z_bearing -= 360
-        while z_bearing < 0:
-            z_bearing += 360
-        #mileage += y_speed * DT
-        latitude, longitude = geo.new_position(
-            latitude,
-            longitude,
-            y_speed * DT,
-            z_bearing,
-        )
-        last_time = current
-
-    #obj['mileage'] = mileage
-    #obj['certainty'] = 0
-    obj['lat'] = latitude
-    obj['lon'] = longitude
-    obj['alt'] = altitude
-    obj['mileage'], obj['certainty'] = GPS.find_mileage(obj['lat'], obj['lon'])
-    data.append(obj)
+#for obj in acclist:
+#    if obj['class'] == "ATT":
+#        current = parse_time(obj['time'])
+#        DT = (current - last_time).total_seconds()
+#
+#        y_speed += -obj['acc_y'] * DT
+#        z_bearing += obj['gyro_z'] * DT
+#        while z_bearing > 360:
+#            z_bearing -= 360
+#        while z_bearing < 0:
+#            z_bearing += 360
+#        latitude, longitude = geo.new_position(
+#            latitude,
+#            longitude,
+#            y_speed * DT,
+#            z_bearing,
+#        )
+#        last_time = current
+#
+#    obj['lat'] = latitude
+#    obj['lon'] = longitude
+#    obj['alt'] = altitude
+#    obj['mileage'], obj['certainty'] = GPS.find_mileage(obj['lat'], obj['lon'])
+#    data.append(obj)
 
 # Sort By
 #sortby='mileage'
@@ -131,7 +114,7 @@ SORTBY='time'
 if SORTBY != 'time':
     data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
 
-with open("with_mileage_sortby_%s.json" % SORTBY, "w") as f:
+with open(sys.argv[1].replace(".json", "_with_mileage_sort_by_%s.json" % SORTBY), "w") as f:
     for obj in data:
         f.write(json.dumps(obj)+"\n")
 

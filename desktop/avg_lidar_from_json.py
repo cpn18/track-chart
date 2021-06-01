@@ -8,9 +8,12 @@ import sys
 import json
 import math
 import statistics
+import lidar_a1m8 as lidar_util
 
 RANGE = 360
 OFFSET = 0
+
+MM_TO_INCH = 0.0393701
 
 def my_min(data, threshold):
     retval = 999999
@@ -30,20 +33,10 @@ def main(filename):
 
     with open(sys.argv[1], "r") as f:
         for line in f:
-            if line[0] == "#":
-                continue
-            if line[-2] != "*":
-                continue
-            fields = line.split(" ")
-            if fields[1] == "L" or fields[1] == "LIDAR":
-                if fields[1] == "LIDAR":
-                    lidar = json.loads(" ".join(fields[2:-1]))
-                    timestamp = lidar['time']
-                    scan_data = lidar['scan']
-                else:
-                    timestamp, datatype, scan_data = line.split(" ", 2)
-                    scan_data = eval(scan_data.replace('*', ''))
-                for angle, distance in scan_data:
+            obj = json.loads(line)
+            if obj['class'] == "LIDAR":
+                for angle, distance in obj['scan']:
+                    distance = lidar_util.estimate_from_lidar(distance)
                     a = round(angle+OFFSET) % RANGE
                     d = float(distance)
                     if d > 0:
@@ -58,8 +51,8 @@ def main(filename):
                 if (0 < clearance < 625):
                     clearances.write(
                         "%s %02f\n" %
-                        (timestamp.replace('T', ' ').replace('Z',''),
-                            clearance*0.0393701)
+                        (obj['time'].replace('T', ' ').replace('Z',''),
+                            clearance*MM_TO_INCH)
                     )
 
     clearances.close()

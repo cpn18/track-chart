@@ -1,22 +1,20 @@
 #!/bin/bash
 
-output=/root/gps-data
-
 cd `dirname $0`
+
+mount /dev/sda1 /media/usb0
+
+if [ -d /media/usb0/PIRAIL ]; then
+  output=/media/usb0/PIRAIL/`date +%Y%m%d`
+else
+  output=/root/gps-data
+fi
 
 mkdir -p ${output}
 
-if [ -f ${output}/error.log ]; then
-  mv ${output}/error.log ${output}/error.log.0
-fi
-
-mii-tool eth0 >> ${output}/error.log
-
-#if [ "`mii-tool eth0`" == "eth0: no link" ]; then
-  while true; do
-    date +%Y%m%d%H%M > ${output}/timestamp
-    ./combolog9.py \
-	    >> ${output}/`cat ${output}/timestamp`_log.csv \
-	    2>> ${output}/error.log
-  done
-#fi
+while true; do
+  timestamp=`date +%Y%m%d%H%M`
+  ./combolog9.py ${output} \
+    >> ${output}/${timestamp}_stdout.txt \
+    2>> ${output}/${timestamp}_stderr.txt
+done

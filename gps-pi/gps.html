@@ -10,6 +10,7 @@
 <button onclick="window.location.href='/lidar.html'">LIDAR</button>
 <table>
 <tr><td colspan=2 align=center id="msg">Loading...</td><tr>
+<tr><th align="right">Time:</th><td id="gpstime" align="right"></td><td id="ept" align="right"></td></tr>
 <tr><th align="right">Latitude:</th><td id="lat" align="right"></td><td id="epy" align="right"></td></tr>
 <tr><th align="right">Longitude:</th><td id="lon" align="right"></td><td id="epx" align="right"></td></tr>
 <tr><th align="right">Altitude:</th><td id="alt" align="right"></td><td id="epv" align="right"></td></tr>
@@ -84,6 +85,16 @@ function update() {
     url: "/gps",
     success: function(obj)
     {
+      if (typeof obj.gpstime !== 'undefined') {
+        $('#gpstime').text(obj.gpstime.replace('T', ' '));
+      } else {
+        $('#gpstime').text("--");
+      }
+      if (typeof obj.ept !== 'undefined') {
+        $('#ept').text("+/-"+obj.ept+"s");
+      } else {
+        $('#ept').text("--");
+      }
       if (typeof obj.lat !== 'undefined') {
         $('#lat').text(obj.lat);
       } else {

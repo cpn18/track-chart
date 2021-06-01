@@ -14,6 +14,8 @@ import nmea
 import statistics
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+import imu_logger
+
 from rplidar import RPLidar
 
 #import adxl345_shim as accel
@@ -24,11 +26,24 @@ PORT_NUMBER = 80
 
 ALWAYS_LOG = True
 
+ERROR_DELAY = 10
+SYNC_DELAY = 5
+IDLE_DELAY = 60
+
+# Configure Axis
 try:
-    with open("axis_config.json", "r") as f:
-        AXIS_CONFIG = json.loads(f.read())
+    with open("config.json", "r") as f:
+        CONFIG = json.loads(f.read())
 except:
-    AXIS_CONFIG = {"x": "x", "y": "y", "z": "z"}
+    CONFIG = {
+        "imu": {"log": True, "x": "x", "y": "y", "z": "z"},
+        "gps": {"log": True},
+        "lidar": {"log": True},
+        "audio": {"log": True},
+    }
+
+CONFIG['class'] = "CONFIG"
+CONFIG['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 class MyHandler(BaseHTTPRequestHandler):
     def do_HEAD(s):
@@ -68,11 +83,12 @@ class MyHandler(BaseHTTPRequestHandler):
         elif s.path.startswith("/setup?"):
             for var in s.path.split("?")[1].split("&"):
                 key, value = var.split("=")
-                AXIS_CONFIG[key]=value.lower()
+                CONFIG['imu'][key]=value.lower()
             content_type = "application/json"
             output = "{\"message\": \"Stored...\"}"
-            with open("axis_config.json", "w") as f:
-                f.write(json.dumps(AXIS_CONFIG))
+            with open("config.json", "w") as f:
+                CONFIG['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                f.write(json.dumps(CONFIG))
             DONE = True
         elif s.path == "/lidar":
             content_type = "application/json"
@@ -175,7 +191,13 @@ def wait_for_timesync(session):
             print(ex)
             sys.exit(1)
 
-def gps_logger(timestamp, session):
+def mylog(msg):
+    logtime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    if isinstance(msg, str):
+        msg = {"log": msg}
+    print("%s LOG '%s' *" % (logtime, json.dumps(msg)))
+
+def gps_logger(output_directory, session):
     """ GPS Data Logger """
     global INLOCSYNC
     global CURRENT
@@ -185,30 +207,48 @@ def gps_logger(timestamp, session):
 
     hold_lat = []
     hold_lon = []
+    hold_alt = []
 
-    # Output file
-    output = open("/root/gps-data/%s_gps.csv" % timestamp, "w")
-    output.write("%s\n" % VERSION)
+    # Configure
+    try:
+        with open("config.json", "r") as f:
+            config = json.loads(f.read())
+    except:
+        config = {"class": "CONFIG", "gps": {"log": True}}
+    config['time'] =  datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
-    while not DONE:
-        try:
+    # Create the output directory
+    if not os.path.isdir(output_directory):
+        os.mkdir(output_directory)
+
+    # Open the output file
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
+    with open(os.path.join(output_directory,timestamp+"_gps.csv"), "w") as gps_output:
+        gps_output.write("#v%d\n" % VERSION)
+        gps_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
+
+        while not DONE:
             # GPS
             report = session.next()
-            # Wait for a 'TPV' report and display the current time
             # To see all report data, uncomment the line below
             #print(report)
 
             if report['class'] == 'TPV':
                 obj = nmea.tpv_to_json(report)
+                # Add Sat Metrics
+                obj['num_sat'] = GPS_NUM_SAT
+                obj['num_used'] = GPS_NUM_USED
             elif report['class'] == 'SKY':
                 obj = nmea.sky_to_json(report)
-                (GPS_NUM_USED, GPS_NUM_SAT) = nmea.calc_used(obj)
+                # Add Time
                 obj['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                (GPS_NUM_USED, GPS_NUM_SAT) = nmea.calc_used(obj)
             else:
                 continue
 
+            # Log the Data
             if 'time' in obj:
-                output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+                gps_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
 
             if obj['class'] == 'TPV':
                 if 'mode' in obj:
@@ -226,97 +266,88 @@ def gps_logger(timestamp, session):
                         print("%s Have location sync" % obj['time'])
 
                     if HOLD == 0:
-                        with open("/root/gps-data/%s_marks.csv" % timestamp, "a") as mark:
-                            mark.write("%s M %02.6f %03.6f \"%s\" *\n" % (obj['time'], statistics.mean(hold_lat), statistics.mean(hold_lon), MEMO))
+                        with open(os.path.join(output_directory,timestamp+"_marks.csv"), "a") as mark:
+                            mark_obj = {
+                                "class": "MARK",
+                                "lat": statistics.mean(hold_lat),
+                                "lon": statistics.mean(hold_lon),
+                                "num_sat": GPS_NUM_SAT,
+                                "num_used": GPS_NUM_USED,
+                                "time": obj['time'],
+                                "memo": MEMO,
+                            }
+                            if len(hold_alt) > 0:
+                                mark_obj['alt'] = statistics.mean(hold_alt)
+                            mark.write("%s %s %s *\n" % (mark_obj['time'], mark_obj['class'], json.dumps(mark_obj)))
                         hold_lat = []
                         hold_lon = []
+                        hold_alt = []
                         HOLD = -1
                     elif HOLD > 0:
                         hold_lat.append(report.lat)
                         hold_lon.append(report.lon)
+                        if 'alt' in report:
+                            hold_alt.append(report.alt)
                         HOLD -= 1
 
-        except KeyboardInterrupt:
-            DONE = True
-        except KeyError:
-            pass
-        except StopIteration:
-            session = None
-            print("GPSD has terminated")
-            DONE = True 
-    print("GPS done")
-    output.close()
+def gps_logger_wrapper(output_directory, session):
+    """ Wrapper Around GPS Logger Function """
+    global GPS_STATUS
 
+    GPS_STATUS = 0
+    try:
+        gps_logger(output_directory, session)
+    except StopIteration:
+        session = None
+        mylog("GPSD has terminated")
+        DONE = True
+    except Exception as ex:
+        mylog("GPS Logger Exception: %s" % ex)
+    GPS_STATUS = 0
+    mylog("GPS done")
 
-def imu_logger(timestamp):
-    """ Accel Data Logger """
-    global DONE, ACC_STATUS
-
-    device = accel.device()
-
-    max_x = max_y = max_z = -20
-    min_x = min_y = min_z = 20
-    sum_x = sum_y = sum_z = 0
-    c = 0
-
-    while not INLOCSYNC:
-        time.sleep(5)
-
-    output = open("/root/gps-data/%s_accel.csv" % timestamp, "w")
-    output.write("%s\n" % VERSION)
-    acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    output.write("%s ATTCFG %s *\n" % (acceltime, json.dumps(AXIS_CONFIG)))
-
-    while not DONE:
-        now = time.time()
-        try:
-            axes = accel.get_axes()
-            acceltime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-            att_obj = {
-                "class": "ATT",
-                "device": device,
-                "time": acceltime,
-                "acc_x": axes['ACC'+AXIS_CONFIG['x']],
-                "acc_y": axes['ACC'+AXIS_CONFIG['y']],
-                "acc_z": axes['ACC'+AXIS_CONFIG['z']],
-                "gyro_x": axes['GYR'+AXIS_CONFIG['x']],
-                "gyro_y": axes['GYR'+AXIS_CONFIG['y']],
-                "gyro_z": axes['GYR'+AXIS_CONFIG['z']],
-            }
-
-            #put the axes into variables
-            if INLOCSYNC or ALWAYS_LOG:
-                output.write("%s %s %s *\n" % (att_obj['time'], att_obj['class'], json.dumps(att_obj)))
-                ACC_STATUS = True
-        except KeyboardInterrupt:
-            DONE = True
-        except IOError:
-            pass
-
-        while (time.time() - now < 0.02):
-            time.sleep(0.001)
-
+def imu_logger_wrapper(output_directory):
+    """ Wrapper Around IMU Logger Function """
+    global ACC_STATUS
+    ACC_STATUS = True
+    try:
+        imu_logger.imu_logger(output_directory)
+    except Exception as ex:
+        mylog("IMU Logger Exception: %s" % ex)
     ACC_STATUS = False
-    print("ACCEL done")
-    output.close()
+    mylog("ACCEL done")
 
-def lidar_logger(timestamp):
+def lidar_logger(output_directory):
     global DONE, LIDAR_STATUS, LIDAR_DATA
 
     port_name = '/dev/lidar'
     lidar = None
 
+    # Configure
+    try:
+        with open("config.json", "r") as f:
+            config = json.loads(f.read())
+    except:
+        config = {"class": "CONFIG", "lidar": {"log": True}}
+    config['time'] =  datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # Create the output directory
+    if not os.path.isdir(output_directory):
+        os.mkdir(output_directory)
+
     while not INLOCSYNC:
-        time.sleep(5)
+        time.sleep(SYNC_DELAY)
 
     while not DONE:
         try:
             lidar = RPLidar(port_name)
-            print(lidar.get_info())
-            print(lidar.get_health())
-            with open("/root/gps-data/%s_lidar.csv" % timestamp, "w") as f:
-                f.write("%s\n" % VERSION)
+            mylog(lidar.get_info())
+            mylog(lidar.get_health())
+            # Open the output file
+            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
+            with open(os.path.join(output_directory,timestamp+"_lidar.csv"), "w") as lidar_output:
+                lidar_output.write("#v%d\n" % VERSION)
+                lidar_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
                 for i, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
                     if INLOCSYNC or ALWAYS_LOG:
                         lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -330,7 +361,7 @@ def lidar_logger(timestamp):
                             'time': lidartime,
                             'scan': data,
                         }
-                        f.write("%s %s %s *\n" % (lidar_data['time'], lidar_data['class'], json.dumps(lidar_data)))
+                        lidar_output.write("%s %s %s *\n" % (lidar_data['time'], lidar_data['class'], json.dumps(lidar_data)))
                         LIDAR_DATA = lidar_data
                     LIDAR_STATUS = True
                     if DONE:
@@ -338,43 +369,92 @@ def lidar_logger(timestamp):
         except KeyboardInterrupt:
             DONE = True
         except Exception as ex:
-            lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            print("%s WARNING: %s" % (lidartime, ex))
+            mylog("LIDAR Logger Exception: %s" % ex)
+            time.sleep(ERROR_DELAY)
+
         if lidar is not None:
             lidar.stop()
             lidar.stop_motor()
             lidar.disconnect()
         LIDAR_STATUS = False
-        time.sleep(1)
-        timestamp = time.strftime("%Y%m%d%H%M", time.gmtime(time.time()))
-    print("LIDAR Done")
+        time.sleep(ERROR_DELAY)
 
-def audio_logger(timestamp):
+
+def lidar_logger_wrapper(output_directory):
+    """ Wrapper Around LIDAR Logger Function """
+    global LIDAR_STATUS
+    LIDAR_STATUS = False
+    try:
+        lidar_logger(output_directory)
+    except Exception as ex:
+        mylog("LIDAR Logger Exception: %s" % ex)
+    LIDAR_STATUS = False
+    mylog("LIDAR Done")
+
+def audio_logger(output_directory):
     global DONE, AUDIO_STATUS
 
-    while not INLOCSYNC:
-        time.sleep(5)
+    # Configure
+    try:
+        with open("config.json", "r") as f:
+            config = json.loads(f.read())
+    except:
+        config = {"class": "CONFIG", "audio": {"log": True}}
+    config['time'] =  datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
-    print("AUDIO Start")
-    while not DONE:
-        try:
-            AUDIO_STATUS = True
-            if os.system("./audio_collect.sh") != 0:
-                AUDIO_STATUS = False
-                time.sleep(30)
-        except KeyboardInterrupt:
-            DONE = True
-        except Exception as ex:
-            logtime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            print("%s WARNING: %s" % (logtime, ex))
+    # Create the output directory
+    if not os.path.isdir(output_directory):
+        os.mkdir(output_directory)
+
+    while not INLOCSYNC:
+        time.sleep(SYNC_DELAY)
+
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
+    with open(os.path.join(output_directory,timestamp+"_audio.csv"), "w") as audio_output:
+        audio_output.write("#v%d\n" % VERSION)
+        audio_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
+        while not DONE:
+            try:
+                AUDIO_STATUS = True
+                timestamp = datetime.datetime.now()
+                filename = timestamp.strftime("%Y%m%d%H%M")
+                if os.system("./audio_collect.sh %s %s" % (output_directory, filename)) != 0:
+                    AUDIO_STATUS = False
+                    time.sleep(ERROR_DELAY)
+                else:
+                    obj = {
+                        "class": "AUDIO",
+                        "time": timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    }
+                    for channel in ["left", "right"]:
+                        capture_file = filename+"_"+channel+".wav"
+                        if os.path.isfile(os.path.join(output_directory, capture_file)):
+                            obj[channel] = capture_file
+                    audio_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+            except KeyboardInterrupt:
+                DONE = True
+            except Exception as ex:
+                mylog("Audio Logger Exception: %s" % ex)
+                time.sleep(ERROR_DELAY)
+
         AUDIO_STATUS = False
-    print("AUDIO Done")
+
+def audio_logger_wrapper(output_directory):
+    """ Wrapper Around Audio Logger Function """
+    global AUDIO_STATUS
+    AUDIO_STATUS = False
+    try:
+        audio_logger(output_directory)
+    except Exception as ex:
+        mylog("Audio Logger Exception: %s" % ex)
+    AUDIO_STATUS = False
+    mylog("Audio Done")
 
 # MAIN START
 INLOCSYNC = False
 DONE = False
 RESTART = True
-VERSION = "#v9"
+VERSION = 9
 CURRENT = {}
 TEMP = 0
 HOLD = -1
@@ -388,6 +468,12 @@ LIDAR_STATUS = False
 LIDAR_DATA = {}
 AUDIO_STATUS = False
 
+# Output Directory
+try:
+    OUTPUT = sys.argv[1]
+except IndexError:
+    OUTPUT = "/root/gps-data"
+
 # Listen on port 2947 (gpsd) of localhost
 SESSION = gps.gps("localhost", "2947")
 SESSION.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
@@ -399,40 +485,49 @@ Twww = threading.Thread(name="W", target=web_server, args=(httpd,))
 Twww.start()
 
 # Make sure we have a time sync
-TIMESTAMP = wait_for_timesync(SESSION)
+wait_for_timesync(SESSION)
 
-print(TIMESTAMP)
+mylog("Have Timestamp")
 
 try:
-    Tgps = threading.Thread(name="G", target=gps_logger, args=(TIMESTAMP, SESSION,))
-    Tgps.start()
-    Timu = threading.Thread(name="A", target=imu_logger, args=(TIMESTAMP,))
-    Timu.start()
-    Tlidar = threading.Thread(name="L", target=lidar_logger, args=(TIMESTAMP,))
-    Tlidar.start()
-    Taudio = threading.Thread(name="F", target=audio_logger, args=(TIMESTAMP,))
-    Taudio.start()
-except:
-    print("Error: unable to start thread")
+    if CONFIG['gps']['log']:
+        Tgps = threading.Thread(name="GPS", target=gps_logger_wrapper, args=(OUTPUT, SESSION,))
+        Tgps.start()
+    if CONFIG['imu']['log']:
+        Timu = threading.Thread(name="IMU", target=imu_logger_wrapper, args=(OUTPUT,))
+        Timu.start()
+    if CONFIG['lidar']['log']:
+        Tlidar = threading.Thread(name="LIDAR", target=lidar_logger_wrapper, args=(OUTPUT,))
+        Tlidar.start()
+    if CONFIG['audio']['log']:
+        Taudio = threading.Thread(name="AUDIO", target=audio_logger_wrapper, args=(OUTPUT,))
+        Taudio.start()
+except Exception as ex:
+    mylog("Exception: unable to start thread: %s" % ex)
     sys.exit(-1)
 
 while not DONE:
     try:
         with open("/sys/class/thermal/thermal_zone0/temp", "r") as t:
             TEMP = int(t.read())/1000
-            print("Temp = %0.1fC" % TEMP)
-        time.sleep(60)
+            mylog({"TempC": TEMP})
+        time.sleep(IDLE_DELAY)
     except KeyboardInterrupt:
         DONE = True
+        imu_logger.DONE = True
 
 httpd.shutdown()
 httpd.server_close()
 
 Twww.join()
-Tgps.join()
-Timu.join()
-Tlidar.join()
-Taudio.join()
+if CONFIG['gps']['log']:
+    Tgps.join()
+if CONFIG['imu']['log']:
+    Timu.join()
+if CONFIG['lidar']['log']:
+    Tlidar.join()
+if CONFIG['audio']['log']:
+    Taudio.join()
 
 while not RESTART:
-    time.sleep(60)
+    time.sleep(IDLE_DELAY)

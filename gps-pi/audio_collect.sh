@@ -1,22 +1,22 @@
 #!/bin/bash
 
-datadir=/root/gps-data
+outputdir=$1
+timestamp=$2
 
 collect()
 {
-  ts=`date +%Y%m%d%H%M%S`
   arecord \
     -d 60 \
     --device=hw:CARD=Device,DEV=0 \
     --format S16_LE \
     --rate 44100 \
-    -c1 ${datadir}/${ts}_left.wav &
+    -c1 ${outputdir}/${timestamp}_left.wav &
   arecord \
     -d 60 \
     --device=hw:CARD=Device_1,DEV=0 \
     --format S16_LE \
     --rate 44100 \
-    -c1 ${datadir}/${ts}_right.wav &
+    -c1 ${outputdir}/${timestamp}_right.wav &
   wait
 }
 

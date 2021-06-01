@@ -74,6 +74,26 @@ class Gps2Miles:
         for i in self.points:
             print(i)
 
+    def export(self):
+        print("Mileage,Latitude,Longitude,Class,Description")
+        for i in sorted(self.points, key=lambda k: k['mileage'], reverse=False):
+            if i['class'] == "ST":
+                continue
+
+            metadata = i['metadata']
+            if 'name' in metadata:
+                description = metadata['name']
+            else:
+                description = ""
+
+            if 'lat' in i and 'lon' in i:
+                lat = i['lat']
+                lon = i['lon']
+            else:
+                lat = lon = ""
+
+            print("%0.2f,%s,%s,%s,\"%s\"" % (i['mileage'], lat, lon, i['class'], description))
+
     def find_mileage(self, latitude, longitude, ignore=False):
         mileage = close1 = close2 = -1
         distance1 = distance2 = 99999
@@ -169,7 +189,8 @@ class Gps2Miles:
         return retval
 
 if __name__ == "__main__":
+    G = Gps2Miles("../known/berlin.csv")
     G = Gps2Miles("../known/negs.csv")
     #print(G.sanity_check(update=True))
-    #G.dump()
-    print(G.find_mileage(43+29/60.0+16.7597/3600.0, -(71+30/60.0+26.8901/3600.0), ignore=True))
+    G.export()
+    #print(G.find_mileage(43+29/60.0+16.7597/3600.0, -(71+30/60.0+26.8901/3600.0), ignore=True))

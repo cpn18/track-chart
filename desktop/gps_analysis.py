@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
 """
-Calculates the average measurement [0..359]
-
-Useful when trying to calibrate the angles for a new LIDAR position
+Useful when debugging GPS issues
 """
 import sys
 import math
 import statistics
 import json
 
-RANGE = 360
-OFFSET = 0
+THRESHOLD = 0
 
 def main(filename):
-    data = []
-    for a in range(RANGE):
-        data.append([])
 
     print("Time Latitude Longitude Used Count")
     with open(sys.argv[1], "r") as f:
@@ -37,11 +31,16 @@ def main(filename):
             elif fields[1] == "TPV":
                 obj = json.loads(" ".join(fields[2:-1]))
                 try:
-                    print("%s %f %f %d %d" % (obj['time'], obj['lat'], obj['lon'], used, count))
+                    if used >= THRESHOLD:
+                        print("%s %f %f %d %d" % (obj['time'], obj['lat'], obj['lon'], used, count))
                 except KeyError:
                     pass
-                used = count = 0
+                #used = count = 0
             else:
                 continue
+
+if len(sys.argv) < 2:
+    print("USAGE: %s data_file" % sys.argv[0])
+    sys.exit(1)
 
 main(sys.argv[1])

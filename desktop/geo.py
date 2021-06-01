@@ -28,3 +28,33 @@ def bearing(lat1,lon1,lat2,lon2):
 
 def great_circle(lat1,lon1,lat2,lon2):
   return haversine(lon1,lat1,lon2,lat2)
+
+####
+
+METERS_TO_DEGREES = 111111.0
+def meters_to_latitude(meters):
+    return meters / METERS_TO_DEGREES
+
+def latitude_to_meters(lat):
+    return lat * METERS_TO_DEGREES
+
+def meters_to_longitude(meters, lat=0):
+    return meters / (METERS_TO_DEGREES * cos(radians(lat)))
+
+def longitude_to_meters(lon, lat=0):
+    return lon * (METERS_TO_DEGREES * cos(radians(lat)))
+
+def new_position(lat, lon, distance, bearing):
+    angle = radians(bearing)
+    lat += meters_to_latitude(distance * cos(angle))
+    lon += meters_to_longitude(distance * sin(angle), lat)
+    return (lat, lon)
+
+if __name__ == "__main__":
+    # Unit Testing
+    print(new_position(0,0,111111,0))
+    print(new_position(0,0,111111,45))
+    print(new_position(0,0,111111,90))
+    print(new_position(0,0,111111,135))
+    print(new_position(0,0,111111,180))
+    print(new_position(0,0,111111,270))
