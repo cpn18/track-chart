@@ -5,16 +5,22 @@ Class to read from a Bluetooth MPU6050 device.
 Obtain acceleration, angular velocity, angle and temperature
 """
 
+import os
 import threading
 import struct
 import bluetooth
-from datetime import datetime
+import datetime
+import json
+import time
+
+VERSION = 9
 
 MAC = "20:19:06:25:18:92"
 
 class MotionTracker(object):
     """Class to track movement from MPU6050 Bluetooth device.
     """
+    device = "MPU6050"
 
     def __init__(self, bd_addr, port=1):
         """Initialization for tracker object.
@@ -137,25 +143,60 @@ class MotionTracker(object):
                     self.ang_z = struct.unpack("<h", yaw_l + yaw_h)[0] / 32768.0 * 180.0
                     self.temperature = struct.unpack("<h", t_l + t_h)[0] / 340.0 + 36.25
 
-# 2019-10-20T12:38:16.148527Z A -1.022 4.094 12.620 0.350 -1.820 -0.210 *
-
-def main():
+def main(output_directory):
     """Test driver stub.
     """
 
-    print "#v9"
-    try:
-        session = MotionTracker(bd_addr=MAC)
-        session.start_read_data()
+    config = {
+        "class": "CONFIG",
+        "time": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "imu": {"log": True, "x": "x", "y": "y", "z": "z"},
+    }
 
-        while True:
-            now = datetime.now()
-            time = now.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            print "%s A %f %f %f %f %f %f %f %f %f *" % (time, session.acc_x, session.acc_y, session.acc_y, session.angv_x, session.angv_y, session.angv_z, session.ang_x, session.ang_y, session.ang_z)
+    # Create output directory
+    if not os.path.isdir(output_directory):
+        os.mkdir(output_directory)
 
-    except KeyboardInterrupt:
-        session.stop_read_data()
+    # Create output file
+    with open(os.path.join(output_directory, datetime.datetime.now().strftime("%Y%m%d%H%M")+"_imu.csv"), "w") as imu_output:
+        imu_output.write("#v%d\n" % VERSION)
+        imu_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
+
+        try:
+            session = MotionTracker(bd_addr=MAC)
+            session.start_read_data()
+
+            while True:
+                now = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                temp_obj = {
+                    "ang_"+config['imu']['x']: session.ang_x,
+                    "ang_"+config['imu']['y']: session.ang_y,
+                    "ang_"+config['imu']['z']: session.ang_z,
+                }
+                obj = {
+                    "class": "ATT",
+                    "time": now,
+                    "device": session.device,
+                    "acc_"+config['imu']['x']: session.acc_x,
+                    "acc_"+config['imu']['y']: session.acc_y,
+                    "acc_"+config['imu']['z']: session.acc_z,
+                    "gyro_"+config['imu']['x']: session.angv_x,
+                    "gyro_"+config['imu']['y']: session.angv_y,
+                    "gyro_"+config['imu']['z']: session.angv_z,
+                    "yaw": temp_obj['ang_z'],
+                    "yaw_st": "N",
+                    "pitch": temp_obj['ang_x'],
+                    "pitch_st": "N",
+                    "roll": temp_obj['ang_y'],
+                    "roll_st": "N",
+                    "temp": session.temperature,
+                }
+                imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+                time.sleep(0.02)
+
+        except KeyboardInterrupt:
+            session.stop_read_data()
 
 
 if __name__ == "__main__":
-    main()
+    main("/root/gps-data")
