@@ -120,10 +120,18 @@ with open(sys.argv[1].replace(".json", "_with_mileage_sort_by_%s.json" % SORTBY)
 
 new_data = []
 accset = []
+
+# Find Starting Mileage
 current = 0
 step = 0.001
-start_mileage = round(data[0]['mileage'],2)
-next_mileage = start_mileage + step
+while True:
+    if not 'mileage' in data[current]:
+        current += 1
+    else:
+        start_mileage = round(data[current]['mileage'],2)
+        next_mileage = start_mileage + step
+        break
+
 while current < len(data):
     if round(data[current]['mileage'],2) < next_mileage:
         accset.append(data[current])

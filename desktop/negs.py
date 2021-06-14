@@ -14,9 +14,9 @@ def main():
     try:
         mychart = trackchart.new([(1024, 768),
                                  20, float(sys.argv[1]), float(sys.argv[2]),
-                                 "../known/negs.csv", None])
+                                 "../known/negs.csv", sys.argv[3]])
     except (IndexError, ValueError):
-        print("Usage: %s start_mile end_mile" % sys.argv[0])
+        print("Usage: %s start_mile end_mile file.json" % sys.argv[0])
         sys.exit()
 
     trackchart.read_data(mychart)
@@ -36,7 +36,7 @@ def main():
     print("curvature")
     #trackchart.curvature(mychart)
     print("accel")
-    #trackchart.accel(mychart)
+    trackchart.accel(mychart)
     print("lidar-gage")
     #trackchart.gage(mychart)
     print("townlines")

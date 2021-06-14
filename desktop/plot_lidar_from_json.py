@@ -2,7 +2,6 @@
 import sys
 import math
 import json
-import gps_to_mileage
 from PIL import Image, ImageDraw, ImageOps
 import plate_c as aar_plate
 import class_i as fra_class
@@ -15,9 +14,11 @@ SCALE=10.0 # mm per pixel
 
 # Where to center the data
 LIDAR_X = WIDTH / 2
-LIDAR_Y = .8 * HEIGHT 
+LIDAR_Y = .8 * HEIGHT
 LIDAR_RADIUS = .4 * WIDTH
-LIDAR_HEIGHT = 381.0 # mm above rail
+#LIDAR_HEIGHT = 381.0 # mm above rail
+LIDAR_HEIGHT = (304 + 352) / 2
+LIDAR_OFFSET = (-944 + 390) / 2
 
 
 DIRECTION=-1        # -1=backwards, 1=forwards
@@ -32,15 +33,18 @@ GHOST = 3 # slices
 GAUGE_OFFSET = 1
 ANGLE_OFFSET = 0
 # Custom
-ANGLE_OFFSET = -1.58
-GAUGE_OFFSET = 1.080991 
+ANGLE_OFFSET = 2.24
+GAUGE_OFFSET = 1.16
+
 
 # Colors
-COLOR_RED = (255, 0, 0)
-COLOR_GREEN = (0, 255, 0)
-COLOR_BLUE = (0, 0, 255)
-COLOR_GREY = (128, 128, 128)
-COLOR_BLACK = (0, 0, 0)
+COLORS = {
+    "red": (255, 0, 0),
+    "green": (0, 255, 0),
+    "blue": (0, 0, 255),
+    "grey": (128, 128, 128),
+    "black": (0, 0, 0),
+}
 
 def to_mph(speed):
     return speed * 2.23694 # convert to mph
@@ -55,8 +59,8 @@ def cvt_point(point):
 # Rear Mount
 #LOW_RANGE = range(123, 119, -1)
 #HIGH_RANGE = range(238, 242)
-LOW_CENTER = 121
-HIGH_CENTER = 240
+LOW_CENTER = 128
+HIGH_CENTER = 249
 DELTA = 2
 LOW_RANGE = range(LOW_CENTER + DELTA, LOW_CENTER - DELTA, -1)
 HIGH_RANGE = range(HIGH_CENTER - DELTA, HIGH_CENTER + DELTA)
@@ -106,16 +110,13 @@ def score_points(point, box):
 def plot(data, timestamp, latitude, longitude, mileage, speed, slice_count):
     global TOTAL_SLOPE, TOTAL_SLOPE_COUNT, TOTAL_GAUGE, TOTAL_GAUGE_COUNT
 
-    if latitude != 0 and longitude != 0:
-        labels = True
-    else:
-        labels = False
+    labels = latitude != 0 and longitude != 0
 
     image = Image.new("RGB", (WIDTH, HEIGHT), "white")
     draw = ImageDraw.Draw(image)
 
     # Draw the LIDAR reference
-    template_color = COLOR_BLUE
+    template_color = COLORS['blue']
     draw.ellipse((int(LIDAR_X-LIDAR_RADIUS),int(LIDAR_Y-LIDAR_RADIUS),int(LIDAR_X+LIDAR_RADIUS),int(LIDAR_Y+LIDAR_RADIUS)), outline=template_color)
     draw.line((0,int(LIDAR_Y),WIDTH,int(LIDAR_Y)),fill=template_color)
     draw.line((int(LIDAR_X),0,int(LIDAR_X),HEIGHT),fill=template_color)
@@ -128,10 +129,10 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice_count):
     width = int(aar_plate.width / (2 * SCALE))
     height = int(aar_plate.height / SCALE)
     x_margin = int(width * 0.05)
-    y_margin = int(height * 0.05) 
+    y_margin = int(height * 0.05)
 
-    min_x = LIDAR_X-width
-    max_x = LIDAR_X+width
+    min_x = LIDAR_X-LIDAR_OFFSET-width
+    max_x = LIDAR_X-LIDAR_OFFSET+width
     max_y = LIDAR_Y+LIDAR_HEIGHT/SCALE
     min_y = LIDAR_Y+LIDAR_HEIGHT/SCALE-height
 
@@ -145,11 +146,11 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice_count):
     # TC Outline
     width = int(1545.4 / (2 * SCALE))
     height = int(1676.4 / SCALE)
-    min_tc_x = LIDAR_X-width
-    max_tc_x = LIDAR_X+width
+    min_tc_x = LIDAR_X-LIDAR_OFFSET-width
+    max_tc_x = LIDAR_X-LIDAR_OFFSET+width
     max_tc_y = LIDAR_Y+LIDAR_HEIGHT/SCALE
     min_tc_y = LIDAR_Y+LIDAR_HEIGHT/SCALE-height
-    
+
     # Draw Data
     new_data = [(0,0,0)] * len(data)
     plate_error = gauge_error = False
@@ -160,7 +161,7 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice_count):
         x = distance * math.sin(adjusted_angle)
         y = distance * math.cos(adjusted_angle)
         new_data[angle] = (distance, x, y)
-        
+
         # Convert to image coordinates
         (px, py) = cvt_point((x, y))
 
@@ -174,21 +175,21 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice_count):
         score += this_score
 
         if this_score > 0:
-            pc = COLOR_RED
+            pc = COLORS['red']
             plate_error = True
             # Draw an X
             draw.line((px-5,py-5,px+5,py+5), fill=pc)
             draw.line((px+5,py-5,px-5,py+5), fill=pc)
         elif ((px <= min_x or px >= max_x) and py < max_y) or py < min_y:
-            pc = COLOR_GREEN
+            pc = COLORS['green']
             # Draw Circle
             draw.ellipse((px-5,py-5,px+5,py+5), outline=pc)
         else:
-            pc = COLOR_BLACK
+            pc = COLORS['black']
         draw.point((px, py), fill=pc)
-    
+
     # Trackcar
-    color_trackcar = COLOR_GREY
+    color_trackcar = COLORS['grey']
     draw.line((min_tc_x,max_tc_y,max_tc_x,max_tc_y), fill=color_trackcar)
     draw.line((min_tc_x,min_tc_y,max_tc_x,min_tc_y), fill=color_trackcar)
     draw.line((min_tc_x,max_tc_y,min_tc_x,min_tc_y), fill=color_trackcar)
@@ -197,9 +198,9 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice_count):
 
     # Draw the clearance box
     if not plate_error:
-        color_plate = COLOR_GREEN
+        color_plate = COLORS['green']
     else:
-        color_plate = COLOR_RED
+        color_plate = COLORS['red']
         draw.text((min_x+5,min_y+15), "Score = %d" % score, fill=color_plate)
 
     draw.line((min_x,max_y,max_x,max_y), fill=color_plate)
@@ -220,25 +221,25 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice_count):
     p2 = cvt_point(p2)
 
     if fra_class.min_gauge <= gauge <= fra_class.max_gauge:
-        gauge_c = COLOR_BLACK
+        gauge_c = COLORS['black']
         if labels:
             draw.text((5,55), "GAGE: %0.2f in" % gauge, fill=gauge_c)
     #elif gauge < fra_class.min_gauge-1 or gauge > fra_class.max_gauge+1:
-  #      gauge_c = COLOR_BLACK
+  #      gauge_c = COLORS['black']
   #      draw.text((5,55), "GAGE: *ERROR*", fill=gauge_c)
     elif gauge == 0:
-        gauge_c = COLOR_BLACK
+        gauge_c = COLORS['black']
         if labels:
             draw.text((5,55), "GAGE: *ERROR*", fill=gauge_c)
     else:
-        gauge_c = COLOR_RED
+        gauge_c = COLORS['red']
         gauge_error = True
         if labels:
             draw.line((p1,p2), fill=gauge_c)
             draw.text((5,55), "GAGE: %0.2f in" % gauge, fill=gauge_c)
 
     if labels:
-        label_color = COLOR_BLACK
+        label_color = COLORS['black']
         draw.text((5,5), "UTC: %s" % timestamp, fill=label_color)
         draw.text((5,15), "LAT: %0.6f" % latitude, fill=label_color)
         draw.text((5,25), "LONG: %0.6f" % longitude, fill=label_color)
@@ -281,10 +282,8 @@ def clearance(filename):
     report = plot(data, timestamp, latitude, longitude, mileage, speed, 0)
     print(report)
 
-def main(filename, known):
-    G = gps_to_mileage.Gps2Miles(known)
-    #G.sanity_check(update=True)
-    last_lat = last_lon = speed = latitude = longitude = mileage = 0
+def main(filename):
+    last_lat = last_lon = speed = 0
     slice_count = 0
     data = [0] * 360
     ghost = [0] * 360
@@ -296,24 +295,8 @@ def main(filename, known):
             count = 0
             for line in f:
                 obj = json.loads(line)
-                if obj['class'] == "TPV":
-                    try:
-                        latitude = obj['lat']
-                    except KeyError:
-                        pass
-                    try:
-                        longitude = obj['lon']
-                    except KeyError:
-                        pass
-                    try:
-                        altitude = obj['alt']
-                    except KeyError:
-                        pass
-                    try:
-                        speed = to_mph(obj['speed'])
-                    except KeyError:
-                        pass
-                    mileage, certainty = G.find_mileage(latitude, longitude)
+                if obj['class'] == "TPV" and 'speed' in obj:
+                        speed = obj['speed']
                 elif obj['class'] == "LIDAR" and speed >= MIN_SPEED:
                     data = [0]*360
                     #for i in range(0,360):
@@ -336,7 +319,7 @@ def main(filename, known):
                                 k.write('<Placemark>\n')
                                 k.write('<name>Point %d</name>\n' % slice_count)
                                 k.write('<description>\n')
-                                k.write('Mileage = %0.2f\n' % mileage)
+                                k.write('Mileage = %0.2f\n' % obj['mileage'])
                                 if report['gauge_error']:
                                     k.write('Gage = %0.f in\n' % report['gauge'])
                                 if report['plate_error']:
@@ -363,18 +346,17 @@ def main(filename, known):
 
 try:
     datafile = sys.argv[1]
-    known = sys.argv[2]
 except:
-    print("USAGE: %s data.json know.csv" % sys.argv[0])
+    print("USAGE: %s data.json" % sys.argv[0])
     sys.exit(1)
 
 if ANGLE_OFFSET == 0:
     print("Calculating Angle Offset...")
     OUTPUT = False
-    main(datafile, known)
+    main(datafile)
     try:
-       ANGLE_OFFSET = TOTAL_SLOPE/TOTAL_SLOPE_COUNT
-       GAUGE_OFFSET = 56.5/(TOTAL_GAUGE/TOTAL_GAUGE_COUNT)
+        ANGLE_OFFSET = TOTAL_SLOPE/TOTAL_SLOPE_COUNT
+        GAUGE_OFFSET = 56.5/(TOTAL_GAUGE/TOTAL_GAUGE_COUNT)
     except ZeroDivisionError:
         ANGLE_OFFSET = 0
         GAUGE_OFFSET = 1
@@ -382,6 +364,6 @@ if ANGLE_OFFSET == 0:
 print("Generating Images...")
 OUTPUT = True
 TOTAL_SLOPE = TOTAL_SLOPE_COUNT = TOTAL_GAUGE = TOTAL_GAUGE_COUNT = 0
-main(datafile, known)
+main(datafile)
 print("ANGLE_OFFSET = %0.2f" % ANGLE_OFFSET)
 print("GAUGE_OFFSET = %0.2f" % GAUGE_OFFSET)

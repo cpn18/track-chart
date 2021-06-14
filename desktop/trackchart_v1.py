@@ -19,22 +19,13 @@ RAD_TO_DEG = 57.29578
 M_PI = 3.14159265358979323846
 AA = 0.40 # Complementary filter constant
 
-COLORS = {
-    "black": (0,0,0),
-    "red": (255,0,0),
-    "green": (0,255,0),
-    "blue": (0,0,255),
-    "white": (255,255,255),
-    "grey": (128,128,128),
-}
-
 def new(args):
     """
     New Trackchart
     """
     (size, margin, first, last, known_file, data_file) = args
     pixel_per_mile = float(size[0]-3*margin) / (last-first)
-    return {'image': Image.new("RGB", size, "white"),
+    return {'image': Image.new("1", size, "white"),
             'margin': margin,
             'mileposts': (first, last, pixel_per_mile),
             'known_file': known_file,
@@ -129,9 +120,6 @@ def read_data(tc):
     queue = []
     first = last = None
 
-    if tc['data_file'] is None:
-        return
-
     try:
         with open(tc['data_file']+".pickle","rb") as f:
             tc['D'] = pickle.load(f)
@@ -139,9 +127,57 @@ def read_data(tc):
     except:
         pass
 
+    if tc['data_file'] is None:
+        return
+
     with open(tc['data_file']) as f:
-        for line in f:
-            tc['D'].append(json.loads(line))
+        used = current = 0
+        for line in csv.reader(f, delimiter=' ', quotechar="'"):
+            print(line)
+            if line[0][0] == "#" or line[-1] != '*':
+                continue
+            if line[1] == "SKY":
+                obj = json.loads(" ".join(line[2:-1]))
+                used = count = 0
+                for s in obj['satellites']:
+                    count += 1
+                    if s['used']:
+                        used += 1
+            elif line[1] == "TPV":
+                obj = json.loads(" ".join(line[2:-1]))
+                if used < 10:
+                    continue
+                if not('lat' in obj and 'lon' in obj and 'time' in obj):
+                    continue
+                if first is None:
+                    first = obj
+                else:
+                    last = obj
+                    start_time = dp.parse(first['time']).timestamp()
+                    start_lat = first['lat']
+                    start_lon = first['lon']
+                    end_time = dp.parse(last['time']).timestamp()
+                    end_lat = last['lat']
+                    end_lon = last['lon']
+                    for q in queue:
+                        q_time = dp.parse(q[0]).timestamp()
+                        # time ratio
+                        ratio = (q_time - start_time) / (end_time - start_time)
+                        # latitiude
+                        q_lat = (end_lat - start_lat) * ratio + start_lat 
+                        # longitude
+                        q_lon = (end_lon - start_lon) * ratio + start_lon 
+                        #print(ratio, q_lat, q_lon, q)
+                        obj = parse_line(q)
+                        if obj is not None:
+                            obj['lat'] = q_lat
+                            obj['lon'] = q_lon
+                            tc['D'].append(obj)
+                    queue = []
+                    first = last
+                tc['D'].append(parse_line(line))
+            else:
+                queue.append(line)
 
     print ("entries", len(tc['D']))
 
@@ -153,9 +189,8 @@ def read_data(tc):
     for obj in tc['D']:
         if obj['class'] != "ATT":
             continue
-        if 'roll' in obj and 'yaw' in obj and 'pitch' in obj:
+        if 'roll' in obj:
             continue
-
         if last_time is not None:
             DT = (parse_time(obj['time']) - parse_time(last_time)).total_seconds()
             last_time = obj['time']
@@ -180,15 +215,14 @@ def read_data(tc):
 
     # Calculate Mileage
     for obj in tc['D']:
-        if 'mileage' in obj:
-            continue
-        obj['mileage'], obj['certainty'] = tc['G'].find_mileage(obj['lat'], obj['lon'])
+        if 'mileage' not in obj:
+            obj['mileage'], obj['certainty'] = tc['G'].find_mileage(obj['lat'], obj['lon'])
 
-    # Sort by mileage
     tc['D'] = sorted(tc['D'], key=lambda k: k['mileage'], reverse=False)
 
     with open(tc['data_file'] + ".pickle", "wb" ) as f:
         pickle.dump(tc['D'], f, pickle.HIGHEST_PROTOCOL)
+
 
 def mile_to_pixel(tc, m):
     """
@@ -222,7 +256,7 @@ def rotated_text(draw, t, degrees):
     (x_size, y_size) = draw.textsize(t)
     txt = Image.new("L", (x_size+2, y_size+2), "black")
     d = ImageDraw.Draw(txt)
-    d.text((1, 1), t, fill="white")
+    d.text((1, 1), t, fill=255)
     return (ImageOps.invert(txt.rotate(degrees, expand=True)), x_size, y_size)
 
 def border(tc):
@@ -232,10 +266,10 @@ def border(tc):
     im = tc['image']
     margin = tc['margin']
     draw = ImageDraw.Draw(im)
-    draw.line((margin, margin, im.size[0]-margin, margin),fill=COLORS['black'])
-    draw.line((im.size[0]-margin, margin, im.size[0]-margin, im.size[1]-margin),fill=COLORS['black'])
-    draw.line((im.size[0]-margin, im.size[1]-margin, margin, im.size[1]-margin),fill=COLORS['black'])
-    draw.line((margin, im.size[1]-margin, margin, margin),fill=COLORS['black'])
+    draw.line((margin, margin, im.size[0]-margin, margin))
+    draw.line((im.size[0]-margin, margin, im.size[0]-margin, im.size[1]-margin))
+    draw.line((im.size[0]-margin, im.size[1]-margin, margin, im.size[1]-margin))
+    draw.line((margin, im.size[1]-margin, margin, margin))
     del draw
 
 def milepost_symbol(draw, x, y_size, margin, name, alt_name):
@@ -243,17 +277,17 @@ def milepost_symbol(draw, x, y_size, margin, name, alt_name):
     Draw a milepost symbol
     """
     # Vertical
-    draw.line((x, 2*margin, x, y_size*0.5),fill=COLORS['black'])
-    draw.line((x, y_size*0.75, x, y_size),fill=COLORS['black'])
+    draw.line((x, 2*margin, x, y_size*0.5))
+    draw.line((x, y_size*0.75, x, y_size))
     # Diamond
-    draw.line((x, margin, x+0.5*margin, 1.5*margin),fill=COLORS['black'])
-    draw.line((x+0.5*margin, 1.5*margin, x, 2*margin),fill=COLORS['black'])
-    draw.line((x, 2*margin, x-0.5*margin, 1.5*margin),fill=COLORS['black'])
-    draw.line((x-0.5*margin, 1.5*margin, x, margin),fill=COLORS['black'])
+    draw.line((x, margin, x+0.5*margin, 1.5*margin))
+    draw.line((x+0.5*margin, 1.5*margin, x, 2*margin))
+    draw.line((x, 2*margin, x-0.5*margin, 1.5*margin))
+    draw.line((x-0.5*margin, 1.5*margin, x, margin))
     # Labels
-    draw.text((x+0.5*margin, margin), name,fill=COLORS['black'])
+    draw.text((x+0.5*margin, margin), name)
     if alt_name is not None:
-        draw.text((x-0.5*margin-draw.textsize(alt_name)[0], margin), alt_name,fill=COLORS['black'])
+        draw.text((x-0.5*margin-draw.textsize(alt_name)[0], margin), alt_name)
 
 def mileposts(tc, from_file=False):
     """
@@ -319,7 +353,7 @@ def mainline(tc):
 
     x1 = max(margin, mile_to_pixel(tc, start-first))
     x2 = min(im.size[0] - margin, mile_to_pixel(tc, end-first))
-    draw.line((x1, y, x2, y), fill=COLORS['black'])
+    draw.line((x1, y, x2, y))
 
     del draw
 
@@ -347,15 +381,15 @@ def bridges_and_crossings(tc, xing_type=None):
         x = mile_to_pixel(tc, mileage-first)
         if xtype == 'U':
             # Draw underpass
-            draw.line((x-5, y, x+5, y), fill=COLORS['white'])
-            draw.line((x, y-margin, x, y+margin), fill=COLORS['black'])
+            draw.line((x-5, y, x+5, y), fill=255)
+            draw.line((x, y-margin, x, y+margin))
         elif xtype == 'O':
             # Draw overpass
-            draw.line((x, y-margin, x, y-5), fill=COLORS['black'])
-            draw.line((x, y+5, x, y+margin), fill=COLORS['black'])
+            draw.line((x, y-margin, x, y-5))
+            draw.line((x, y+5, x, y+margin))
         elif xtype == 'X':
             # Draw road
-            draw.line((x, y-margin, x, y+margin), fill=COLORS['black'])
+            draw.line((x, y-margin, x, y+margin))
 
         # Draw description
         if 'name' in metadata:
@@ -409,8 +443,8 @@ def townlines(tc):
             x_size1 = x_size2
         x_size1 = int(math.ceil(x_size1/10.0)*10)
         for y1 in range(int(y-x_size1/2), int(y+x_size1/2), 10):
-            draw.line((x, y1, x, y1+2),fill=COLORS['black'])
-            draw.line((x, y1+7, x, y1+10),fill=COLORS['black'])
+            draw.line((x, y1, x, y1+2))
+            draw.line((x, y1+7, x, y1+10))
     del draw
 
 def stations(tc):
@@ -452,7 +486,7 @@ def stations(tc):
                           x, y-offset-1.5*box_size,
                           x+box_size/2, y-offset-box_size,
                           x+box_size/2, y-offset
-                         ), fill=COLORS['black'], outline=COLORS['black'])
+                         ), fill=255, outline=0)
 
         # Draw description
         if 'name' in metadata:
@@ -467,11 +501,11 @@ def stations(tc):
 
         y1 = int((im.size[1]-margin)*0.7)
         (x_size, y_size) = draw.textsize(text)
-        draw.text((int(x-x_size/2), int(y1)), text, fill=COLORS['black'])
+        draw.text((int(x-x_size/2), int(y1)), text)
         y1 += y_size
         m_str = mileage_to_string(mileage)
         (x_size, y_size) = draw.textsize(m_str)
-        draw.text((int(x-x_size/2), int(y1)), m_str, fill=COLORS['black'])
+        draw.text((int(x-x_size/2), int(y1)), m_str)
     del draw
 
 def yardlimits(tc):
@@ -502,17 +536,17 @@ def yardlimits(tc):
         if offset > 0:
             # Above the mainline
             offset = 2
-            draw.line((x, y-offset, x, y-offset-line_length),fill=COLORS['black'])
+            draw.line((x, y-offset, x, y-offset-line_length))
             y1 = y-offset-line_length-y_size1-y_size2
         else:
             # Below the mainline
             offset = 2
-            draw.line((x, y+offset, x, y+offset+line_length),fill=COLORS['black'])
+            draw.line((x, y+offset, x, y+offset+line_length))
             y1 = y+offset+line_length
 
         # Draw description
-        draw.text((int(x-x_size1/2), int(y1)), label,fill=COLORS['black'])
-        draw.text((int(x-x_size2/2), int(y1+y_size1)), m_str,fill=COLORS['black'])
+        draw.text((int(x-x_size1/2), int(y1)), label)
+        draw.text((int(x-x_size2/2), int(y1+y_size1)), m_str)
     del draw
 
 def controlpoints(tc):
@@ -567,7 +601,7 @@ def controlpoints(tc):
                 y_end = y_start - end_offset*y_size
                 x_end = x - abs(end_offset)*y_size
 
-        draw.line((x, y_start, x_end, y_end),fill=COLORS['black'])
+        draw.line((x, y_start, x_end, y_end))
     del draw
 
 def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45, write_file=True):
@@ -734,16 +768,16 @@ def elevation(tc):
         x2 = mile_to_pixel(tc, edata[j]['mileage']-first)
         y1 = y - (edata[j-1]['alt'] - emin) * (y_range/emax)
         y2 = y - (edata[j]['alt'] - emin) * (y_range/emax)
-        draw.line((x1, y1, x2, y2),fill=COLORS['black'])
+        draw.line((x1, y1, x2, y2))
         if edata[j]['alt'] == emax and not max_display:
             txt = "%dft" % emax
             (x_size, y_size) = draw.textsize(txt)
-            draw.text((int(x2-x_size/2), y2-y_size), txt, fill=COLORS['black'])
+            draw.text((int(x2-x_size/2), y2-y_size), txt)
             max_display = True
         elif edata[j]['alt'] == emin and not min_display:
             txt = "%dft" % emin
             (x_size, y_size) = draw.textsize(txt)
-            draw.text((int(x2-x_size/2), y2), txt, fill=COLORS['black'])
+            draw.text((int(x2-x_size/2), y2), txt)
             min_display = True
 
     del draw
@@ -789,8 +823,8 @@ def curvature(tc):
         x = mile_to_pixel(tc, cdata[i]['mileage']-first)
         yval = y - bdiff
         #print(cdata[i]['mileage'],cdata[last_i]['track'], cdata[i]['track'],bdiff)
-        draw.line((last_x,last_y,x,yval),fill=COLORS['black'])
-        draw.point((x, y), fill=COLORS['black'])
+        draw.line((last_x,last_y,x,yval))
+        draw.point((x, y))
         last_x = x
         last_y = yval
         last_i = i
@@ -823,13 +857,13 @@ def accel(tc):
 
     scale = 1
 
-    draw.text((margin, yx), "AX", fill=COLORS['red'])
-    draw.text((margin, yy), "AY", fill=COLORS['blue'])
-    draw.text((margin, yz), "AZ", fill=COLORS['green'])
-    draw.text((margin, ygx), "GX", fill=COLORS['red'])
-    draw.text((margin, ygy), "GY", fill=COLORS['blue'])
-    draw.text((margin, ygz), "GZ", fill=COLORS['green'])
-    #draw.text((margin, ys), "S", fill=COLORS['black'])
+    draw.text((margin, yx), "AX")
+    draw.text((margin, yy), "AY")
+    draw.text((margin, yz), "AZ")
+    draw.text((margin, ygx), "GX")
+    draw.text((margin, ygy), "GY")
+    draw.text((margin, ygz), "GZ")
+    #draw.text((margin, ys), "S")
 
     accel_threshold = 0.00
 
@@ -854,12 +888,12 @@ def accel(tc):
         if obj['class'] == "G" or obj['class'] == "TPV":
             # Speed
             speed = obj['speed']
-            #draw.point((x, ys-speed), fill=COLORS['black'])
-        elif obj['class'] in ["A", "ATT"]:
+            #draw.point((x, ys-speed))
+        elif obj['class'] == "A" or obj['class'] == "ATT":
             if speed == 0:
-                #draw.point((x, yx), fill=COLORS['black'])
-                #draw.point((x, yy), fill=COLORS['black'])
-                #draw.point((x, yz), fill=COLORS['black'])
+                #draw.point((x, yx))
+                #draw.point((x, yy))
+                #draw.point((x, yz))
                 pass
             else:
                 ACCx = (obj['acc_x'])
@@ -883,12 +917,12 @@ def accel(tc):
                 accel_file.write("%f %f %f %f %f %f %f\n" %( obj['mileage'], obj['acc_x'], obj['acc_y'], obj['acc_z'], obj['gyro_x'], obj['gyro_y'], obj['gyro_z']))
 
     for x in range(margin, len(ACCxp)-2*margin):
-        draw.line((x,yx-scale*ACCxp[x],x-1,yx-scale*ACCxp[x-1]),fill=COLORS['red'])
-        draw.line((x,yy-scale*ACCyp[x],x-1,yy-scale*ACCyp[x-1]),fill=COLORS['blue'])
-        draw.line((x,yz-scale*ACCzp[x],x-1,yz-scale*ACCzp[x-1]),fill=COLORS['green'])
-        draw.line((x,ygx-scale*GYRxp[x],x-1,ygx-scale*GYRxp[x-1]),fill=COLORS['red'])
-        draw.line((x,ygy-scale*GYRyp[x],x-1,ygy-scale*GYRyp[x-1]),fill=COLORS['blue'])
-        draw.line((x,ygz-scale*GYRzp[x],x-1,ygz-scale*GYRzp[x-1]),fill=COLORS['green'])
+        draw.line((x,yx-scale*ACCxp[x],x-1,yx-scale*ACCxp[x-1]))
+        draw.line((x,yy-scale*ACCyp[x],x-1,yy-scale*ACCyp[x-1]))
+        draw.line((x,yz-scale*ACCzp[x],x-1,yz-scale*ACCzp[x-1]))
+        draw.line((x,ygx-scale*GYRxp[x],x-1,ygx-scale*GYRxp[x-1]))
+        draw.line((x,ygy-scale*GYRyp[x],x-1,ygy-scale*GYRyp[x-1]))
+        draw.line((x,ygz-scale*GYRzp[x],x-1,ygz-scale*GYRzp[x-1]))
 
     accel_file.close()
     del draw
@@ -915,7 +949,7 @@ def sidings(tc):
         start_x = mile_to_pixel(tc,mileage - first)
         end_x = mile_to_pixel(tc,metadata['end'] - first)
         y1 = y - pixel_per_mile * 0.01 * int(metadata['offset'])
-        draw.line((start_x, y1, end_x, y1),fill=COLORS['black'])
+        draw.line((start_x, y1, end_x, y1))
 
     del draw
 
@@ -929,14 +963,14 @@ def gage(tc):
     draw = ImageDraw.Draw(im)
 
     y = int((im.size[1]-margin)*0.34)
-    draw.text((margin, y), aar.full_name, fill=COLORS['black'])
+    draw.text((margin, y), aar.full_name)
 
     data = [0] * 360
     ghost = [0] * 360
     total_slope = total_slope_count = 0
     # Read from file
     for obj in tc['D']:
-        if obj['class'] not in ["LIDAR", "L"]:
+        if obj['class'] != "L":
             continue
         mileage = obj['mileage']
         if not(first <= mileage <= last):
@@ -951,9 +985,9 @@ def gage(tc):
 
         if not(aar.min_gauge <= gage <= aar.max_gauge):
             print(mileage, gage)
-            draw.point((x,y+(gage-aar.standard_gauge)*2),fill=COLORS['red'])
+            draw.point((x,y+(gage-aar.standard_gauge)*2))
         else:
-            #draw.point((x,y), fill=COLORS['black'])
+            #draw.point((x,y))
             pass
         total_slope += slope
         total_slope_count += 1

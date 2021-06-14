@@ -10,10 +10,16 @@ import math
 import statistics
 import lidar_a1m8 as lidar_util
 
-RANGE = 360
+RANGE = 360 # degrees
 OFFSET = 0
+THRESHOLD = 500 # mm
 
 MM_TO_INCH = 0.0393701
+
+def ad_to_xy(a, d):
+    x = d * math.sin(math.radians(a))
+    y = d * math.cos(math.radians(a))
+    return (x, y)
 
 def my_min(data, threshold):
     retval = 999999
@@ -23,7 +29,7 @@ def my_min(data, threshold):
     return retval
 
 def main(filename):
-    s = [0] * 360
+    s = [0] * RANGE
     data = []
     for a in range(RANGE):
         data.append([])
@@ -40,8 +46,7 @@ def main(filename):
                     a = round(angle+OFFSET) % RANGE
                     d = float(distance)
                     if d > 0:
-                        x = d * math.sin(math.radians(a))
-                        y = d * math.cos(math.radians(a))
+                        (x, y) = ad_to_xy(a, d)
                         s[a] = y
                         data[a].append(d)
 
@@ -57,26 +62,47 @@ def main(filename):
 
     clearances.close()
 
+
+    avgd = [0] * RANGE
     with open("average_lidar.csv", "w") as f:
-        f.write("Angle,Distance,X,Y\n")
+        f.write("Angle,Distance,Trend,X,Y\n")
         for a in range(RANGE):
             if len(data[a]) > 0:
                 d = statistics.mean(data[a]) 
+                avgd[a] = d
             else:
                 d = 0
-            x = d * math.sin(math.radians(a))
-            y = d * math.cos(math.radians(a))
-            f.write("%d,%f,%f,%f\n" % (a, d, x, y))
+            (x, y) = ad_to_xy(a, d)
+            if a == 0:
+                trend = 0
+            elif d > avgd[a-1]:
+                trend = 1
+            elif d < avgd[a-1]:
+                trend = -1
+            else:
+                trend = 0
+            f.write("%d,%f,%d,%f,%f\n" % (a, d, trend, x, y))
+
+    # find right rail
+    a = 180-60
+    while avgd[a] > avgd[a+1]:
+        a += 1
+    print("right", a)
+
+    # find left rail
+    a = 180+60
+    while avgd[a] > avgd[a-1]:
+        a -= 1
+    print("left", a)
 
     with open("min_lidar.csv", "w") as f:
         f.write("Angle,Distance,X,Y\n")
         for a in range(RANGE):
             if len(data[a]) > 0:
-                d = my_min(data[a],500) 
+                d = my_min(data[a], THRESHOLD) 
             else:
                 d = 0
-            x = d * math.sin(math.radians(a))
-            y = d * math.cos(math.radians(a))
+            (x, y) = ad_to_xy(a, d)
             f.write("%d,%f,%f,%f\n" % (a, d, x, y))
 
 if len(sys.argv) != 2:
