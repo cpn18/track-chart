@@ -2,6 +2,7 @@
 Track chart drawing methods
 """
 import sys
+import os
 import math
 import datetime
 from PIL import Image, ImageDraw, ImageOps
@@ -42,6 +43,11 @@ def new(args):
             'G': gps_to_mileage.Gps2Miles(known_file),
             'D': [],
     }
+
+def is_newer(file1, file2):
+    stat1 = os.stat(file1)
+    stat2 = os.stat(file2)
+    return stat1.st_atime > stat2.st_atime
 
 def draw_title(tc, title="PiRail"):
     im = tc['image']
@@ -132,18 +138,21 @@ def read_data(tc):
     if tc['data_file'] is None:
         return
 
+
     try:
-        with open(tc['data_file']+".pickle","rb") as f:
-            tc['D'] = pickle.load(f)
-        return
-    except:
+        if is_newer(tc['data_file']+".pickle", tc['data_file']):
+            with open(tc['data_file']+".pickle","rb") as f:
+                tc['D'] = pickle.load(f)
+            return
+    except Exception as ex:
+        print(ex)
         pass
 
     with open(tc['data_file']) as f:
         for line in f:
             tc['D'].append(json.loads(line))
 
-    print ("entries", len(tc['D']))
+    #print ("entries", len(tc['D']))
 
     # Calculate Yaw/Pitch/Roll
     # Based on:
@@ -472,6 +481,13 @@ def stations(tc):
         m_str = mileage_to_string(mileage)
         (x_size, y_size) = draw.textsize(m_str)
         draw.text((int(x-x_size/2), int(y1)), m_str, fill=COLORS['black'])
+
+        # Survey Station
+        if 'survey' in metadata: 
+            survey_station = metadata['survey']
+            (w, x_size, y_size) = rotated_text(draw, survey_station, 90)
+            im.paste(w, ((x-y_size-3, im.size[1]-margin-x_size)))
+
     del draw
 
 def yardlimits(tc):
@@ -490,6 +506,9 @@ def yardlimits(tc):
         label = obj['class']
         mileage = obj['mileage']
         metadata = obj['metadata']
+        if 'label' in metadata:
+            label = metadata['label']
+
         if not(first <= mileage <= last):
             continue
 
@@ -499,16 +518,14 @@ def yardlimits(tc):
         m_str = mileage_to_string(mileage)
         (x_size2, y_size2) = draw.textsize(m_str)
 
-        if offset > 0:
+        if metadata['offset'] > 0:
             # Above the mainline
-            offset = 2
             draw.line((x, y-offset, x, y-offset-line_length),fill=COLORS['black'])
-            y1 = y-offset-line_length-y_size1-y_size2
+            y1 = y-metadata['offset']-line_length-y_size1-y_size2
         else:
             # Below the mainline
-            offset = 2
             draw.line((x, y+offset, x, y+offset+line_length),fill=COLORS['black'])
-            y1 = y+offset+line_length
+            y1 = y+metadata['offset']+line_length
 
         # Draw description
         draw.text((int(x-x_size1/2), int(y1)), label,fill=COLORS['black'])
@@ -575,7 +592,7 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
     if input_data is None:
         input_data = tc['D']
 
-    print("Input=%d" % len(input_data))
+    #print("Input=%d" % len(input_data))
     data = []
     used = 0
     for obj in input_data:
@@ -584,16 +601,16 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
             for s in obj['satellites']:
                 if s['used']:
                     used += 1
-            print(used, len(obj['satellites']))
+            #print(used, len(obj['satellites']))
             continue
         elif obj['class'] != "TPV":
             continue
 
         if used < GPS_THRESHOLD:
-            print(used, "less than", GPS_THRESHOLD)
+            #print(used, "less than", GPS_THRESHOLD)
             continue
 
-        print(obj)
+        #print(obj)
 
         used = 0
 
@@ -604,7 +621,7 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
         #    print("too slow", obj)
         #    continue
         try:
-            print(mileage)
+            #print(mileage)
             new_obj = {
                 'class': obj['class'],
                 'speed': obj['speed'],
@@ -670,7 +687,7 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
                             obj['lat'], obj['lon'])
 
             if d > mileage_threshold:
-                print("Inserted: %f @ %d" % (d,b))
+                #print("Inserted: %f @ %d" % (d,b))
                 smooth_data.append(obj)
                 last_obj = obj
 
@@ -697,8 +714,71 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
                         obj['track'],
                         ))
 
-    print("Smooth=%d" % len(smooth_data))
+    #print("Smooth=%d" % len(smooth_data))
     return smooth_data
+
+def string_chart_by_time(tc):
+    """
+    Draw a string chart
+    x = mileage
+    y = time
+    """
+    im = tc['image']
+    margin = tc['margin']
+    (first, last, pixel_per_mile) = tc['mileposts']
+    draw = ImageDraw.Draw(im)
+
+    mintime = None
+    maxtime = None
+    timedata = []
+    used = 0
+    for obj in tc['D']:
+        mileage = obj['mileage']
+        if not(first <= mileage <= last):
+            continue
+        if obj['class'] == "SKY":
+            used=0
+            for s in obj['satellites']:
+                if s['used']:
+                    used += 1
+            continue
+        if obj['class'] == "G" or obj['class'] == "TPV":
+            if used < GPS_THRESHOLD:
+                continue
+            objtime = parse_time(obj['time'])
+            if mintime is None or objtime < mintime:
+                mintime = objtime
+            if maxtime is None or objtime > maxtime:
+                maxtime = objtime
+            timedata.append({
+                'time': objtime,
+                'mileage': mileage,
+            })
+
+    timedata = sorted(timedata, key=lambda k: k['time'], reverse=False)
+
+    lastx = lasty = lasttime = None
+    for obj in timedata:
+        mileage = obj['mileage']
+        objtime = obj['time']
+        x = mile_to_pixel(tc, mileage-first)
+        y = (im.size[1]-2*margin) * (objtime - mintime).total_seconds() / (maxtime-mintime).total_seconds() + margin
+        if lastx is None or (objtime - lasttime).total_seconds() > 60:
+            draw.point((x, y), fill=COLORS['blue'])
+        else:
+            draw.line((lastx, lasty, x, y),fill=COLORS['blue'])
+
+        lastx = x
+        lasty = y
+        lasttime = objtime
+
+    for hour in range(mintime.hour, maxtime.hour+1):
+        objtime = datetime.datetime(mintime.year, mintime.month, mintime.day, hour, 0, 0)
+        x = 10
+        y = (im.size[1]-2*margin) * (objtime - mintime).total_seconds() / (maxtime-mintime).total_seconds() + margin
+        draw.text((x, y), "%d:00Z" % hour, fill=COLORS['blue'])
+
+    del draw
 
 def elevation(tc):
     """
@@ -812,7 +892,7 @@ def accel(tc):
     ygx = int((im.size[1]-margin)*0.34)
     ygy = int((im.size[1]-margin)*0.42)
     ygz = int((im.size[1]-margin)*0.50)
-    #ys = int((im.size[1]-margin)*0.58)
+    ys = int((im.size[1]-margin)*0.58)
     
     ACCxp = [0] * im.size[0]
     ACCyp = [0] * im.size[0]
@@ -856,7 +936,7 @@ def accel(tc):
             speed = obj['speed']
             #draw.point((x, ys-speed), fill=COLORS['black'])
         elif obj['class'] in ["A", "ATT"]:
-            if speed == 0:
+            if speed == 100:
                 #draw.point((x, yx), fill=COLORS['black'])
                 #draw.point((x, yy), fill=COLORS['black'])
                 #draw.point((x, yz), fill=COLORS['black'])
@@ -950,7 +1030,7 @@ def gage(tc):
         gage,slope,p1,p2 = lidar_util.calc_gage(new_data)
 
         if not(aar.min_gauge <= gage <= aar.max_gauge):
-            print(mileage, gage)
+            #print(mileage, gage)
             draw.point((x,y+(gage-aar.standard_gauge)*2),fill=COLORS['red'])
         else:
             #draw.point((x,y), fill=COLORS['black'])
@@ -959,6 +1039,7 @@ def gage(tc):
         total_slope_count += 1
 
     if total_slope_count > 0:
-        print(total_slope/total_slope_count)
+        #print(total_slope/total_slope_count)
+        pass
 
     del draw

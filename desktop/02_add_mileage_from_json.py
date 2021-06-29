@@ -42,17 +42,20 @@ with open(sys.argv[1]) as f:
         elif obj['class'] == "TPV" and used >= GPS_THRESHOLD:
             if obj['mode'] < 3:
                 continue
-            print(obj)
             if last_tpv is not None:
                 if len(acclist) > 0:
+                    time_start = parse_time(obj['time'])
+                    time_delta = time_start - parse_time(last_tpv['time'])
                     delta_lat = (obj['lat'] - last_tpv['lat'])
                     delta_lon = (obj['lon'] - last_tpv['lon'])
                     delta_alt = (obj['alt'] - last_tpv['alt'])
+                    print ("delta_lat", delta_lat)
+                    print ("delta_lon", delta_lon)
+                    print ("time_delta", time_delta.total_seconds())
                     for acc in acclist:
-                        try:
-                            millsec = float("0." + acc['time'].split(".")[1].replace("Z", ""))
-                        except IndexError:
-                            millsec = 0
+                        acc_time = parse_time(acc['time'])
+
+                        millsec = (acc_time - time_start).total_seconds() / time_delta.total_seconds()
 
                         acc['lat'] = last_tpv['lat'] + millsec*delta_lat
                         acc['lon'] = last_tpv['lon'] + millsec*delta_lon
@@ -60,53 +63,15 @@ with open(sys.argv[1]) as f:
                         acc['mileage'], acc['certainty'] = GPS.find_mileage(acc['lat'], acc['lon'])
                         data.append(acc)
             obj['mileage'], obj['certainty'] = GPS.find_mileage(obj['lat'], obj['lon'])
+            if 8.6 <= obj['mileage'] <= 8.7:
+                print(obj, len(acclist))
             data.append(obj)
-            if 'speed' in obj:
-                y_speed = obj['speed']
-            #if 'mileage' in obj:
-            #    mileage = obj['mileage']
-            if 'time' in obj:
-                last_time = parse_time(obj['time'])
-            if 'track' in obj:
-                z_bearing = obj['track']
-            if 'lat' in obj:
-                latitude = obj['lat']
-            if 'lon' in obj:
-                longitude = obj['lon']
-            if 'alt' in obj:
-                altitude = obj['alt']
-
             last_tpv = obj
             acclist = []
         elif obj['class'] == "ATT":
             acclist.append(obj)
 
 print("Leftover elements = %d" % len(acclist))
-
-#for obj in acclist:
-#    if obj['class'] == "ATT":
-#        current = parse_time(obj['time'])
-#        DT = (current - last_time).total_seconds()
-#
-#        y_speed += -obj['acc_y'] * DT
-#        z_bearing += obj['gyro_z'] * DT
-#        while z_bearing > 360:
-#            z_bearing -= 360
-#        while z_bearing < 0:
-#            z_bearing += 360
-#        latitude, longitude = geo.new_position(
-#            latitude,
-#            longitude,
-#            y_speed * DT,
-#            z_bearing,
-#        )
-#        last_time = current
-#
-#    obj['lat'] = latitude
-#    obj['lon'] = longitude
-#    obj['alt'] = altitude
-#    obj['mileage'], obj['certainty'] = GPS.find_mileage(obj['lat'], obj['lon'])
-#    data.append(obj)
 
 # Sort By
 #sortby='mileage'

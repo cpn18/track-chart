@@ -13,7 +13,6 @@ NORMALIZE = True
 TIME_THRESHOLD = 5.0 # seconds
 
 GPS_THRESHOLD = 10 # number of used satellites
-GPS_THRESHOLD = 0
 
 #FILL=(255,255,255)
 FILL=None
@@ -59,6 +58,9 @@ with open(filename) as f:
             print("ERROR: %s" % ex)
             sys.exit(1)
 
+        #if not ( 8.5 < obj['mileage'] < 8.8):
+        #    continue
+
         if obj['class'] == 'ATT':
             data.append(obj)
             x_sum += obj['acc_x']
@@ -85,27 +87,25 @@ with open(filename) as f:
                 if s['used']:
                     used += 1
 
-        #if line_count > 100:
-        #    break
-
-margin = (1/360)
+margin = max((max_lat - min_lat), (max_lon - min_lon)) * 0.01
 min_lat = min_lat-margin
 max_lat = max_lat+margin
 min_lon = min_lon-margin
 max_lon = max_lon+margin
 mid_lat = (min_lat+max_lat)/2
 mid_lon = (min_lon+max_lon)/2
+print(margin)
 print(min_lat, min_lon)
 print(mid_lat, mid_lon)
 print(max_lat, max_lon)
 print(geo.longitude_to_meters(max_lon - min_lon,mid_lat))
 print(geo.latitude_to_meters(max_lat - min_lat))
 scale = min(
-    width/geo.longitude_to_meters(max_lon - min_lon,min_lat),
+    width/geo.longitude_to_meters(max_lon - min_lon,mid_lat),
     height/geo.latitude_to_meters(max_lat - min_lat)
 )
 print(scale)
-scale=0.5
+#scale=0.5
 
 # Normallize Data by reseting to zero average
 if NORMALIZE:
