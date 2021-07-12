@@ -47,8 +47,11 @@ class Gps2Miles:
         self.points = sorted(data, key=lambda k: k['mileage'], reverse=False)
         for i in range(len(self.points)):
             if self.points[i]['mileage'] == -1:
-                self.points[i]['mileage'], self.points[i]['certainty'] = self.find_mileage(self.points[i]['lat'], self.points[i]['lon'], ignore=True)
-                #print(self.points[i])
+                try:
+                    self.points[i]['mileage'], self.points[i]['certainty'] = self.find_mileage(self.points[i]['lat'], self.points[i]['lon'], ignore=True)
+                except KeyError:
+                    print(self.points[i])
+                    pass
         #print(self.points)
 
     def get_points(self, ktype=None, kclass=None):

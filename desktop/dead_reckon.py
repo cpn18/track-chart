@@ -72,11 +72,14 @@ with open(filename) as f:
                 line_count += 1
                 obj['used'] = used
                 obj['count'] = count
-                data.append(obj)
-                min_lat = min(min_lat, obj['lat'])
-                max_lat = max(max_lat, obj['lat'])
-                min_lon = min(min_lon, obj['lon'])
-                max_lon = max(max_lon, obj['lon'])
+                try:
+                    min_lat = min(min_lat, obj['lat'])
+                    max_lat = max(max_lat, obj['lat'])
+                    min_lon = min(min_lon, obj['lon'])
+                    max_lon = max(max_lon, obj['lon'])
+                    data.append(obj)
+                except KeyError:
+                    pass
             else:
                 bad_data.append(obj)
         elif obj['class'] == 'SKY':
@@ -161,7 +164,7 @@ def draw_gps_fix(obj,color):
         point = geo_to_xy(obj['lat'], obj['lon'])
         draw.point(point, fill=color)
     except KeyError:
-        pass
+        return
 
     # Draw the Error Ellipse
     try:

@@ -15,7 +15,10 @@ import pickle
 import lidar_util
 import class_i as aar
 
-GPS_THRESHOLD = 9
+TIME_THRESHOLD = 3600 # seconds
+GPS_THRESHOLD = 10 # number of used satellites
+MILEAGE_THRESHOLD = 0.005 # miles
+
 RAD_TO_DEG = 57.29578
 M_PI = 3.14159265358979323846
 AA = 0.40 # Complementary filter constant
@@ -731,29 +734,32 @@ def string_chart_by_time(tc):
     mintime = None
     maxtime = None
     timedata = []
-    used = 0
+    skip = False
+    lastm = None
     for obj in tc['D']:
         mileage = obj['mileage']
         if not(first <= mileage <= last):
             continue
-        if obj['class'] == "SKY":
-            used=0
-            for s in obj['satellites']:
-                if s['used']:
-                    used += 1
-            continue
         if obj['class'] == "G" or obj['class'] == "TPV":
-            if used < GPS_THRESHOLD:
+            if obj['num_used'] < GPS_THRESHOLD:
                 continue
+            if obj['speed'] < obj['eps']:
+                if skip:
+                    continue
+                skip = True
+            else:
+                skip = False
             objtime = parse_time(obj['time'])
             if mintime is None or objtime < mintime:
                 mintime = objtime
             if maxtime is None or objtime > maxtime:
                 maxtime = objtime
-            timedata.append({
-                'time': objtime,
-                'mileage': mileage,
-            })
+            if lastm is None or abs(mileage - lastm) >= MILEAGE_THRESHOLD:
+                timedata.append({
+                    'time': objtime,
+                    'mileage': mileage,
+                })
+                lastm = mileage
 
     timedata = sorted(timedata, key=lambda k: k['time'], reverse=False)
 
@@ -763,7 +769,13 @@ def string_chart_by_time(tc):
         objtime = obj['time']
         x = mile_to_pixel(tc, mileage-first)
         y = (im.size[1]-2*margin) * (objtime - mintime).total_seconds() / (maxtime-mintime).total_seconds() + margin
-        if lastx is None or (objtime - lasttime).total_seconds() > 60:
+
+        if lasttime is None:
+            timediff = 0
+        else:
+            timediff = (objtime - lasttime).total_seconds()
+
+        if lastx is None or timediff > TIME_THRESHOLD:
             draw.point((x, y), fill=COLORS['blue'])
         else:
             draw.line((lastx, lasty, x, y),fill=COLORS['blue'])
@@ -771,6 +783,7 @@ def string_chart_by_time(tc):
         lastx = x
         lasty = y
         lasttime = objtime
+        lastm = mileage
 
     for hour in range(mintime.hour, maxtime.hour+1):
         objtime = datetime.datetime(mintime.year, mintime.month, mintime.day, hour, 0, 0)
