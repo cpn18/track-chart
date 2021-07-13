@@ -107,3 +107,4 @@ desktop/slices/
 *.swp
 desktop/*.csv
 desktop/*.json
+desktop/*.png
