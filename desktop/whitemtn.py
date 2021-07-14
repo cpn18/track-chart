@@ -49,9 +49,11 @@ def main():
     trackchart.sidings(mychart)
     print("title")
     trackchart.draw_title(mychart)
+    print("string chart")
+    trackchart.string_chart_by_time(mychart)
 
 
-    filename = "images/negs_%s_%s.png" % (sys.argv[1], sys.argv[2])
+    filename = "images/whitemtn_%s_%s.png" % (sys.argv[1], sys.argv[2])
     mychart['image'].save(filename)
     os.system("eog %s" % filename)
 
