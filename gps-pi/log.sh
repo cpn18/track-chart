@@ -4,6 +4,8 @@ cd `dirname $0`
 
 mount /dev/sda1 /media/usb0
 
+./wait_for_gps_fix.py
+
 if [ -d /media/usb0/PIRAIL ]; then
   output=/media/usb0/PIRAIL/`date +%Y%m%d`
 else
@@ -12,9 +14,13 @@ fi
 
 mkdir -p ${output}
 
-while true; do
-  timestamp=`date +%Y%m%d%H%M`
-  ./combolog9.py ${output} \
-    >> ${output}/${timestamp}_stdout.txt \
-    2>> ${output}/${timestamp}_stderr.txt
-done
+./web_server.sh 80 ${output} &
+./gps_logger.sh 8080 ${output} &
+./imu_logger.sh 8081 ${output} &
+
+#while true; do
+#  timestamp=`date +%Y%m%d%H%M`
+#  ./combolog9.py ${output} \
+#    >> ${output}/${timestamp}_stdout.txt \
+#    2>> ${output}/${timestamp}_stderr.txt
+#done
