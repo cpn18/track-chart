@@ -12,6 +12,7 @@ import gps
 import json
 import nmea
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 
 ALWAYS_LOG = True
 
@@ -31,76 +32,37 @@ except:
 CONFIG['class'] = "CONFIG"
 CONFIG['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    pass
+
 class MyHandler(BaseHTTPRequestHandler):
-    def do_HEAD(s):
-        s.send_response(200)
-        s.send_header("Content-type", "text/html")
-        s.end_headers()
     def do_GET(s):
         """Respond to a GET request."""
-        global CURRENT
         global DONE
-        global RESTART
-        global HOLD
-        global MEMO
 
         content_type = "text/html; charset=utf-8"
 
-        if s.path == "/poweroff":
+        if s.path == "/imu":
             content_type = "application/json"
-            output = "{\"message\": \"Shutting down...\"}"
-            DONE = True
-            RESTART = False
-            os.system("shutdown --poweroff +1")
-        elif s.path == "/reset":
-            content_type = "application/json"
-            output = "{\"message\": \"Resetting...\"}"
-            DONE = True
-        elif s.path.startswith("/mark?memo="):
-            HOLD = 1
-            MEMO = s.path.replace("/mark?memo=", "")
-            content_type = "application/json"
-            output = "{\"message\": \"Marked...\"}"
-        elif s.path.startswith("/hold?memo="):
-            HOLD = 15 
-            MEMO = s.path.replace("/hold?memo=", "")
-            content_type = "application/json"
-            output = "{\"message\": \"Holding...\"}"
-        elif s.path.startswith("/setup?"):
-            for var in s.path.split("?")[1].split("&"):
-                key, value = var.split("=")
-                CONFIG['imu'][key]=value.lower()
-            content_type = "application/json"
-            output = "{\"message\": \"Stored...\"}"
-            with open("config.json", "w") as f:
-                CONFIG['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                f.write(json.dumps(CONFIG))
-            DONE = True
-        elif s.path == "/lidar":
-            content_type = "application/json"
-            output = json.dumps(LIDAR_DATA)
-        elif s.path == "/att":
-            content_type = "application/json"
-            output = json.dumps(CURRENT) + "\n"
-        elif s.path == "/jquery-3.4.1.min.js":
-            with open("jquery-3.4.1.min.js", "r") as j:
-                output = j.read()
-        elif s.path == "/lidar.html":
-            with open("lidar.html", "r") as j:
-                output = j.read()
-        elif s.path == "/gps.html":
-            with open("gps.html", "r") as j:
-                output = j.read()
-        elif s.path == "/setup.html":
-            with open("setup.html", "r") as j:
-                output = j.read()
-        elif s.path == "/favicon.ico":
-            output = ""
+            output = json.dumps(ATT) + "\n"
+        elif s.path == "/imu-stream":
+            content_type = "text/event-stream"
+            s.send_response(200)
+            s.send_header("content-type", content_type)
+            s.end_headers()
+            while not DONE:
+                lines = [
+                    "event: att\n",
+                    "data: " + json.dumps(ATT) + "\n",
+                    "\n",
+                ]
+                for line in lines:
+                    s.wfile.write(line.encode('utf-8'))
+                time.sleep(5)
+            return
         else:
-            output = "<html><head><title>RPi/GPS/IMU</title></head>"
-            output += "<body>"
-            output += "<p>You accessed path: %s</p>" % s.path
-            output += "</body></html>"
+            s.send_error(404, s.path)
+            return
 
         s.send_response(200)
         s.send_header("Content-type", content_type)
@@ -152,7 +114,7 @@ VERSION = 9
 # Set to True to exit
 DONE = False
 
-CURRENT = {}
+ATT = {}
 
 def _get_temp():
     with open("/sys/class/thermal/thermal_zone0/temp", "r") as t:
@@ -160,7 +122,7 @@ def _get_temp():
 
 def imu_logger(output_directory):
     """ IMU Logger """
-    global CURRENT
+    global ATT
     gyroXangle = gyroYangle = gyroZangle = 0
     CFangleX = CFangleY = CFangleZ = 0
 
@@ -229,7 +191,7 @@ def imu_logger(output_directory):
 
              # Log the output
              imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
-             CURRENT = obj
+             ATT = obj
 
              #print(json.dumps(obj))
              #print("AccLen %7.3f\tYaw %7.3f\tPitch %7.3f\tRoll %7.3f" % (obj['acc_len'],obj['yaw'], obj['pitch'], obj['roll']))
@@ -255,12 +217,9 @@ def imu_logger_wrapper(output_directory):
 # MAIN START
 INLOCSYNC = False
 DONE = False
-RESTART = True
 VERSION = 9
-CURRENT = {}
+ATT = {}
 TEMP = 0
-HOLD = -1
-MEMO = ""
 
 GPS_STATUS = 0
 GPS_NUM_SAT = 0
@@ -280,7 +239,7 @@ except IndexError:
     OUTPUT = "/root/gps-data"
 
 # Web Server
-httpd = HTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
+httpd = ThreadedHTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
 
 Twww = threading.Thread(name="W", target=web_server, args=(httpd,))
 Twww.start()
