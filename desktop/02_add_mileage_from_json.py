@@ -98,6 +98,10 @@ while True:
         break
 
 while current < len(data):
+    if not 'mileage' in data[current]:
+        current += 1
+        continue
+
     if round(data[current]['mileage'],2) < next_mileage:
         accset.append(data[current])
         current += 1

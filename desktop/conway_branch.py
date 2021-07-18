@@ -35,8 +35,8 @@ def main():
     #trackchart.elevation(mychart)
     #print("curvature")
     #trackchart.curvature(mychart)
-    #print("accel")
-    #trackchart.accel(mychart)
+    print("accel")
+    trackchart.accel(mychart)
     #print("lidar-gage")
     #trackchart.gage(mychart)
     #print("townlines")
@@ -51,7 +51,7 @@ def main():
     trackchart.draw_title(mychart)
 
     print("string chart")
-    trackchart.string_chart_by_time(mychart)
+    #trackchart.string_chart_by_time(mychart)
 
     filename = "images/conway_%s_%s.png" % (sys.argv[1], sys.argv[2])
     mychart['image'].save(filename)

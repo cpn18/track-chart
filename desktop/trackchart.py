@@ -194,7 +194,10 @@ def read_data(tc):
     for obj in tc['D']:
         if 'mileage' in obj:
             continue
-        obj['mileage'], obj['certainty'] = tc['G'].find_mileage(obj['lat'], obj['lon'])
+        if 'lat' in obj and 'lon' in obj:
+            obj['mileage'], obj['certainty'] = tc['G'].find_mileage(obj['lat'], obj['lon'])
+        else:
+            obj['mileage'] = obj['certainty'] = 0
 
     # Sort by mileage
     tc['D'] = sorted(tc['D'], key=lambda k: k['mileage'], reverse=False)
