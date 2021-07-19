@@ -15,10 +15,11 @@
 <tr><th align="right">Longitude:</th><td id="lon" align="right"></td><td id="epx" align="right"></td></tr>
 <tr><th align="right">Altitude:</th><td id="alt" align="right"></td><td id="epv" align="right"></td></tr>
 <tr><th align="right">Speed:</th><td id="speed" align="right"></td><td id="eps" align="right"></td></tr>
-<tr><th align="right">Temp:</th><td id="temp" align="right"></td><td>C</td></tr>
-<tr><th align="right">GPS:</th><td id="gps_status" align="right"></td><td></td></tr>
-<tr><th align="right">ACCEL:</th><td id="acc_status" align="right"></td><td></td></tr>
-<tr><th align="right">LIDAR:</th><td id="lidar_status" align="right"></td><td></td></tr>
+<tr><th align="right">Temp:</th><td id="temp" align="right"></td><td></td></tr>
+<tr><th align="right">GPS:</th><td id="mode" align="right">OFF</td><td id="gps_count"></td></tr>
+<tr><th align="right">IMU:</th><td id="imu_status" align="right">OFF</td><td></td></tr>
+<tr><th align="right">LIDAR:</th><td id="lidar_status" align="right">OFF</td><td></td></tr>
+<tr><th align="right">LPCM:</th><td id="lpcm_status" align="right">OFF</td><td></td></tr>
 <tr><th align="right">Hold:</th><td id="hold" align="right"></td><td></td></tr>
 <tr><td colspan=3 align=center><i><p id="time"></p></i></td><tr>
 </table>
@@ -79,110 +80,91 @@ function power()
   });
 }
 
-function update() {
-  $.ajax({
-    datatype: "json",
-    url: "/gps",
-    success: function(obj)
-    {
-      if (typeof obj.gpstime !== 'undefined') {
-        $('#gpstime').text(obj.gpstime.replace('T', ' '));
-      } else {
-        $('#gpstime').text("--");
-      }
-      if (typeof obj.ept !== 'undefined') {
-        $('#ept').text("+/-"+obj.ept+"s");
-      } else {
-        $('#ept').text("--");
-      }
-      if (typeof obj.lat !== 'undefined') {
-        $('#lat').text(obj.lat);
-      } else {
-        $('#lat').text("--");
-      }
-      if (typeof obj.epy !== 'undefined') {
-        $('#epy').text("+/-"+Math.round(obj.epy*m_to_ft)+"ft");
-      } else {
-        $('#epy').text("--");
-      }
-      if (typeof obj.lon !== 'undefined') {
-        $('#lon').text(obj.lon);
-      } else {
-        $('#lon').text("--");
-      }
-      if (typeof obj.epx !== 'undefined') {
-        $('#epx').text("+/-"+Math.round(obj.epx*m_to_ft)+"ft");
-      } else {
-        $('#epx').text("--");
-      }
-      if (typeof obj.alt !== 'undefined') {
-        $('#alt').text(Math.round(obj.alt*m_to_ft));
-      } else {
-        $('#alt').text("--");
-      }
-      if (typeof obj.epv !== 'undefined') {
-        $('#epv').text("+/-"+Math.round(obj.epv*m_to_ft)+"ft");
-      } else {
-        $('#epv').text("--");
-      }
-      if (typeof obj.speed !== 'undefined') {
-        $('#speed').text(Math.round(obj.speed*ms_to_mph));
-      } else {
-        $('#speed').text("--");
-      }
-      if (typeof obj.eps !== 'undefined') {
-        $('#eps').text("+/-"+Math.round(obj.eps*ms_to_mph)+"mph");
-      } else {
-        $('#eps').text("--");
-      }
-      $('#msg').text("");
-      if (typeof obj.time !== 'undefined') {
-        $('#time').text(obj.time.replace('T', ' '));
-      } else {
-        $('#time').text("--");
-      }
-      if (typeof obj.temp !== 'undefined') {
-        $('#temp').text(obj.temp);
-      } else {
-        $('#temp').text("--");
-      }
-      if (typeof obj.gps_status !== 'undefined') {
-        $('#gps_status').text(obj.gps_status + " " + obj.gps_num_used + "/" + obj.gps_num_sat);
-      } else {
-        $('#gps_status').text("--");
-      }
-      if (typeof obj.acc_status !== 'undefined') {
-        $('#acc_status').text(obj.acc_status);
-      } else {
-        $('#acc_status').text("--");
-      }
-      if (typeof obj.lidar_status !== 'undefined') {
-        $('#lidar_status').text(obj.lidar_status);
-      } else {
-        $('#lidar_status').text("--");
-      }
-      if (typeof obj.hold !== 'undefined') {
-	if (obj.hold < 0) {
-          $('#hold').text("OFF");
-	} else {
-          $('#hold').text(obj.hold);
+function stream() {
+    const gpsStream = new EventSource("/gps-stream");
+
+    console.log(gpsStream.readyState);
+    console.log(gpsStream.url);
+
+    const imuStream = new EventSource("/imu-stream");
+
+    console.log(imuStream.readyState);
+    console.log(imuStream.url);
+
+    gpsStream.onopen = function() {
+        document.getElementById('msg').innerText = "";
+	console.log("connection opened");
+        document.getElementById("mode").innerText = "...";
+        document.getElementById("gps_count").innerText = "";
+	};
+
+    gpsStream.onerror = function() {
+      //document.getElementById('msg').innerHTML = "&#x274C; Connecton Error";
+      console.log("connection error");
+        document.getElementById("mode").innerText = "OFF";
+        document.getElementById("gps_count").innerText = "";
+    };
+
+    gpsStream.addEventListener("tpv", function(event) {
+        // console.log(event);
+	var tpv = JSON.parse(event.data);
+        // console.log(tpv);
+
+	document.getElementById("gpstime").innerText = tpv.time.replace('T', ' ');
+	document.getElementById("ept").innerText = "+/-"+tpv.ept+"s";
+
+	document.getElementById("lat").innerText = tpv.lat.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits: 6});
+	document.getElementById("epy").innerText = "+/-"+Math.round(tpv.epy*m_to_ft)+"ft";
+
+	document.getElementById("lon").innerText = tpv.lon.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits: 6});
+	document.getElementById("epx").innerText = "+/-"+Math.round(tpv.epx*m_to_ft)+"ft";
+
+	document.getElementById("alt").innerText = tpv.alt.toLocaleString(undefined,{minimumFractionDigits:1, maximumFractionDigits: 1});
+	document.getElementById("epv").innerText = "+/-"+Math.round(tpv.epv*m_to_ft)+"ft";
+
+	document.getElementById("speed").innerText = Math.round(tpv.speed*ms_to_mph);
+	document.getElementById("eps").innerText = "+/-"+Math.round(tpv.eps*ms_to_mph)+"mph";
+
+	document.getElementById("mode").innerText = tpv.mode + "D ";
+    });
+
+    gpsStream.addEventListener("sky", function(event) {
+        // console.log(event);
+	var sky = JSON.parse(event.data);
+	// console.log(sky);
+	var used = 0;
+	for (var i=0; i<sky.satellites.length; i++) {
+	    if (sky.satellites[i].used) {
+	        used ++;
+	    }
 	}
-      } else {
-        $('#hold').text("--");
-      }
-      setTimeout(update,refresh);
-    },
-    error: function(xhr, status, error)
-    {
-      $('#msg').html("&#x274C; Connecton Error");
-      setTimeout(update,refresh);
-    }
-});
+	document.getElementById("gps_count").innerText = used + "/" + sky.satellites.length;
+    });
+
+    imuStream.onopen = function() {
+        document.getElementById('msg').innerText = "";
+	console.log("imu connection opened");
+        document.getElementById("imu_status").innerText = "...";
+	};
+
+    imuStream.onerror = function() {
+      console.log("imu connection error");
+      document.getElementById("imu_status").innerText = "OFF";
+    };
+
+    imuStream.addEventListener("att", function(event) {
+        // console.log(event);
+	var att = JSON.parse(event.data);
+	// console.log(att);
+	document.getElementById("imu_status").innerText = "ON";
+	document.getElementById("temp").innerText = Math.round(att.temp) + "C ";
+	document.getElementById("time").innerText = att.time.replace('T', ' ');
+    });
 }
 
 $(document).ready(function()
 {
-  update();
+  stream();
 });
 </script>
 </body>

@@ -17,10 +17,3 @@ mkdir -p ${output}
 ./web_server.sh 80 ${output} &
 ./gps_logger.sh 8080 ${output} &
 ./imu_logger.sh 8081 ${output} &
-
-#while true; do
-#  timestamp=`date +%Y%m%d%H%M`
-#  ./combolog9.py ${output} \
-#    >> ${output}/${timestamp}_stdout.txt \
-#    2>> ${output}/${timestamp}_stderr.txt
-#done
