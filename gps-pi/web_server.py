@@ -165,6 +165,62 @@ class MyHandler(BaseHTTPRequestHandler):
             else:
                 self.send_error(response.status_code, response.reason)
                 return
+        elif self.path == "/lidar-stream":
+            content_type = "text/event-stream"
+            headers = {
+                "accept": content_type,
+            }
+            response = requests.get(
+                "http://localhost:8082/lidar-stream",
+                headers=headers,
+                stream=True,
+            )
+            if response.status_code != 200:
+                self.send_error(response.status_code, response.reason)
+                return
+
+            self.send_response(response.status_code)
+            self.send_header("Content-type", response.headers['content-type'])
+            self.end_headers()
+            while not DONE:
+                for line in response.iter_lines():
+                    line = (line.decode('utf-8') + "\n").encode('utf-8')
+                    self.wfile.write(line)
+            return
+        elif self.path == "/lpcm.html":
+            with open("lpcm.html", "r") as j:
+                output = j.read()
+        elif self.path == "/lpcm":
+            content_type = "application/json"
+            response = requests.get("http://localhost:8083/lpcm")
+            if response:
+                output = response.json()
+                output = json.dumps(output)
+            else:
+                self.send_error(response.status_code, response.reason)
+                return
+        elif self.path == "/lpcm-stream":
+            content_type = "text/event-stream"
+            headers = {
+                "accept": content_type,
+            }
+            response = requests.get(
+                "http://localhost:8083/lpcm-stream",
+                headers=headers,
+                stream=True,
+            )
+            if response.status_code != 200:
+                self.send_error(response.status_code, response.reason)
+                return
+
+            self.send_response(response.status_code)
+            self.send_header("Content-type", response.headers['content-type'])
+            self.end_headers()
+            while not DONE:
+                for line in response.iter_lines():
+                    line = (line.decode('utf-8') + "\n").encode('utf-8')
+                    self.wfile.write(line)
+            return
         elif self.path == "/favicon.ico":
             output = ""
         else:
