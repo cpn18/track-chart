@@ -19,7 +19,7 @@
 <tr><th align="right">Longitude:</th><td id="lon" align="right"></td><td id="epx" align="right"></td></tr>
 <tr><th align="right">Altitude:</th><td id="alt" align="right"></td><td id="epv" align="right"></td></tr>
 <tr><th align="right">Speed:</th><td id="speed" align="right"></td><td id="eps" align="right"></td></tr>
-<tr><th align="right">CPU Temp:</th><td id="temp" align="right"></td><td></td></tr>
+<tr><th align="right">CPU Temp:</th><td id="temp" align="right"></td><td>C</td></tr>
 <tr><th align="right">GPS:</th><td id="mode" align="right">OFF</td><td id="gps_count"></td></tr>
 <tr><th align="right">IMU:</th><td id="imu_status" align="right">OFF</td><td></td></tr>
 <tr><th align="right">LIDAR:</th><td id="lidar_status" align="right">OFF</td><td></td></tr>
@@ -163,7 +163,7 @@ function stream() {
 	var att = JSON.parse(event.data);
 	// console.log(att);
 	document.getElementById("imu_status").innerText = "ON";
-	document.getElementById("temp").innerText = Math.round(att.temp) + " C";
+	document.getElementById("temp").innerText = Math.round(att.temp);
 	document.getElementById("time").innerText = att.time.replace('T', ' ');
     });
 

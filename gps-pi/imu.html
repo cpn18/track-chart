@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>PiRail</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+<h1>IMU Status</h1>
+<button onclick="window.location.href='/index.html'">&#x1f3e0;HOME</button>
+<button onclick="window.location.href='/setup.html'">&#x2699;SETUP</button>
+<button onclick="window.location.href='/gps.html'">&#x1f6f0;GPS</button>
+<!-- <button onclick="window.location.href='/imu.html'">&#x1f4f3;IMU</button> -->
+<button onclick="window.location.href='/lidar.html'">&#x26a1;LIDAR</button>
+<button onclick="window.location.href='/lpcm.html'">&#x1f3a4;LPCM</button>
+<table>
+<tr><td colspan=2 align=center id="msg">Loading...</td><tr>
+<tr><th align="right">Yaw:</th><td id="yaw" align="right"></td><td></td></tr>
+<tr><th align="right">Pitch:</th><td id="pitch" align="right"></td><td></td></tr>
+<tr><th align="right">Roll:</th><td id="roll" align="right"></td><td></td></tr>
+<tr><th align="right">CPU Temp:</th><td id="temp" align="right"></td><td>C</td></tr>
+<tr><th align="right">IMU:</th><td id="imu_status" align="right">OFF</td><td></td></tr>
+<tr><td colspan=3 align=center><i><p id="time"></p></i></td><tr>
+</table>
+<script>
+var refresh=1000;
+var m_to_ft = 3.28084;
+var ms_to_mph = 2.23694;
+
+function stream() {
+    const imuStream = new EventSource("/imu-stream");
+    console.log(imuStream.readyState);
+    console.log(imuStream.url);
+
+    imuStream.onopen = function() {
+        document.getElementById('msg').innerText = "";
+	console.log("imu connection opened");
+        document.getElementById("imu_status").innerText = "...";
+	};
+
+    imuStream.onerror = function() {
+      console.log("imu connection error");
+      document.getElementById("imu_status").innerText = "OFF";
+    };
+
+    imuStream.addEventListener("att", function(event) {
+        // console.log(event);
+	var att = JSON.parse(event.data);
+	// console.log(att);
+	document.getElementById("imu_status").innerText = "ON";
+	document.getElementById("yaw").innerText = Math.round(att.yaw);
+	document.getElementById("pitch").innerText = Math.round(att.pitch);
+	document.getElementById("roll").innerText = Math.round(att.roll);
+	document.getElementById("temp").innerText = Math.round(att.temp);
+	document.getElementById("time").innerText = att.time.replace('T', ' ');
+    });
+}
+
+$(document).ready(function()
+{
+  stream();
+});
+</script>
+</body>
+</html>
