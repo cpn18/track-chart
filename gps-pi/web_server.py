@@ -80,6 +80,9 @@ class MyHandler(BaseHTTPRequestHandler):
             output = "{\"message\": \"Stored...\"}"
             write_config()
             DONE = True
+        elif self.path == "/" or self.path == "/index.html":
+            with open("index.html", "r") as j:
+                output = j.read()
         elif self.path == "/gps.html":
             with open("gps.html", "r") as j:
                 output = j.read()

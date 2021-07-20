@@ -15,6 +15,8 @@ from socketserver import ThreadingMixIn
 
 import berryimu_shim as accel
 
+STREAM_DELAY = 1
+
 def read_config():
     """ Read Configuration """
     # Configure Axis
@@ -57,7 +59,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 ]
                 for line in lines:
                     self.wfile.write(line.encode('utf-8'))
-                time.sleep(5)
+                time.sleep(STREAM_DELAY)
             return
         else:
             self.send_error(404, self.path)

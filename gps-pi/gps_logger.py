@@ -18,10 +18,7 @@ import nmea
 
 ALWAYS_LOG = True
 
-ERROR_DELAY = 10
-SYNC_DELAY = 5
-IDLE_DELAY = 60
-STREAM_DELAY = 5
+STREAM_DELAY = 1
 
 def read_config():
     """ Read Configuration """
@@ -72,14 +69,24 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", content_type)
             self.end_headers()
             while not DONE:
-                lines = [
-                "event: tpv\n",
-                "data: "+json.dumps(TPV) + "\n",
-                "\n",
-                "event: sky\n",
-                "data: "+json.dumps(SKY) + "\n",
-                "\n",
-                ]
+                if TPV['time'] < SKY['time']:
+                    lines = [
+                        "event: tpv\n",
+                        "data: "+json.dumps(TPV) + "\n",
+                        "\n",
+                        "event: sky\n",
+                        "data: "+json.dumps(SKY) + "\n",
+                        "\n",
+                    ]
+                else:
+                    lines = [
+                        "event: sky\n",
+                        "data: "+json.dumps(SKY) + "\n",
+                        "\n",
+                        "event: tpv\n",
+                        "data: "+json.dumps(TPV) + "\n",
+                        "\n",
+                    ]
                 for line in lines:
                     self.wfile.write(line.encode('utf-8'))
                 time.sleep(STREAM_DELAY)
