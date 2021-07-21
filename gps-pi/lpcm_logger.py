@@ -106,17 +106,18 @@ def audio_logger(output_directory):
             try:
                 timestamp = datetime.datetime.now()
                 filename = timestamp.strftime("%Y%m%d%H%M")
+                LPCM_DATA = {
+                    "class": "AUDIO",
+                    "time": timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                }
+                for channel in ["left", "right"]:
+                    capture_file = filename+"_"+channel+".wav"
+                    if os.path.isfile(os.path.join(output_directory, capture_file)):
+                        LPCM_DATA[channel] = capture_file
+
                 if os.system("./audio_collect.sh %s %s" % (output_directory, filename)) != 0:
                     time.sleep(ERROR_DELAY)
                 else:
-                    LPCM_DATA = {
-                        "class": "AUDIO",
-                        "time": timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                    }
-                    for channel in ["left", "right"]:
-                        capture_file = filename+"_"+channel+".wav"
-                        if os.path.isfile(os.path.join(output_directory, capture_file)):
-                            LPCM_DATA[channel] = capture_file
                     audio_output.write(
                         "%s %s %s *\n" % (
                             LPCM_DATA['time'],

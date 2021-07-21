@@ -38,6 +38,7 @@ function stream()
 
   lpcmStream.addEventListener("lpcm", function(event) {
     var lpcm = JSON.parse(event.data)
+    document.getElementById('msg').innerHTML = "";
     document.getElementById('lpcm_status').innerText = "ON";
   });
 }
