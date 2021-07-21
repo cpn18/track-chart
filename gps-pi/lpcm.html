@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>PiRail LPCM Status</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script type="text/javascript" src="/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+<h1>LIDAR</h1>
+<button onclick="window.location.href='/index.html'">&#x1f3e0;HOME</button>
+<button onclick="window.location.href='/setup.html'">&#x2699;SETUP</button>
+<button onclick="window.location.href='/gps.html'">&#x1f6f0;GPS</button>
+<button onclick="window.location.href='/imu.html'">&#x1f4f3;IMU</button>
+<button onclick="window.location.href='/lidar.html'">&#x26a1;LIDAR</button>
+<!-- <button onclick="window.location.href='/lpcm.html'">&#x1f3a4;LPCM</button> -->
+<table>
+<tr><td id="msg">Loading...</td></tr>
+<tr><td align="left">LPCM:</td><td id="lpcm_status"></td><td></td></tr>
+</table>
+<script>
+
+function stream()
+{
+  const lpcmStream = new EventSource("/lpcm-stream");
+  console.log(lpcmStream.readyState);
+  console.log(lpcmStream.url);
+
+  lpcmStream.onopen = function() {
+    document.getElementById('lpcm_status').innerText = "...";
+    console.log("lpcm connection opened");
+  };
+
+  lpcmStream.onerror = function() {
+    document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
+    document.getElementById('lpcm_status').innerText = "OFF";
+    console.log("lpcm connection error");
+  };
+
+  lpcmStream.addEventListener("lpcm", function(event) {
+    var lpcm = JSON.parse(event.data)
+    document.getElementById('lpcm_status').innerText = "ON";
+  });
+}
+
+$(document).ready(function()
+{
+	stream();
+});
+
+	</script>
+</body>
+</html>
