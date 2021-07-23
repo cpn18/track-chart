@@ -170,6 +170,7 @@ def gps_logger(output_directory):
                 # Add Sat Metrics
                 obj['num_sat'] = GPS_NUM_SAT
                 obj['num_used'] = GPS_NUM_USED
+                obj['hold'] = HOLD
                 TPV = obj
             elif report['class'] == 'SKY':
                 obj = nmea.sky_to_json(report)

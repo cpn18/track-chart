@@ -135,6 +135,12 @@ function stream() {
 	document.getElementById("eps").innerText = "+/-"+Math.round(tpv.eps*ms_to_mph)+"mph";
 
 	document.getElementById("mode").innerText = tpv.mode + "D ";
+
+	if (tpv.hold == -1) {
+	  document.getElementById("hold").innerText = "OFF";
+	} else {
+	  document.getElementById("hold").innerText = tpv.hold;
+	}
     });
 
     gpsStream.addEventListener("sky", function(event) {
@@ -207,6 +213,7 @@ function stream() {
 $(document).ready(function()
 {
   stream();
+  document.getElementById("msg").innerText = "";
 });
 </script>
 </body>

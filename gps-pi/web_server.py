@@ -65,10 +65,18 @@ class MyHandler(BaseHTTPRequestHandler):
             content_type = "application/json"
             output = "{\"message\": \"Marked...\"}"
         elif self.path.startswith("/hold?memo="):
-            HOLD = 15
-            MEMO = self.path.replace("/hold?memo=", "")
             content_type = "application/json"
-            output = "{\"message\": \"Holding...\"}"
+            headers = {
+                "accept": content_type,
+            }
+            response = requests.get(
+                "http://localhost:8080" + self.path;
+                headers=headers,
+            )
+            if response.status_code != 200:
+                self.send_error(response.status_code, response.reason)
+                return
+            output = json.dumps(response.json())
         elif self.path == "/setup.html":
             with open("setup.html", "r") as j:
                 output = j.read()
