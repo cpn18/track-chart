@@ -14,8 +14,4 @@ fi
 
 mkdir -p ${output}
 
-./web_server.sh 80 ${output} &
-./gps_logger.sh 8080 ${output} &
-./imu_logger.sh 8081 ${output} &
-./lidar_logger.sh 8082 ${output} &
-./lpcm_logger.sh 8083 ${output} &
+./launcher.py ${output}
