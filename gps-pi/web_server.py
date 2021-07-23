@@ -49,7 +49,8 @@ class MyHandler(BaseHTTPRequestHandler):
             os.system("shutdown --poweroff +1")
         elif self.path == "/reset":
             content_type = "application/json"
-            output = "{\"message\": \"Resetting...\"}"
+            output = "{\"message\": \"Rebooting...\"}"
+            os.system("shutdown --reboot +1")
             DONE = True
         elif self.path.startswith("/mark?memo="):
             HOLD = 1
