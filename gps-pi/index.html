@@ -14,7 +14,7 @@
 <button onclick="window.location.href='/lpcm.html'">&#x1f3a4;LPCM</button>
 <table>
 <tr><td colspan=2 align=center id="msg">Loading...</td><tr>
-<tr><th align="right">Time:</th><td id="gpstime" align="center"></td><td id="ept" align="right"></td></tr>
+<tr><th align="right">GPS Time:</th><td id="gpstime" align="center"></td><td id="ept" align="right"></td></tr>
 <tr><th align="right">Latitude:</th><td id="lat" align="right"></td><td id="epy" align="right"></td></tr>
 <tr><th align="right">Longitude:</th><td id="lon" align="right"></td><td id="epx" align="right"></td></tr>
 <tr><th align="right">Altitude:</th><td id="alt" align="right"></td><td id="epv" align="right"></td></tr>
@@ -24,13 +24,9 @@
 <tr><th align="right">IMU:</th><td id="imu_status" align="right">OFF</td><td></td></tr>
 <tr><th align="right">LIDAR:</th><td id="lidar_status" align="right">OFF</td><td></td></tr>
 <tr><th align="right">LPCM:</th><td id="lpcm_status" align="right">OFF</td><td></td></tr>
-<tr><th align="right">Hold:</th><td id="hold" align="right">OFF</td><td></td></tr>
 <tr><td colspan=3 align=center><i><p id="time"></p></i></td><tr>
 </table>
-<input type=text id="memo" placeholder="Memo"><br>
 <br>
-<button onclick="mark()">&#x1F4CC;Mark</button>
-<button onclick="hold()">&#x1F6D1;Hold</button>
 <button onclick="reset()">&#x23FC;Reset</button>
 <button onclick="power()">&#x2B58;Power</button>
 <br>
@@ -38,30 +34,6 @@
 var refresh=1000;
 var m_to_ft = 3.28084;
 var ms_to_mph = 2.23694;
-
-function mark()
-{
-  $.ajax({
-    datatype: "json",
-    url: "/mark?memo="+$('#memo').val(),
-    success: function(obj) {
-      $('#msg').text(obj.message);
-      $('#memo').val('');
-    }
-  });
-}
-
-function hold()
-{
-  $.ajax({
-    datatype: "json",
-    url: "/hold?memo="+$('#memo').val(),
-    success: function(obj) {
-      $('#msg').text(obj.message);
-      $('#memo').val('');
-    }
-  });
-}
 
 function reset()
 {
@@ -110,6 +82,7 @@ function stream() {
 
     gpsStream.onerror = function() {
       console.log("gps connection error");
+        document.getElementById("msg").innerText = "&nbsp;";
         document.getElementById("mode").innerText = "OFF";
         document.getElementById("gps_count").innerText = "";
     };
@@ -136,11 +109,6 @@ function stream() {
 
 	document.getElementById("mode").innerText = tpv.mode + "D ";
 
-	if (tpv.hold == -1) {
-	  document.getElementById("hold").innerText = "OFF";
-	} else {
-	  document.getElementById("hold").innerText = tpv.hold;
-	}
     });
 
     gpsStream.addEventListener("sky", function(event) {
@@ -163,6 +131,7 @@ function stream() {
 
     imuStream.onerror = function() {
       console.log("imu connection error");
+      document.getElementById("msg").innerText = "&nbsp;";
       document.getElementById("imu_status").innerText = "OFF";
     };
 
@@ -182,6 +151,7 @@ function stream() {
 
     lidarStream.onerror = function() {
       console.log("lidar connection error");
+      document.getElementById("msg").innerText = "&nbsp;";
       document.getElementById("lidar_status").innerText = "OFF";
     };
 
@@ -199,6 +169,7 @@ function stream() {
 
     lpcmStream.onerror = function() {
       console.log("lpcm connection error");
+      document.getElementById("msg").innerText = "&nbsp;";
       document.getElementById("lpcm_status").innerText = "OFF";
     };
 
@@ -213,7 +184,7 @@ function stream() {
 $(document).ready(function()
 {
   stream();
-  document.getElementById("msg").innerText = "";
+  document.getElementById("msg").innerHTML = "&nbsp;";
 });
 </script>
 </body>

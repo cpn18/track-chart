@@ -32,13 +32,14 @@ function stream() {
     console.log(imuStream.url);
 
     imuStream.onopen = function() {
-        document.getElementById('msg').innerText = "";
-	console.log("imu connection opened");
-        document.getElementById("imu_status").innerText = "...";
-	};
+      console.log("imu connection opened");
+      document.getElementById('msg').innerHTML = "&nbsp;";
+      document.getElementById("imu_status").innerText = "...";
+    };
 
     imuStream.onerror = function() {
       console.log("imu connection error");
+      document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
       document.getElementById("imu_status").innerText = "OFF";
     };
 

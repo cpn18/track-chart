@@ -28,13 +28,13 @@ function stream(name, imagedata)
   console.log(lidarStream.url);
 
   lidarStream.onopen = function() {
-    document.getElementById('msg').innerText = "";
     console.log("lidar connection opened");
+    document.getElementById('msg').innerHTML = "&nbsp;";
   };
 
   lidarStream.onerror = function() {
-    document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
     console.log("lidar connection error");
+    document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
   };
 
   lidarStream.addEventListener("lidar", function(event) {

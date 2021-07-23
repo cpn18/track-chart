@@ -14,7 +14,7 @@
 <button onclick="window.location.href='/lpcm.html'">&#x1f3a4;LPCM</button>
 <table>
 <tr><td colspan=2 align=center id="msg">Loading...</td><tr>
-<tr><th align="right">Time:</th><td id="gpstime" align="center"></td><td id="ept" align="right"></td></tr>
+<tr><th align="right">GPS Time:</th><td id="gpstime" align="center"></td><td id="ept" align="right"></td></tr>
 <tr><th align="right">Latitude:</th><td id="lat" align="right"></td><td id="epy" align="right"></td></tr>
 <tr><th align="right">Longitude:</th><td id="lon" align="right"></td><td id="epx" align="right"></td></tr>
 <tr><th align="right">Altitude:</th><td id="alt" align="right"></td><td id="epv" align="right"></td></tr>
@@ -27,8 +27,6 @@
 <br>
 <button onclick="mark()">&#x1F4CC;Mark</button>
 <button onclick="hold()">&#x1F6D1;Hold</button>
-<button onclick="reset()">&#x23FC;Reset</button>
-<button onclick="power()">&#x2B58;Power</button>
 <br>
 <script>
 var refresh=1000;
@@ -59,28 +57,6 @@ function hold()
   });
 }
 
-function reset()
-{
-  $.ajax({
-    datatype: "json",
-    url: "/reset",
-    success: function(obj) {
-      $('#msg').text(obj.message);
-    }
-  });
-}
-
-function power()
-{
-  $.ajax({
-    datatype: "json",
-    url: "/poweroff",
-    success: function(obj) {
-      $('#msg').text(obj.message);
-    }
-  });
-}
-
 function stream() {
     const gpsStream = new EventSource("/gps-stream");
 
@@ -88,17 +64,17 @@ function stream() {
     console.log(gpsStream.url);
 
     gpsStream.onopen = function() {
-        document.getElementById('msg').innerText = "";
-	console.log("connection opened");
-        document.getElementById("mode").innerText = "...";
-        document.getElementById("gps_count").innerText = "";
-	};
+      console.log("connection opened");
+      document.getElementById('msg').innerHTML = "&nbsp;";
+      document.getElementById("mode").innerText = "...";
+      document.getElementById("gps_count").innerText = "";
+    };
 
     gpsStream.onerror = function() {
-      document.getElementById('msg').innerHTML = "&#x274C; Connecton Error";
       console.log("connection error");
-        document.getElementById("mode").innerText = "OFF";
-        document.getElementById("gps_count").innerText = "";
+      document.getElementById('msg').innerHTML = "&#x274C;Connecton Error";
+      document.getElementById("mode").innerText = "OFF";
+      document.getElementById("gps_count").innerText = "";
     };
 
     gpsStream.addEventListener("tpv", function(event) {

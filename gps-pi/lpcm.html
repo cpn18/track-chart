@@ -26,19 +26,19 @@ function stream()
   console.log(lpcmStream.url);
 
   lpcmStream.onopen = function() {
-    document.getElementById('lpcm_status').innerText = "...";
     console.log("lpcm connection opened");
+    document.getElementById('msg').innerHTML = "&nbsp;";
+    document.getElementById('lpcm_status').innerText = "...";
   };
 
   lpcmStream.onerror = function() {
+    console.log("lpcm connection error");
     document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
     document.getElementById('lpcm_status').innerText = "OFF";
-    console.log("lpcm connection error");
   };
 
   lpcmStream.addEventListener("lpcm", function(event) {
     var lpcm = JSON.parse(event.data)
-    document.getElementById('msg').innerHTML = "";
     document.getElementById('lpcm_status').innerText = "ON";
   });
 }
