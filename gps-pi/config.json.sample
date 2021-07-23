@@ -1,0 +1,22 @@
+{
+    "web": {
+	"cmd": ["web_server.sh", "80", "%OUTPUT_DIR%"]
+    },
+    "gps": {
+	"enable": true,
+	"cmd": ["gps_logger.sh", "8080", "%OUTPUT_DIR%"]
+    },
+    "imu": {
+       	"x": "x", "y": "y", "z": "z",
+	"enable": true,
+	"cmd": ["imu_logger.sh", "8081", "%OUTPUT_DIR%"]
+    },
+    "lidar": {
+	"enable": true,
+	"cmd": ["lidar_logger.sh", "8082", "%OUTPUT_DIR%"]
+    },
+    "lpcm": {
+	"enable": false,
+	"cmd": ["lpcm_logger.sh", "8083", "%OUTPUT_DIR%"]
+    }
+}

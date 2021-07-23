@@ -29,17 +29,9 @@ IDLE_DELAY = 60
 STREAM_DELAY = 1
 
 def read_config():
-    # Configure Axis
-    try:
-        with open("config.json", "r") as f:
-            config = json.loads(f.read())
-    except:
-        config = {
-            "imu": {"log": True, "x": "x", "y": "y", "z": "z"},
-            "gps": {"log": True},
-            "lidar": {"log": True},
-            "audio": {"log": True},
-        }
+    """ Read Configuration """
+    with open("config.json", "r") as f:
+        config = json.loads(f.read())
 
     config['class'] = "CONFIG"
     config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")

@@ -36,10 +36,10 @@ try:
         CONFIG = json.loads(f.read())
 except:
     CONFIG = {
-        "imu": {"log": True, "x": "x", "y": "y", "z": "z"},
-        "gps": {"log": True},
-        "lidar": {"log": True},
-        "audio": {"log": True},
+        "imu": {"enable": True, "x": "x", "y": "y", "z": "z"},
+        "gps": {"enable": True},
+        "lidar": {"enable": True},
+        "lpcm": {"enable": True},
     }
 
 CONFIG['class'] = "CONFIG"
@@ -391,15 +391,15 @@ def lidar_logger_wrapper(output_directory):
     LIDAR_STATUS = False
     mylog("LIDAR Done")
 
-def audio_logger(output_directory):
-    global DONE, AUDIO_STATUS
+def lpcm_logger(output_directory):
+    global DONE, LPCM_STATUS
 
     # Configure
     try:
         with open("config.json", "r") as f:
             config = json.loads(f.read())
     except:
-        config = {"class": "CONFIG", "audio": {"log": True}}
+        config = {"class": "CONFIG", "lpcm": {"log": True}}
     config['time'] =  datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     # Create the output directory
@@ -410,45 +410,45 @@ def audio_logger(output_directory):
         time.sleep(SYNC_DELAY)
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
-    with open(os.path.join(output_directory,timestamp+"_audio.csv"), "w") as audio_output:
-        audio_output.write("#v%d\n" % VERSION)
-        audio_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
+    with open(os.path.join(output_directory,timestamp+"_lpcm.csv"), "w") as lpcm_output:
+        lpcm_output.write("#v%d\n" % VERSION)
+        lpcm_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
         while not DONE:
             try:
-                AUDIO_STATUS = True
+                LPCM_STATUS = True
                 timestamp = datetime.datetime.now()
                 filename = timestamp.strftime("%Y%m%d%H%M")
-                if os.system("./audio_collect.sh %s %s" % (output_directory, filename)) != 0:
-                    AUDIO_STATUS = False
+                if os.system("./lpcm_collect.sh %s %s" % (output_directory, filename)) != 0:
+                    LPCM_STATUS = False
                     time.sleep(ERROR_DELAY)
                 else:
                     obj = {
-                        "class": "AUDIO",
+                        "class": "LPCM",
                         "time": timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                     }
                     for channel in ["left", "right"]:
                         capture_file = filename+"_"+channel+".wav"
                         if os.path.isfile(os.path.join(output_directory, capture_file)):
                             obj[channel] = capture_file
-                    audio_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+                    lpcm_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
             except KeyboardInterrupt:
                 DONE = True
             except Exception as ex:
-                mylog("Audio Logger Exception: %s" % ex)
+                mylog("LPCM Logger Exception: %s" % ex)
                 time.sleep(ERROR_DELAY)
 
-        AUDIO_STATUS = False
+        LPCM_STATUS = False
 
-def audio_logger_wrapper(output_directory):
-    """ Wrapper Around Audio Logger Function """
-    global AUDIO_STATUS
-    AUDIO_STATUS = False
+def lpcm_logger_wrapper(output_directory):
+    """ Wrapper Around LPCM Logger Function """
+    global LPCM_STATUS
+    LPCM_STATUS = False
     try:
-        audio_logger(output_directory)
+        lpcm_logger(output_directory)
     except Exception as ex:
-        mylog("Audio Logger Exception: %s" % ex)
-    AUDIO_STATUS = False
-    mylog("Audio Done")
+        mylog("LPCM Logger Exception: %s" % ex)
+    LPCM_STATUS = False
+    mylog("LPCM Done")
 
 # MAIN START
 INLOCSYNC = False
@@ -466,7 +466,7 @@ GPS_NUM_USED = 0
 ACC_STATUS = False
 LIDAR_STATUS = False
 LIDAR_DATA = {}
-AUDIO_STATUS = False
+LPCM_STATUS = False
 
 # Output Directory
 try:
@@ -490,18 +490,18 @@ wait_for_timesync(SESSION)
 mylog("Have Timestamp")
 
 try:
-    if CONFIG['gps']['log']:
+    if CONFIG['gps']['enable']:
         Tgps = threading.Thread(name="GPS", target=gps_logger_wrapper, args=(OUTPUT, SESSION,))
         Tgps.start()
-    if CONFIG['imu']['log']:
+    if CONFIG['imu']['enable']:
         Timu = threading.Thread(name="IMU", target=imu_logger_wrapper, args=(OUTPUT,))
         Timu.start()
-    if CONFIG['lidar']['log']:
+    if CONFIG['lidar']['enable']:
         Tlidar = threading.Thread(name="LIDAR", target=lidar_logger_wrapper, args=(OUTPUT,))
         Tlidar.start()
-    if CONFIG['audio']['log']:
-        Taudio = threading.Thread(name="AUDIO", target=audio_logger_wrapper, args=(OUTPUT,))
-        Taudio.start()
+    if CONFIG['lpcm']['enable']:
+        Tlpcm = threading.Thread(name="LPCM", target=lpcm_logger_wrapper, args=(OUTPUT,))
+        Tlpcm.start()
 except Exception as ex:
     mylog("Exception: unable to start thread: %s" % ex)
     sys.exit(-1)
@@ -520,14 +520,14 @@ httpd.shutdown()
 httpd.server_close()
 
 Twww.join()
-if CONFIG['gps']['log']:
+if CONFIG['gps']['enable']:
     Tgps.join()
-if CONFIG['imu']['log']:
+if CONFIG['imu']['enable']:
     Timu.join()
-if CONFIG['lidar']['log']:
+if CONFIG['lidar']['enable']:
     Tlidar.join()
-if CONFIG['audio']['log']:
-    Taudio.join()
+if CONFIG['lpcm']['enable']:
+    Tlpcm.join()
 
 while not RESTART:
     time.sleep(IDLE_DELAY)

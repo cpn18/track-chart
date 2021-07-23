@@ -16,17 +16,9 @@ import requests
 # Configure Axis
 def read_config():
     """ Read Configuration """
-    try:
-        with open("config.json", "r") as config_file:
-            config = json.loads(config_file.read())
-    except Exception as ex:
-        print("WARNING: %s" % ex)
-        config = {
-            "imu": {"log": True, "x": "x", "y": "y", "z": "z"},
-            "gps": {"log": True},
-            "lidar": {"log": True},
-            "audio": {"log": True},
-        }
+    with open("config.json", "r") as config_file:
+        config = json.loads(config_file.read())
+
     config['class'] = "CONFIG"
     config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     return config
@@ -95,6 +87,10 @@ class MyHandler(BaseHTTPRequestHandler):
             with open("gps.html", "r") as j:
                 output = j.read()
         elif self.path == "/gps-stream":
+            if CONFIG['gps']['enable'] is False:
+                self.send_error(404, "Not Enabled")
+                return
+
             content_type = "text/event-stream"
             headers = {
                 "accept": content_type,
@@ -137,6 +133,10 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_error(response.status_code, response.reason)
                 return
         elif self.path == "/imu-stream":
+            if CONFIG['imu']['enable'] is False:
+                self.send_error(404, "Not Enabled")
+                return
+
             content_type = "text/event-stream"
             headers = {
                 "accept": content_type,
@@ -174,6 +174,10 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_error(response.status_code, response.reason)
                 return
         elif self.path == "/lidar-stream":
+            if CONFIG['lidar']['enable'] is False:
+                self.send_error(404, "Not Enabled")
+                return
+
             content_type = "text/event-stream"
             headers = {
                 "accept": content_type,
@@ -208,6 +212,10 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_error(response.status_code, response.reason)
                 return
         elif self.path == "/lpcm-stream":
+            if CONFIG['lpcm']['enable'] is False:
+                self.send_error(404, "Not Enabled")
+                return
+
             content_type = "text/event-stream"
             headers = {
                 "accept": content_type,
