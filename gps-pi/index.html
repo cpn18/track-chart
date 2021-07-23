@@ -82,7 +82,7 @@ function stream() {
 
     gpsStream.onerror = function() {
       console.log("gps connection error");
-        document.getElementById("msg").innerText = "&nbsp;";
+        document.getElementById("msg").innerHTML = "&nbsp;";
         document.getElementById("mode").innerText = "OFF";
         document.getElementById("gps_count").innerText = "";
     };
@@ -131,7 +131,7 @@ function stream() {
 
     imuStream.onerror = function() {
       console.log("imu connection error");
-      document.getElementById("msg").innerText = "&nbsp;";
+      document.getElementById("msg").innerHTML = "&nbsp;";
       document.getElementById("imu_status").innerText = "OFF";
     };
 
@@ -151,7 +151,7 @@ function stream() {
 
     lidarStream.onerror = function() {
       console.log("lidar connection error");
-      document.getElementById("msg").innerText = "&nbsp;";
+      document.getElementById("msg").innerHTML = "&nbsp;";
       document.getElementById("lidar_status").innerText = "OFF";
     };
 
@@ -169,7 +169,7 @@ function stream() {
 
     lpcmStream.onerror = function() {
       console.log("lpcm connection error");
-      document.getElementById("msg").innerText = "&nbsp;";
+      document.getElementById("msg").innerHTML = "&nbsp;";
       document.getElementById("lpcm_status").innerText = "OFF";
     };
 
