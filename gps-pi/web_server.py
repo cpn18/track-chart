@@ -12,6 +12,17 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import requests
 
+DOCUMENT_MAP = {
+    "/": "htdocs/index.html",
+    "/index.html": "htdocs/index.html",
+    "/setup.html": "htdocs/index.setup",
+    "/gps.html": "htdocs/gps.html",
+    "/imu.html": "htdocs/imu.html",
+    "/lidar.html": "htdocs/lidar.html",
+    "/lpcm.html": "htdocs/lpcm.html",
+    "/favicon.ico": "htdocs/favicon.ico",
+    "/jquery.js": "js/jquery-3.4.1.min.js",
+}
 
 # Configure Axis
 def read_config():
@@ -37,56 +48,56 @@ class MyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         """Respond to a GET request."""
         global DONE
-        global HOLD
-        global MEMO
 
-        content_type = "text/html; charset=utf-8"
+        content_type = "text/html"
 
-        if self.path == "/poweroff":
-            content_type = "application/json"
-            output = "{\"message\": \"Shutting down...\"}"
+        if self.path in DOCUMENT_MAP:
+            pathname = DOCUMENT_MAP[self.path]
+            if not os.path.exists(pathname):
+                self.send_error(404, "File Not Found")
+                return
+            else:
+                if pathanme.endswith(".html"):
+                    content_type = "text/html"
+                elif pathname.endswith(".js"):
+                    content_type = "text/javascript":
+                else:
+                    content_type = "application/octet-stream"
+                with open(pathname) as j:
+                    output = j.read()
+        elif self.path == "/poweroff":
             DONE = True
+            content_type = "application/json"
+            output = json.dumps({
+                "message": "Shutting down...",
+            })
             os.system("shutdown --poweroff +1")
         elif self.path == "/reset":
-            content_type = "application/json"
-            output = "{\"message\": \"Rebooting...\"}"
-            os.system("shutdown --reboot +1")
             DONE = True
-        elif self.path.startswith("/mark?memo="):
-            HOLD = 1
-            MEMO = self.path.replace("/mark?memo=", "")
             content_type = "application/json"
-            output = "{\"message\": \"Marked...\"}"
-        elif self.path.startswith("/hold?memo="):
-            content_type = "application/json"
-            headers = {
-                "accept": content_type,
-            }
-            response = requests.get(
-                "http://localhost:8080" + self.path;
-                headers=headers,
-            )
-            if response.status_code != 200:
-                self.send_error(response.status_code, response.reason)
-                return
-            output = json.dumps(response.json())
-        elif self.path == "/setup.html":
-            with open("setup.html", "r") as j:
-                output = j.read()
+            output = json.dumps({
+                "message": "Rebooting...",
+            })
+            os.system("shutdown --reboot +1")
         elif self.path.startswith("/setup?"):
+            DONE = True
             for var in self.path.split("?")[1].split("&"):
                 key, value = var.split("=")
                 CONFIG['imu'][key]=value.lower()
-            content_type = "application/json"
-            output = "{\"message\": \"Stored...\"}"
             write_config()
-            DONE = True
-        elif self.path == "/" or self.path == "/index.html":
-            with open("index.html", "r") as j:
-                output = j.read()
-        elif self.path == "/gps.html":
-            with open("gps.html", "r") as j:
-                output = j.read()
+            content_type = "application/json"
+            output = json.dumps({
+                "message": "Stored. Rebooting...",
+            })
+            os.system("shutdown --reboot +1")
+        elif self.path == "/gps":
+            content_type = "application/json"
+            response = requests.get("http://localhost:%d/gps" % CONFIG['gps']['port'])
+            if response:
+                output = json.dumps(response.json())
+            else:
+                self.send_error(response.status_code, response.reason)
+                return
         elif self.path == "/gps-stream":
             if CONFIG['gps']['enable'] is False:
                 self.send_error(404, "Not Enabled")
@@ -97,7 +108,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 "accept": content_type,
             }
             response = requests.get(
-                "http://localhost:8080/gps-stream",
+                "http://localhost:%d/gps-stream" % CONFIG['gps']['port'],
                 headers=headers,
                 stream=True,
             )
@@ -113,20 +124,22 @@ class MyHandler(BaseHTTPRequestHandler):
                     line = (line.decode('utf-8') + "\n").encode('utf-8')
                     self.wfile.write(line)
             return
-        elif self.path == "/gps":
+        elif self.path.startswith("/gps-mark?memo=") or self.path.startswith("/gps-hold?memo="):
             content_type = "application/json"
-            response = requests.get("http://localhost:8080/gps")
-            if response:
-                output = json.dumps(response.json())
-            else:
+            headers = {
+                "accept": content_type,
+            }
+            response = requests.get(
+                "http://localhost:%d" % CONFIG['gps']['port'] + self.path;
+                headers=headers,
+            )
+            if response.status_code != 200:
                 self.send_error(response.status_code, response.reason)
                 return
-        elif self.path == "/imu.html":
-            with open("imu.html", "r") as j:
-                output = j.read()
+            output = json.dumps(response.json())
         elif self.path == "/imu":
             content_type = "application/json"
-            response = requests.get("http://localhost:8081/imu")
+            response = requests.get("http://localhost:%d/imu" % CONFIG['imu']['port'])
             if response:
                 output = response.json()
                 output = json.dumps(output)
@@ -143,7 +156,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 "accept": content_type,
             }
             response = requests.get(
-                "http://localhost:8081/imu-stream",
+                "http://localhost:%d/imu-stream" % CONFIG['imu']['port'],
                 headers=headers,
                 stream=True,
             )
@@ -159,15 +172,9 @@ class MyHandler(BaseHTTPRequestHandler):
                     line = (line.decode('utf-8') + "\n").encode('utf-8')
                     self.wfile.write(line)
             return
-        elif self.path == "/jquery-3.4.1.min.js":
-            with open("jquery-3.4.1.min.js", "r") as j:
-                output = j.read()
-        elif self.path == "/lidar.html":
-            with open("lidar.html", "r") as j:
-                output = j.read()
         elif self.path == "/lidar":
             content_type = "application/json"
-            response = requests.get("http://localhost:8082/lidar")
+            response = requests.get("http://localhost:%d/lidar" % CONFIG['lidar']['port'])
             if response:
                 output = response.json()
                 output = json.dumps(output)
@@ -184,7 +191,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 "accept": content_type,
             }
             response = requests.get(
-                "http://localhost:8082/lidar-stream",
+                "http://localhost:%d/lidar-stream" % CONFIG['lidar']['port'],
                 headers=headers,
                 stream=True,
             )
@@ -200,12 +207,9 @@ class MyHandler(BaseHTTPRequestHandler):
                     line = (line.decode('utf-8') + "\n").encode('utf-8')
                     self.wfile.write(line)
             return
-        elif self.path == "/lpcm.html":
-            with open("lpcm.html", "r") as j:
-                output = j.read()
         elif self.path == "/lpcm":
             content_type = "application/json"
-            response = requests.get("http://localhost:8083/lpcm")
+            response = requests.get("http://localhost:%d/lpcm" % CONFIG['lpcm']['port'])
             if response:
                 output = response.json()
                 output = json.dumps(output)
@@ -222,7 +226,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 "accept": content_type,
             }
             response = requests.get(
-                "http://localhost:8083/lpcm-stream",
+                "http://localhost:%d/lpcm-stream" % CONFIG['lpcm']['port'],
                 headers=headers,
                 stream=True,
             )
@@ -238,12 +242,11 @@ class MyHandler(BaseHTTPRequestHandler):
                     line = (line.decode('utf-8') + "\n").encode('utf-8')
                     self.wfile.write(line)
             return
-        elif self.path == "/favicon.ico":
-            output = ""
         else:
             self.send_error(404, self.path)
             return
 
+        # If we made it this far, then send output to the browser
         self.send_response(200)
         self.send_header("Content-type", content_type)
         self.send_header("Content-length", str(len(output)))
@@ -270,13 +273,10 @@ def web_server(host_name, port_number):
 if __name__ == "__main__":
     # MAIN START
     DONE = False
-    HOLD = -1
-    MEMO = ""
-
-    HOST_NAME = ''
 
     # Command Line Arguments
     try:
+        HOST_NAME = ''
         PORT_NUMBER = int(sys.argv[1])
         OUTPUT = sys.argv[2]
     except IndexError:

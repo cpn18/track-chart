@@ -1,22 +1,27 @@
 {
     "web": {
-	"cmd": ["web_server.sh", "80", "%OUTPUT_DIR%"]
+	"cmd": ["web_server.sh", "%PORT%", "%OUTPUT_DIR%"]
+        "port": 80,
     },
     "gps": {
 	"enable": true,
-	"cmd": ["gps_logger.sh", "8080", "%OUTPUT_DIR%"]
+	"cmd": ["gps_logger.sh", "%PORT%", "%OUTPUT_DIR%"]
+        "port": 8080,
     },
     "imu": {
        	"x": "x", "y": "y", "z": "z",
 	"enable": true,
-	"cmd": ["imu_logger.sh", "8081", "%OUTPUT_DIR%"]
+	"cmd": ["imu_logger.sh", "%PORT%", "%OUTPUT_DIR%"]
+        "port": 8081,
     },
     "lidar": {
 	"enable": true,
-	"cmd": ["lidar_logger.sh", "8082", "%OUTPUT_DIR%"]
+	"cmd": ["lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"]
+        "port": 8082,
     },
     "lpcm": {
 	"enable": false,
-	"cmd": ["lpcm_logger.sh", "8083", "%OUTPUT_DIR%"]
+	"cmd": ["lpcm_logger.sh", "%PORT%", "%OUTPUT_DIR%"]
+        "port": 8083,
     }
 }

@@ -1,11 +1,12 @@
+<!DOCTYPE HTML>
 <html>
 <head>
 <title>PiRail GPS Status</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/jquery.js"></script>
 </head>
 <body>
-<h1>GPS Status</h1>
+<h1>GPS</h1>
 <button onclick="window.location.href='/index.html'">&#x1f3e0;HOME</button>
 <button onclick="window.location.href='/setup.html'">&#x2699;SETUP</button>
 <!-- <button onclick="window.location.href='/gps.html'">&#x1f6f0;GPS</button> -->
@@ -29,7 +30,6 @@
 <button onclick="hold()">&#x1F6D1;Hold</button>
 <br>
 <script>
-var refresh=1000;
 var m_to_ft = 3.28084;
 var ms_to_mph = 2.23694;
 
@@ -37,7 +37,7 @@ function mark()
 {
   $.ajax({
     datatype: "json",
-    url: "/mark?memo="+$('#memo').val(),
+    url: "/gps-mark?memo="+$('#memo').val(),
     success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
@@ -49,7 +49,7 @@ function hold()
 {
   $.ajax({
     datatype: "json",
-    url: "/hold?memo="+$('#memo').val(),
+    url: "/gps-hold?memo="+$('#memo').val(),
     success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');

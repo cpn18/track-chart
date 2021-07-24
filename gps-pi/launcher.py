@@ -30,6 +30,8 @@ def launch(task, output_directory):
         for i in range(len(args)):
             if args[i] == "%OUTPUT_DIR%":
                 args[i] = output_directory
+            elif args[i] == "%PORT%":
+                args[i] = str(task['port'])
 
         #print(path, args)
         os.execv(path, args)
