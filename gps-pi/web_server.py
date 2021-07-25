@@ -126,9 +126,12 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", response.headers['content-type'])
             self.end_headers()
             while not DONE:
-                for line in response.iter_lines():
-                    line = (line.decode('utf-8') + "\n").encode('utf-8')
-                    self.wfile.write(line)
+                try:
+                    for line in response.iter_lines():
+                        line = (line.decode('utf-8') + "\n").encode('utf-8')
+                        self.wfile.write(line)
+                except BrokenPipeError:
+                    break
             return
         elif self.path.startswith("/mark?memo=") or self.path.startswith("/hold?memo="):
             content_type = "application/json"
@@ -174,9 +177,12 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", response.headers['content-type'])
             self.end_headers()
             while not DONE:
-                for line in response.iter_lines():
-                    line = (line.decode('utf-8') + "\n").encode('utf-8')
-                    self.wfile.write(line)
+                try:
+                    for line in response.iter_lines():
+                        line = (line.decode('utf-8') + "\n").encode('utf-8')
+                        self.wfile.write(line)
+                except BrokenPipeError:
+                    break
             return
         elif self.path == "/lidar":
             content_type = "application/json"
@@ -209,9 +215,12 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", response.headers['content-type'])
             self.end_headers()
             while not DONE:
-                for line in response.iter_lines():
-                    line = (line.decode('utf-8') + "\n").encode('utf-8')
-                    self.wfile.write(line)
+                try:
+                    for line in response.iter_lines():
+                        line = (line.decode('utf-8') + "\n").encode('utf-8')
+                        self.wfile.write(line)
+                except BrokenPipeError:
+                    break
             return
         elif self.path == "/lpcm":
             content_type = "application/json"
@@ -244,9 +253,12 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", response.headers['content-type'])
             self.end_headers()
             while not DONE:
-                for line in response.iter_lines():
-                    line = (line.decode('utf-8') + "\n").encode('utf-8')
-                    self.wfile.write(line)
+                try:
+                    for line in response.iter_lines():
+                        line = (line.decode('utf-8') + "\n").encode('utf-8')
+                        self.wfile.write(line)
+                except BrokenPipeError:
+                    break
             return
         else:
             self.send_error(404, self.path)
