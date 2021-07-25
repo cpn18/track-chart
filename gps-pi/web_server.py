@@ -22,7 +22,12 @@ DOCUMENT_MAP = {
     "/lpcm.html": "htdocs/lpcm.html",
     "/favicon.ico": "htdocs/favicon.ico",
     "/jquery.js": "js/jquery-3.6.0.min.js",
+    "/pirail_setup.js": "js/pirail_setup.js",
     "/pirail_dashboard.js": "js/pirail_dashboard.js",
+    "/pirail_gps.js": "js/pirail_gps.js",
+    "/pirail_imu.js": "js/pirail_imu.js",
+    "/pirail_lidar.js": "js/pirail_lidar.js",
+    "/pirail_lpcm.js": "js/pirail_lpcm.js",
 }
 
 # Configure Axis

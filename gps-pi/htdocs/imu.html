@@ -4,6 +4,7 @@
 <title>PiRail IMU Status</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script type="text/javascript" src="/jquery.js"></script>
+<script type="text/javascript" src="/pirail_imu.js"></script>
 </head>
 <body>
 <h1>IMU</h1>
@@ -23,44 +24,10 @@
 <tr><td colspan=3 align=center><i><p id="time"></p></i></td><tr>
 </table>
 <script>
-var refresh=1000;
-var m_to_ft = 3.28084;
-var ms_to_mph = 2.23694;
-
-function stream() {
-    const imuStream = new EventSource("/imu-stream");
-    console.log(imuStream.readyState);
-    console.log(imuStream.url);
-
-    imuStream.onopen = function() {
-      console.log("imu connection opened");
-      document.getElementById('msg').innerHTML = "&nbsp;";
-      document.getElementById("imu_status").innerText = "...";
-    };
-
-    imuStream.onerror = function() {
-      console.log("imu connection error");
-      document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
-      document.getElementById("imu_status").innerText = "OFF";
-    };
-
-    imuStream.addEventListener("att", function(event) {
-        // console.log(event);
-	var att = JSON.parse(event.data);
-	// console.log(att);
-	document.getElementById("imu_status").innerText = "ON";
-	document.getElementById("yaw").innerText = Math.round(att.yaw);
-	document.getElementById("pitch").innerText = Math.round(att.pitch);
-	document.getElementById("roll").innerText = Math.round(att.roll);
-	document.getElementById("temp").innerText = Math.round(att.temp);
-	document.getElementById("time").innerText = att.time.replace('T', ' ');
+    $(document).ready(function()
+    {
+        imu_stream();
     });
-}
-
-$(document).ready(function()
-{
-  stream();
-});
 </script>
 </body>
 </html>

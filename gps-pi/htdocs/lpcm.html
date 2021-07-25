@@ -4,6 +4,7 @@
 	<title>PiRail LPCM Status</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script type="text/javascript" src="/jquery.js"></script>
+	<script type="text/javascript" src="/pirail_lpcm.js"></script>
 </head>
 <body>
 <h1>LPCM</h1>
@@ -18,36 +19,10 @@
 <tr><td align="left">LPCM:</td><td id="lpcm_status"></td><td></td></tr>
 </table>
 <script>
-
-function stream()
-{
-  const lpcmStream = new EventSource("/lpcm-stream");
-  console.log(lpcmStream.readyState);
-  console.log(lpcmStream.url);
-
-  lpcmStream.onopen = function() {
-    console.log("lpcm connection opened");
-    document.getElementById('msg').innerHTML = "&nbsp;";
-    document.getElementById('lpcm_status').innerText = "...";
-  };
-
-  lpcmStream.onerror = function() {
-    console.log("lpcm connection error");
-    document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
-    document.getElementById('lpcm_status').innerText = "OFF";
-  };
-
-  lpcmStream.addEventListener("lpcm", function(event) {
-    var lpcm = JSON.parse(event.data)
-    document.getElementById('lpcm_status').innerText = "ON";
-  });
-}
-
-$(document).ready(function()
-{
-	stream();
-});
-
-	</script>
+    $(document).ready(function()
+    {
+	lpcm_stream();
+    });
+</script>
 </body>
 </html>

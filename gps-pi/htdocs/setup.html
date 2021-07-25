@@ -4,6 +4,7 @@
 <title>PiRail Setup</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script type="text/javascript" src="/jquery.js"></script>
+<script type="text/javascript" src="/pirail_setup.js"></script>
 </head>
 <body>
 <h1>Setup</h1>
@@ -20,21 +21,5 @@
 <tr><td>Z-axis</td><td><select id="zaxis"><option>X</option><option>Y</option><option selected="selected">Z</option></select></td></tr>
 </table>
 <button onclick="setup()">Setup</button>
-<br>
-<script>
-
-function setup()
-{
-  $.ajax({
-    datatype: "json",
-    url: "/setup?x="+$('#xaxis').val()+"&y="+$('#yaxis').val()+"&z="+$('#zaxis').val(),
-    success: function(data) {
-      var obj = JSON.parse(data);
-      $('#msg').text(obj.message);
-    }
-  });
-}
-
-</script>
 </body>
 </html>
