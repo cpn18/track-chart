@@ -1,4 +1,6 @@
-#import the Berry IMU module
+"""
+IMU SHIM for the Berry-IMU
+"""
 import IMU 
 
 IMU.detectIMU()
@@ -15,9 +17,11 @@ GYRO_GAIN = 0.070
 
 
 def device():
+    """ Get Device Name """
     return "LSM9DS1"
 
 def get_axes():
+    """ Get Axes Values """
     return {
         'ACCx': IMU.readACCx() * ACC_LSB,
         'ACCy': IMU.readACCy() * ACC_LSB,

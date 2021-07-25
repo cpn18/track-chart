@@ -8,10 +8,7 @@ import sys
 import threading
 import time
 import datetime
-import gps
 import json
-import nmea
-import statistics
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 
