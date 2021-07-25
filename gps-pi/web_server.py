@@ -21,7 +21,7 @@ DOCUMENT_MAP = {
     "/lidar.html": "htdocs/lidar.html",
     "/lpcm.html": "htdocs/lpcm.html",
     "/favicon.ico": "htdocs/favicon.ico",
-    "/jquery.js": "js/jquery-3.4.1.min.js",
+    "/jquery.js": "js/jquery-3.6.0.min.js",
 }
 
 # Configure Axis
