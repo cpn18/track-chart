@@ -15,7 +15,7 @@ import requests
 DOCUMENT_MAP = {
     "/": "htdocs/index.html",
     "/index.html": "htdocs/index.html",
-    "/setup.html": "htdocs/index.setup",
+    "/setup.html": "htdocs/setup.html",
     "/gps.html": "htdocs/gps.html",
     "/imu.html": "htdocs/imu.html",
     "/lidar.html": "htdocs/lidar.html",
@@ -57,10 +57,10 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_error(404, "File Not Found")
                 return
             else:
-                if pathanme.endswith(".html"):
+                if pathname.endswith(".html"):
                     content_type = "text/html"
                 elif pathname.endswith(".js"):
-                    content_type = "text/javascript":
+                    content_type = "text/javascript"
                 else:
                     content_type = "application/octet-stream"
                 with open(pathname) as j:
@@ -130,7 +130,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 "accept": content_type,
             }
             response = requests.get(
-                "http://localhost:%d" % CONFIG['gps']['port'] + self.path;
+                "http://localhost:%d" % CONFIG['gps']['port'] + self.path,
                 headers=headers,
             )
             if response.status_code != 200:
