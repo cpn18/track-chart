@@ -21,6 +21,7 @@ DOCUMENT_MAP = {
     "/lidar.html": "htdocs/lidar.html",
     "/lpcm.html": "htdocs/lpcm.html",
     "/favicon.ico": "htdocs/favicon.ico",
+    "/version.txt": "version.txt",
     "/jquery.js": "js/jquery-3.6.0.min.js",
     "/pirail_setup.js": "js/pirail_setup.js",
     "/pirail_dashboard.js": "js/pirail_dashboard.js",
@@ -28,6 +29,14 @@ DOCUMENT_MAP = {
     "/pirail_imu.js": "js/pirail_imu.js",
     "/pirail_lidar.js": "js/pirail_lidar.js",
     "/pirail_lpcm.js": "js/pirail_lpcm.js",
+}
+
+MIME_MAP = {
+    ".html": "text/html",
+    ".txt": "text/plain",
+    ".js": "text/javascript",
+    ".json": "application/json",
+    "default": "application/octet-stream",
 }
 
 # Configure Axis
@@ -59,16 +68,14 @@ class MyHandler(BaseHTTPRequestHandler):
 
         if self.path in DOCUMENT_MAP:
             pathname = DOCUMENT_MAP[self.path]
+            _, extension = os.path.splitext(pathname)
             if not os.path.exists(pathname):
                 self.send_error(404, "File Not Found")
                 return
             else:
-                if pathname.endswith(".html"):
-                    content_type = "text/html"
-                elif pathname.endswith(".js"):
-                    content_type = "text/javascript"
-                else:
-                    content_type = "application/octet-stream"
+                if not extension in MIME_MAP:
+                    extension = 'default'
+                content_type = MIME_MAP[extension]
                 with open(pathname) as j:
                     output = j.read()
         elif self.path == "/poweroff":
