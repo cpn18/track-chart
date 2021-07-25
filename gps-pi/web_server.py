@@ -130,7 +130,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     line = (line.decode('utf-8') + "\n").encode('utf-8')
                     self.wfile.write(line)
             return
-        elif self.path.startswith("/gps-mark?memo=") or self.path.startswith("/gps-hold?memo="):
+        elif self.path.startswith("/mark?memo=") or self.path.startswith("/hold?memo="):
             content_type = "application/json"
             headers = {
                 "accept": content_type,

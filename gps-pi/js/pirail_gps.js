@@ -5,7 +5,7 @@ function mark()
 {
   $.ajax({
     datatype: "json",
-    url: "/gps-mark?memo="+$('#memo').val(),
+    url: "/mark?memo="+$('#memo').val(),
     success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
@@ -17,7 +17,7 @@ function hold()
 {
   $.ajax({
     datatype: "json",
-    url: "/gps-hold?memo="+$('#memo').val(),
+    url: "/hold?memo="+$('#memo').val(),
     success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
