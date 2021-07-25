@@ -1,0 +1,21 @@
+#!/bin/bash
+
+apt-get install python
+apt-get install vim
+apt-get install gpsd gpsd-clients python-gps
+apt-get install python-smbus i2c-tools git-core
+
+systemctl disable serial-getty@ttyAMA0
+systemctl stop serial-getty@ttyAMA0
+
+cmd="/bin/cp"
+
+#${cmd} 01-lidar.rules
+${cmd} dhcpcd.conf /etc
+${cmd} dnsmasq.conf /etc
+${cmd} iptables.ipv4.nat /etc
+#${cmd} ntp.conf 
+${cmd} rc.local /etc
+${cmd} sysctl.conf /etc
+${cmd} gpsd /etc/default
+${cmd} hostapd.conf /etc/hostapd
