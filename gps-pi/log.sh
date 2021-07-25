@@ -1,5 +1,7 @@
 #!/bin/bash
 
+config="config.json"
+
 cd `dirname $0`
 
 mount /dev/sda1 /media/usb0
@@ -13,5 +15,9 @@ else
 fi
 
 mkdir -p ${output}
+
+if [ ! -f ${config} ]; then
+  cp ${config}.sample ${config}
+fi
 
 ./launcher.py ${output}
