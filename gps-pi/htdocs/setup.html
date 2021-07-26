@@ -16,10 +16,19 @@
 <button onclick="window.location.href='/lpcm.html'">&#x1f3a4;LPCM</button>
 <table>
 <tr><td colspan=2 align=center id="msg">&nbsp;</td><tr>
-<tr><td>X-axis</td><td><select id="xaxis"><option selected="selected">X</option><option>Y</option><option>Z</option></select></td></tr>
-<tr><td>Y-axis</td><td><select id="yaxis"><option>X</option><option selected="selected">Y</option><option>Z</option></select></td></tr>
-<tr><td>Z-axis</td><td><select id="zaxis"><option>X</option><option>Y</option><option selected="selected">Z</option></select></td></tr>
+<tr><td colspan=2 align=left><b>GPS</td><tr>
+<tr><td>Enable</td><td><input type="checkbox" id="gps_enable" checked></td></tr>
+<tr><td colspan=2 align=left><b>IMU</td><tr>
+<tr><td>Enable</td><td><input type="checkbox" id="imu_enable" checked></td></tr>
+<tr><td>X-axis</td><td><select id="imu_x"><option selected="selected">X</option><option>Y</option><option>Z</option></select></td></tr>
+<tr><td>Y-axis</td><td><select id="imu_y"><option>X</option><option selected="selected">Y</option><option>Z</option></select></td></tr>
+<tr><td>Z-axis</td><td><select id="imu_z"><option>X</option><option>Y</option><option selected="selected">Z</option></select></td></tr>
+<tr><td colspan=2 align=left><b>LIDAR</td><tr>
+<tr><td>Enable</td><td><input type="checkbox" id="lidar_enable" checked></td></tr>
+<tr><td colspan=2 align=left><b>LPCM</td><tr>
+<tr><td>Enable</td><td><input type="checkbox" id="lpcm_enable" checked></td></tr>
 </table>
-<button onclick="setup()">Setup</button>
+<button onclick="setup_reset()">&#x1f504;Reset</button>
+<button onclick="setup_save()">&#x1f4be;Save</button>
 </body>
 </html>

@@ -96,7 +96,8 @@ class MyHandler(BaseHTTPRequestHandler):
             DONE = True
             for var in self.path.split("?")[1].split("&"):
                 key, value = var.split("=")
-                CONFIG['imu'][key]=value.lower()
+                section, key = key.split("_")
+                CONFIG[section][key]=value.lower()
             write_config()
             content_type = "application/json"
             output = json.dumps({
