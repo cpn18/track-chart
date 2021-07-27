@@ -53,13 +53,37 @@ def write_config():
     """ Write Configuration """
     with open("config.json", "w") as config_file:
         CONFIG['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        config_file.write(json.dumps(CONFIG))
+        config_file.write(json.dumps(CONFIG, indent=4))
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
 class MyHandler(BaseHTTPRequestHandler):
     """ Web Handler """
+    def do_POST(self):
+        global DONE
+        if self.path.startswith("/setup"):
+            data = json.loads(self.rfile.read(int(self.headers['content-length'])))
+            for field in ['gps', 'imu', 'lidar', 'lpcm']:
+                CONFIG[field].update(data[field])
+            DONE = True
+            write_config()
+            content_type = "application/json"
+            output = json.dumps({
+                "message": "Stored. Rebooting...",
+            })
+            os.system("shutdown --reboot +1")
+        else:
+            self.send_error(404, self.path)
+            return
+
+        # If we made it this far, then send output to the browser
+        self.send_response(200)
+        self.send_header("Content-type", content_type)
+        self.send_header("Content-length", str(len(output)))
+        self.end_headers()
+        self.wfile.write(output.encode('utf-8'))
+
     def do_GET(self):
         """Respond to a GET request."""
         global DONE
@@ -78,6 +102,9 @@ class MyHandler(BaseHTTPRequestHandler):
                 content_type = MIME_MAP[extension]
                 with open(pathname) as j:
                     output = j.read()
+        elif self.path == "/setup":
+            content_type = "application/json"
+            output = json.dumps(CONFIG)
         elif self.path == "/poweroff":
             DONE = True
             content_type = "application/json"
@@ -90,18 +117,6 @@ class MyHandler(BaseHTTPRequestHandler):
             content_type = "application/json"
             output = json.dumps({
                 "message": "Rebooting...",
-            })
-            os.system("shutdown --reboot +1")
-        elif self.path.startswith("/setup?"):
-            DONE = True
-            for var in self.path.split("?")[1].split("&"):
-                key, value = var.split("=")
-                section, key = key.split("_")
-                CONFIG[section][key]=value.lower()
-            write_config()
-            content_type = "application/json"
-            output = json.dumps({
-                "message": "Stored. Rebooting...",
             })
             os.system("shutdown --reboot +1")
         elif self.path == "/gps":
