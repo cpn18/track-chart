@@ -739,6 +739,7 @@ def string_chart_by_time(tc):
     timedata = []
     skip = False
     lastm = None
+    speed = 0
     for obj in tc['D']:
         mileage = obj['mileage']
         if not(first <= mileage <= last):
@@ -753,6 +754,8 @@ def string_chart_by_time(tc):
             else:
                 skip = False
             objtime = parse_time(obj['time'])
+            if 'speed' in obj:
+                speed = obj['speed']
             if mintime is None or objtime < mintime:
                 mintime = objtime
             if maxtime is None or objtime > maxtime:
@@ -761,6 +764,7 @@ def string_chart_by_time(tc):
                 timedata.append({
                     'time': objtime,
                     'mileage': mileage,
+                    'speed': speed,
                 })
                 lastm = mileage
 
@@ -770,6 +774,7 @@ def string_chart_by_time(tc):
     for obj in timedata:
         mileage = obj['mileage']
         objtime = obj['time']
+        speed = obj['speed'] * 2.23694
         x = mile_to_pixel(tc, mileage-first)
         y = (im.size[1]-2*margin) * (objtime - mintime).total_seconds() / (maxtime-mintime).total_seconds() + margin
 
@@ -778,10 +783,19 @@ def string_chart_by_time(tc):
         else:
             timediff = (objtime - lasttime).total_seconds()
 
-        if lastx is None or timediff > TIME_THRESHOLD:
-            draw.point((x, y), fill=COLORS['blue'])
+        if speed > 20:
+            color=COLORS['red']
+        elif speed > 15:
+            color=COLORS['orange']
+        elif speed > 5:
+            color=COLORS['green']
         else:
-            draw.line((lastx, lasty, x, y),fill=COLORS['blue'])
+            color=COLORS['blue']
+
+        if lastx is None or timediff > TIME_THRESHOLD:
+            draw.point((x, y), fill=color)
+        else:
+            draw.line((lastx, lasty, x, y),fill=color)
 
         lastx = x
         lasty = y
