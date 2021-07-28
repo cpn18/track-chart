@@ -30,5 +30,7 @@ files="adxl345.py \
     os_setup"
 
 echo $hash > version.txt
-tar -zcf ${HOME}/PiRail-${hash}.tgz ${files} version.txt
+file=${HOME}/PiRail-${hash}.tgz
+tar -zcf ${file} ${files} version.txt
 rm version.txt
+echo "Wrote ${file}"
