@@ -40,18 +40,27 @@ function fade_points(name, imagedata, decay)
 	}
 }
 
-function draw_point(name, imagedata, x, y, r, g, b, a) {
+function draw_point(name, imagedata, x, y, color) {
 	var canvas = document.getElementById(name);
+
+	// need to be integers
+	x = Math.round(x);
+	y = Math.round(y);
+
+	// filter based on canvas size
+	if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) {
+		return;
+	}
 
 	// Each "bit" is controlled by four bytes
 	pixel = (y * canvas.width + x) * 4;
-	imagedata.data[pixel] = r;     // RED
-	imagedata.data[pixel+1] = g;   // GREEN
-	imagedata.data[pixel+2] = b;   // BLUE
-	imagedata.data[pixel+3] = a;   // ALPHA
+	imagedata.data[pixel] = color[0];     // RED
+	imagedata.data[pixel+1] = color[1];   // GREEN
+	imagedata.data[pixel+2] = color[2];   // BLUE
+	imagedata.data[pixel+3] = color[3];   // ALPHA
 }
 
-function draw_line(name, imagedata, x1, y1, x2, y2, r, g, b, a) {
+function draw_line(name, imagedata, x1, y1, x2, y2, color) {
         dy = y2 - y1;      // rise
 	dx = x2 - x1;      // run
 
@@ -72,7 +81,7 @@ function draw_line(name, imagedata, x1, y1, x2, y2, r, g, b, a) {
 	     dx = end_x - start_x;
              dy = end_y - start_y;
              for (tx = start_x, ty = start_y; tx < end_x; tx++, ty += dy/dx) {
-	       draw_point(name, imagedata, tx, Math.round(ty), r, g, b, a);
+	       draw_point(name, imagedata, tx, ty, color);
              }
          } else {  // slope greater than 1
              // sort the y end points
@@ -91,7 +100,7 @@ function draw_line(name, imagedata, x1, y1, x2, y2, r, g, b, a) {
 	     dx = end_x - start_x;
              dy = end_y - start_y;
        	     for (ty = start_y, tx = start_x; ty < end_y; ty++, tx += dx/dy) {
-	       draw_point(name, imagedata, Math.round(tx), ty, r, g, b, a);
+	       draw_point(name, imagedata, tx, ty, color);
 	     }
         }
 }
@@ -107,6 +116,9 @@ function imu_update(name, imagedata, obj) {
 	var context = canvas.getContext("2d");
 	var last_x = 0;
 	var last_y = 0;
+	var x_origin = 0.50;
+	var y_origin = 0.75;
+	var deg_to_rad = 0.0174533;
 
 	// Fade the existing data
 	fade_points(name, imagedata, decay);
@@ -119,26 +131,18 @@ function imu_update(name, imagedata, obj) {
 
 	// The center of the LIDAR hub is offset toward the bottom
 	// of the bit map
-	x = Math.round(canvas.width / 2);
-	y = Math.round(0.75 * canvas.height);
-	draw_point(name, imagedata, x, y, 0, 255, 0, 255);
+	x = x_origin * canvas.width;
+	y = y_origin * canvas.height;
+	draw_point(name, imagedata, x, y, [0, 255, 0, 255]);
 
 	// Process all the data in the scan array
 	for (var i=0; i<obj.scan.length; i++) {
-		a = obj.scan[i][0];          // Angle in degrees
-		d = obj.scan[i][1] * scale;  // Distance in mm
+		a = obj.scan[i][0] * deg_to_rad; // Angle in radians
+		d = obj.scan[i][1] * scale;      // Distance in mm
 
 		// convert a,d to x,y
-		x = Math.round(d * Math.sin(a*0.0174533) + canvas.width / 2);
-		y = Math.round(-d * Math.cos(a*0.0174533) + 0.75 * canvas.height);
-
-		// filter based on canvas size
-		if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) {
-			continue;
-		}
-
-		// Draw a black pixel
-	        draw_point(name, imagedata, x, y, 0, 0, 0, 255);
+		x = d * Math.sin(a) + x_origin * canvas.width;
+		y = -d * Math.cos(a) + y_origin * canvas.height;
 
 		// Try to group with the last pixel drawn
 		// similar to how a RADAR system groups points
@@ -148,8 +152,11 @@ function imu_update(name, imagedata, obj) {
 		distance = Math.sqrt(dx*dx+dy*dy);
 
 		if (distance < d*0.05) {
-                  draw_line(name, imagedata, last_x, last_y, x, y, 0, 0, 255, 255);
+                  draw_line(name, imagedata, last_x, last_y, x, y, [0, 0, 255, 255]);
                 }
+
+		// Draw a black pixel
+	        draw_point(name, imagedata, x, y, [0, 0, 0, 255]);
 		
 		// keep track of the last point
 		last_x = x;
