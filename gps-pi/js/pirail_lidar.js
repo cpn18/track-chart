@@ -85,7 +85,7 @@ function draw_line(name, imagedata, x1, y1, x2, y2, color) {
              }
          } else {  // slope greater than 1
              // sort the y end points
-	     if (y > y2) {
+	     if (y1 > y2) {
 	       start_x = x2;
 	       end_x = x1;
 	       start_y = y2;
