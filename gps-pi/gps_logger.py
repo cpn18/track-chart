@@ -40,7 +40,6 @@ class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
     def do_GET(self):
         """Respond to a GET request."""
-        global CURRENT
         global DONE
         global HOLD
         global MEMO
@@ -93,15 +92,10 @@ class MyHandler(BaseHTTPRequestHandler):
             return
         elif self.path == "/gps":
             content_type = "application/json"
-            CURRENT.update({
-                "temp": TEMP,
-                "gps_status": GPS_STATUS,
-                "gps_num_sat": GPS_NUM_SAT,
-                "gps_num_used": GPS_NUM_USED,
-                "hold": HOLD,
-                "time": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            })
-            output = json.dumps(CURRENT) + "\n"
+            if TPV['time'] < SKY['time']:
+                output = json.dumps([TPV, SKY]) + "\n"
+            else:
+                output = json.dumps([SKY, TPV]) + "\n"
         elif self.path == "/gps.html":
             with open("gps.html", "r") as j:
                 output = j.read()
@@ -134,7 +128,7 @@ def web_server(host_name, port_number):
 def gps_logger(output_directory):
     """ GPS Data Logger """
     global INLOCSYNC
-    global CURRENT, SKY, TPV
+    global SKY, TPV
     global DONE
     global HOLD
     global GPS_STATUS, GPS_NUM_SAT, GPS_NUM_USED
@@ -194,7 +188,6 @@ def gps_logger(output_directory):
                         continue
 
                 if 'lat' in obj and 'lon' in obj and 'time' in obj:
-                    CURRENT = obj
                     if not INLOCSYNC:
                         INLOCSYNC = True
                         print("%s Have location sync" % obj['time'])
@@ -244,8 +237,7 @@ def gps_logger_wrapper(output_directory):
 INLOCSYNC = False
 DONE = False
 VERSION = 9
-CURRENT = TPV = SKY = {}
-TEMP = 0
+TPV = SKY = {}
 HOLD = -1
 MEMO = ""
 
