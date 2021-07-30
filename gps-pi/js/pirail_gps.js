@@ -25,7 +25,7 @@ function hold()
   });
 }
 
-function gps_stream() {
+function gps_stream(viewport, imagedata) {
     const gpsStream = new EventSource("/gps-stream");
 
     console.log(gpsStream.readyState);
