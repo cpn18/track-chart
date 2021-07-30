@@ -1,6 +1,7 @@
 var m_to_ft = 3.28084;
 var ms_to_mph = 2.23694;
 var deg_to_rad = 0.0174533;
+var decay=10;
 
 function mark()
 {
@@ -90,7 +91,7 @@ function gps_stream(viewport, imagedata) {
 	// console.log(sky);
 	var used = 0;
 
-	fade_points(viewport, imagedata);
+	fade_points(viewport, imagedata, decay);
 
 	draw_circle(viewport, imagedata, 0.5 * canvas.width, 0.5 * canvas.height, 45, [0,0,0,255]);
 	draw_circle(viewport, imagedata, 0.5 * canvas.width, 0.5 * canvas.height, 90, [0,0,0,255]);
