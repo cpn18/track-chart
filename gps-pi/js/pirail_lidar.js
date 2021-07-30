@@ -1,7 +1,7 @@
 var scale=0.1;
 var decay=10;
 
-function imu_stream(name, imagedata)
+function lidar_stream(name, imagedata)
 {
   const lidarStream = new EventSource("/lidar-stream");
   console.log(lidarStream.readyState);
@@ -19,17 +19,17 @@ function imu_stream(name, imagedata)
 
   lidarStream.addEventListener("lidar", function(event) {
     var lidar = JSON.parse(event.data)
-    imu_update(name, imagedata, lidar);
+    lidar_update(name, imagedata, lidar);
   });
 }
 
-function imu_setup(name) {
+function lidar_setup(name) {
 	var canvas = document.getElementById(name);
 	var context = canvas.getContext("2d");
 	return context.createImageData(canvas.width, canvas.height);
 }
 
-function imu_update(name, imagedata, obj) {
+function lidar_update(name, imagedata, obj) {
 	var canvas = document.getElementById(name);
 	var context = canvas.getContext("2d");
 	var last_x = 0;

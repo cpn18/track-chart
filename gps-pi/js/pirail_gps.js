@@ -1,5 +1,6 @@
 var m_to_ft = 3.28084;
 var ms_to_mph = 2.23694;
+var deg_to_rad = 0.0174533;
 
 function mark()
 {
@@ -25,11 +26,20 @@ function hold()
   });
 }
 
+function gps_setup(viewport) {
+	var canvas = document.getElementById(viewport);
+	var context = canvas.getContext("2d");
+	return context.createImageData(canvas.width, canvas.height);
+}
+
 function gps_stream(viewport, imagedata) {
     const gpsStream = new EventSource("/gps-stream");
 
     console.log(gpsStream.readyState);
     console.log(gpsStream.url);
+
+    var canvas = document.getElementById(viewport);
+    var context = canvas.getContext("2d"); 
 
     gpsStream.onopen = function() {
       console.log("connection opened");
@@ -79,11 +89,32 @@ function gps_stream(viewport, imagedata) {
 	var sky = JSON.parse(event.data);
 	// console.log(sky);
 	var used = 0;
+
+	fade_points(viewport, imagedata);
+
 	for (var i=0; i<sky.satellites.length; i++) {
+	    az = sky.satellites[i].az;
+	    el = 90 - sky.satellites[i].el;
+	    //console.log(az, el);
+	    az = az * deg_to_rad;
 	    if (sky.satellites[i].used) {
 	        used ++;
+		color = [0, 255, 0, 255];
+	    } else {
+		    color = [255, 0, 0, 255];
 	    }
+	    x = el * Math.sin(az) + 0.5 * canvas.width;
+	    y = el * Math.cos(az) + 0.5 * canvas.height;
+
+	    draw_point(viewport, imagedata, x+1, y, color);
+	    draw_point(viewport, imagedata, x-1, y, color);
+	    draw_point(viewport, imagedata, x, y, color);
+	    draw_point(viewport, imagedata, x, y+1, color);
+	    draw_point(viewport, imagedata, x, y-1, color);
+
+	    draw_line(viewport, imagedata, 0.5*canvas.width, 0.5*canvas.height, x, y, color);
 	}
 	document.getElementById("gps_count").innerText = used + "/" + sky.satellites.length;
+	context.putImageData(imagedata, 0, 0);
     });
 }

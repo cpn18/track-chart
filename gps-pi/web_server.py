@@ -29,6 +29,7 @@ DOCUMENT_MAP = {
     "/pirail_imu.js": "js/pirail_imu.js",
     "/pirail_lidar.js": "js/pirail_lidar.js",
     "/pirail_lpcm.js": "js/pirail_lpcm.js",
+    "/pirail_draw.js": "js/pirail_draw.js",
 }
 
 MIME_MAP = {
