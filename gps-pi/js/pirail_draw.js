@@ -1,3 +1,5 @@
+var deg_to_rad = 0.0174533;
+
 function fade_points(name, imagedata, decay)
 {
 	var canvas = document.getElementById(name);
@@ -78,4 +80,19 @@ function draw_line(name, imagedata, x1, y1, x2, y2, color) {
 	       draw_point(name, imagedata, tx, ty, color);
 	     }
         }
+}
+
+function draw_circle(viewport, imagedata, cx, cy, r, color) {
+	last_x = 0;
+	last_y = 0;
+
+	for (a=0; a<360; a++) {
+		x = cx + r * Math.sin(a * deg_to_rad);
+		y = cy + r * Math.cos(a * deg_to_rad);
+		if (a > 0) {
+		    draw_line(viewport, imagedata, x, y, last_x, last_y, color);
+		}
+		last_x = x;
+		last_y = y;
+	}
 }

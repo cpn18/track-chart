@@ -92,6 +92,9 @@ function gps_stream(viewport, imagedata) {
 
 	fade_points(viewport, imagedata);
 
+	draw_circle(viewport, imagedata, 0.5 * canvas.width, 0.5 * canvas.height, 45, [0,0,0,255]);
+	draw_circle(viewport, imagedata, 0.5 * canvas.width, 0.5 * canvas.height, 90, [0,0,0,255]);
+
 	for (var i=0; i<sky.satellites.length; i++) {
 	    az = sky.satellites[i].az;
 	    el = 90 - sky.satellites[i].el;
