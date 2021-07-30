@@ -91,10 +91,17 @@ function gps_stream(viewport, imagedata) {
 	// console.log(sky);
 	var used = 0;
 
+	cx = 0.5 * canvas.width;
+	cy = 0.5 * canvas.height;
+
 	fade_points(viewport, imagedata, decay);
 
-	draw_circle(viewport, imagedata, 0.5 * canvas.width, 0.5 * canvas.height, 45, [0,0,0,255]);
-	draw_circle(viewport, imagedata, 0.5 * canvas.width, 0.5 * canvas.height, 90, [0,0,0,255]);
+	draw_circle(viewport, imagedata, cx, cy, 45, [0,0,0,255]);
+	draw_circle(viewport, imagedata, cx, cy, 90, [0,0,0,255]);
+	draw_line(viewport, imagedata, cx+45, cy, canvas.width, cy, [0,0,0,255]);
+	draw_line(viewport, imagedata, cx-45, cy, 0, cy, [0,0,0,255]);
+	draw_line(viewport, imagedata, cx, cy+45, cx, canvas.height, [0,0,0,255]);
+	draw_line(viewport, imagedata, cx, cy-45, cx, 0, [0,0,0,255]);
 
 	for (var i=0; i<sky.satellites.length; i++) {
 	    az = sky.satellites[i].az;
@@ -105,10 +112,11 @@ function gps_stream(viewport, imagedata) {
 	        used ++;
 		color = [0, 255, 0, 255];
 	    } else {
-		    color = [255, 0, 0, 255];
+	        color = [255, 0, 0, 255];
 	    }
-	    x = el * Math.sin(az) + 0.5 * canvas.width;
-	    y = el * Math.cos(az) + 0.5 * canvas.height;
+
+	    x = el * Math.sin(az) + cx;
+	    y = el * Math.cos(az) + cy;
 
 	    draw_point(viewport, imagedata, x+1, y, color);
 	    draw_point(viewport, imagedata, x-1, y, color);
