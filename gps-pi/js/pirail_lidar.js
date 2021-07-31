@@ -10,16 +10,19 @@ function lidar_stream(name, imagedata)
   lidarStream.onopen = function() {
     console.log("lidar connection opened");
     document.getElementById('msg').innerHTML = "&nbsp;";
+    document.getElementById('lidar_status').innerText = "...";
   };
 
   lidarStream.onerror = function() {
     console.log("lidar connection error");
     document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
+    document.getElementById('lidar_status').innerText = "OFF";
   };
 
   lidarStream.addEventListener("lidar", function(event) {
     var lidar = JSON.parse(event.data)
     lidar_update(name, imagedata, lidar);
+    document.getElementById('lidar_status').innerText = "ON";
   });
 }
 
@@ -71,6 +74,7 @@ function lidar_update(name, imagedata, obj) {
 		dx = last_x - x;      // run
 		distance = Math.sqrt(dx*dx+dy*dy);
 
+		// if distance between is less than 5% of the distance
 		if (distance < d*0.05) {
                   draw_line(name, imagedata, last_x, last_y, x, y, [0, 0, 255, 255]);
                 }
