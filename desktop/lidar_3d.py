@@ -5,18 +5,15 @@ import math
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
+import pirail
+
 OFFSET = 0
 RANGE = 360
 
 def read_file(filename):
     data = []
-    with open(filename) as f:
-        for line in f:
-            obj = json.loads(line)
-            if obj['class'] == "LIDAR":
-                data.append(obj)
-            else:
-                continue
+    for line_no,obj in pirail.read(filename, classes=['LIDAR']):
+        data.append(obj)
     return data
 
 def radial_to_xy(angle, distance):

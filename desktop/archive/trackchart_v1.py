@@ -14,6 +14,8 @@ import pickle
 import lidar_util
 import class_i as aar
 
+import pirail
+
 GPS_THRESHOLD = 9
 RAD_TO_DEG = 57.29578
 M_PI = 3.14159265358979323846
@@ -112,9 +114,6 @@ def parse_line(line):
 
     return obj
 
-def parse_time(time_string):
-    return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
-
 def read_data(tc):
     tc['D'] = []
     queue = []
@@ -192,7 +191,7 @@ def read_data(tc):
         if 'roll' in obj:
             continue
         if last_time is not None:
-            DT = (parse_time(obj['time']) - parse_time(last_time)).total_seconds()
+            DT = (pirail.parse_time(obj['time']) - pirail.parse_time(last_time)).total_seconds()
             last_time = obj['time']
         else:
             DT = 0

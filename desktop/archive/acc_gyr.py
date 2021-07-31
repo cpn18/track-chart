@@ -4,16 +4,14 @@ import datetime
 import json
 import math
 
+import pirail
+
 # Based on:
 # https://github.com/ozzmaker/BerryIMU/blob/master/python-BerryIMU-gryo-accel-compass/berryIMU-simple.py
 
 RAD_TO_DEG = 57.29578
 M_PI = 3.14159265358979323846
 AA = 0.40 # Complementary filter constant
-
-
-def parse_time(time_string):
-    return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 data=[]
 with open(sys.argv[1]) as f:
@@ -42,7 +40,7 @@ gyroXangle = gyroYangle = gyroZangle = CFangleX = CFangleY = CFangleZ = 0
 print("Time", "Lat", "Long", "AngleX", "AngleY", "AngleZ")
 last_time = data[0]['time']
 for obj in data:
-    DT = (parse_time(obj['time']) - parse_time(last_time)).total_seconds()
+    DT = (pirail.parse_time(obj['time']) - pirail.parse_time(last_time)).total_seconds()
 
     gyroXangle+=obj['gyro_x']*DT;
     gyroYangle+=obj['gyro_y']*DT;

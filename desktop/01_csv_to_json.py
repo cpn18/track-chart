@@ -7,12 +7,10 @@ import sys
 import datetime
 import math
 
+import pirail
+
 AA = 0.03 # Complementary filter constant
 M_PI = 3.14159265358979323846
-
-def parse_time(time_string):
-    """ Parse Time Field """
-    return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 if len(sys.argv) != 2:
     print("USAGE: %s data_file" % sys.argv[0])
@@ -49,7 +47,7 @@ for obj in data:
 
     # Time Delta
     if last_time is not None:
-        DT = (parse_time(obj['time']) - parse_time(last_time)).total_seconds()
+        DT = (pirail.parse_time(obj['time']) - pirail.parse_time(last_time)).total_seconds()
     else:
         DT = 0
     last_time = obj['time']

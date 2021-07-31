@@ -4,6 +4,8 @@ import datetime
 import json
 import math
 
+import pirail
+
 from PIL import Image, ImageDraw, ImageOps
 
 import geo
@@ -22,8 +24,64 @@ COLOR_RED=(255,0,0)
 COLOR_BLACK=(0,0,0)
 COLOR_WHITE=(255,255,255)
 
-def parse_time(time_string):
-    return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
+def geo_to_xy(lat, lon):
+    """ Convert Latitude/Longitude to x,y in meters """
+    latm = geo.latitude_to_meters(lat)
+    lonm = geo.longitude_to_meters(lon, lat)
+    x = (width/2) - (geo.longitude_to_meters(mid_lon,lat)-lonm)*scale
+    y = (height/2) + (geo.latitude_to_meters(mid_lat)-latm)*scale
+    return (x,y)
+
+def draw_gps_fix(obj,color):
+    """ Draw a GPS Fix """
+
+    # Sanity check, ignore data without a fix
+    if 'lat' not in obj or 'lon' not in obj:
+        return
+
+    # Draw Center Point
+    point = geo_to_xy(obj['lat'], obj['lon'])
+    draw.point(point, fill=color)
+
+    # Draw the Error Ellipse
+    if 'epx' in obj and 'epy' in obj: 
+        draw.ellipse([
+            point[0]-obj['epx'],
+            point[1]-obj['epy'],
+            point[0]+obj['epx'],
+            point[1]+obj['epy'],
+            ], fill=FILL, outline=color)
+
+    if 'speed' in obj and 'track' in obj and 'eps' in obj and 'epd' in obj:
+        # Draw the left, center and right tracks
+        newlat, newlon = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], obj['track']-obj['epd'])
+        draw.line([point, geo_to_xy( newlat, newlon)], fill=color)
+        newlat, newlon = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], obj['track'])
+        draw.line([point, geo_to_xy( newlat, newlon)], fill=color)
+        newlat, newlon = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], obj['track']+obj['epd'])
+        draw.line([point, geo_to_xy( newlat, newlon)], fill=color)
+
+        # Draw the maximum one-second range
+        north, _ = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], 0)
+        _, east = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], 90)
+        south, _ = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], 180)
+        _, west = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], 270)
+        draw.arc(
+            [geo_to_xy(north, west), geo_to_xy(south, east)],
+            start=obj['track']-obj['epd']-90,
+            end=obj['track']+obj['epd']-90,
+            fill=color)
+
+        # Draw the minimum one-second range
+        north, _ = geo.new_position(obj['lat'], obj['lon'], obj['speed']-obj['eps'], 0)
+        _, east = geo.new_position(obj['lat'], obj['lon'], obj['speed']-obj['eps'], 90)
+        south, _ = geo.new_position(obj['lat'], obj['lon'], obj['speed']-obj['eps'], 180)
+        _, west = geo.new_position(obj['lat'], obj['lon'], obj['speed']-obj['eps'], 270)
+        draw.arc(
+            [geo_to_xy(north, west), geo_to_xy(south, east)],
+            start=obj['track']-obj['epd']-90,
+            end=obj['track']+obj['epd']-90,
+            fill=color)
 
 try:
     filename = sys.argv[1]
@@ -47,48 +105,23 @@ z_sum = 0
 data=[]
 bad_data=[]
 acc_count = 0
-used = count = 0
-line_count = 0
-with open(filename) as f:
-    for line in f:
-        try:
-            obj = json.loads(line)
-        except Exception as ex:
-            print("LINE: %s" % line)
-            print("ERROR: %s" % ex)
-            sys.exit(1)
 
-        #if not ( 8.5 < obj['mileage'] < 8.8):
-        #    continue
-
-        if obj['class'] == 'ATT':
+for line_no, obj in pirail.read(filename, classes=['ATT', 'TPV']):
+    if obj['class'] == 'ATT':
+        data.append(obj)
+        x_sum += obj['acc_x']
+        y_sum += obj['acc_y']
+        z_sum += obj['gyro_z']
+        acc_count += 1
+    elif obj['class'] == 'TPV':
+        if obj['num_used'] >= GPS_THRESHOLD:
+            min_lat = min(min_lat, obj['lat'])
+            max_lat = max(max_lat, obj['lat'])
+            min_lon = min(min_lon, obj['lon'])
+            max_lon = max(max_lon, obj['lon'])
             data.append(obj)
-            x_sum += obj['acc_x']
-            y_sum += obj['acc_y']
-            z_sum += obj['gyro_z']
-            acc_count += 1
-        elif obj['class'] == 'TPV':
-            if used >= GPS_THRESHOLD:
-                line_count += 1
-                obj['used'] = used
-                obj['count'] = count
-                try:
-                    min_lat = min(min_lat, obj['lat'])
-                    max_lat = max(max_lat, obj['lat'])
-                    min_lon = min(min_lon, obj['lon'])
-                    max_lon = max(max_lon, obj['lon'])
-                    data.append(obj)
-                except KeyError:
-                    pass
-            else:
-                bad_data.append(obj)
-        elif obj['class'] == 'SKY':
-            data.append(obj)
-            used = 0
-            count = len(obj['satellites'])
-            for s in obj['satellites']:
-                if s['used']:
-                    used += 1
+        else:
+            bad_data.append(obj)
 
 margin = max((max_lat - min_lat), (max_lon - min_lon)) * 0.01
 min_lat = min_lat-margin
@@ -97,18 +130,17 @@ min_lon = min_lon-margin
 max_lon = max_lon+margin
 mid_lat = (min_lat+max_lat)/2
 mid_lon = (min_lon+max_lon)/2
-print(margin)
-print(min_lat, min_lon)
-print(mid_lat, mid_lon)
-print(max_lat, max_lon)
-print(geo.longitude_to_meters(max_lon - min_lon,mid_lat))
-print(geo.latitude_to_meters(max_lat - min_lat))
+print("Latitude (degrees): %f %f %f" % (min_lat, mid_lat, max_lat))
+print("Longitude (degrees): %f %f %f" % (min_lon, mid_lon, max_lon))
+lon_meters = geo.longitude_to_meters(max_lon - min_lon,mid_lat)
+lat_meters = geo.latitude_to_meters(max_lat - min_lat)
+print("Latitude (meters): %f" % lat_meters)
+print("Longitude (meters): %f" % lon_meters)
 scale = min(
     width/geo.longitude_to_meters(max_lon - min_lon,mid_lat),
     height/geo.latitude_to_meters(max_lat - min_lat)
 )
-print(scale)
-#scale=0.5
+print("Scale: %d" % scale)
 
 # Normallize Data by reseting to zero average
 if NORMALIZE:
@@ -116,14 +148,14 @@ if NORMALIZE:
     y_avg = y_sum / acc_count
     z_avg = z_sum / acc_count
     for obj in data:
-        if obj['class'] != "ATT":
-            continue
-        obj['acc_x'] -= x_avg
-        obj['acc_y'] -= y_avg
-        obj['gyro_z'] -= z_avg
-
+        if obj['class'] == "ATT":
+            obj['acc_x'] -= x_avg
+            obj['acc_y'] -= y_avg
+            obj['gyro_z'] -= z_avg
 
 # Try to seed the initial values
+
+# Find the first TPV record
 for i in range(0, len(data)):
     if data[i]['class'] == "TPV":
         y_speed = data[i]['speed']
@@ -132,15 +164,14 @@ for i in range(0, len(data)):
         latitude = data[i]['lat']
         break
 
+# Find the first ATT record
 for i in range(0, len(data)):
     if data[i]['class'] == "ATT":
-        last_time = parse_time(data[i]['time'])
+        last_time = pirail.parse_time(data[i]['time'])
 
-        #longitude = data[i]['lon']
         x_last_acc = data[i]['acc_x']
         x_speed = 0
 
-        #latitude = data[i]['lat']
         y_last_acc = data[i]['acc_y']
 
         z_last_acc = data[i]['gyro_z']
@@ -148,73 +179,6 @@ for i in range(0, len(data)):
 
 y_speed = None
 z_bearing = None
-
-def geo_to_xy(lat, lon):
-    latm = geo.latitude_to_meters(lat)
-    lonm = geo.longitude_to_meters(lon, lat)
-    x = (width/2) - (geo.longitude_to_meters(mid_lon,lat)-lonm)*scale
-    y = (height/2) + (geo.latitude_to_meters(mid_lat)-latm)*scale
-    return (x,y)
-
-def draw_gps_fix(obj,color):
-    """ Draw a GPS Fix """
-
-    # Draw Center Point
-    try:
-        point = geo_to_xy(obj['lat'], obj['lon'])
-        draw.point(point, fill=color)
-    except KeyError:
-        return
-
-    # Draw the Error Ellipse
-    try:
-        draw.ellipse([
-            point[0]-obj['epx'],
-            point[1]-obj['epy'],
-            point[0]+obj['epx'],
-            point[1]+obj['epy'],
-            ], fill=FILL, outline=color)
-    except KeyError:
-        pass
-
-    # Draw the left, center and right tracks
-    try:
-        newlat, newlon = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], obj['track']-obj['epd'])
-        draw.line([point, geo_to_xy( newlat, newlon)], fill=color)
-        newlat, newlon = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], obj['track'])
-        draw.line([point, geo_to_xy( newlat, newlon)], fill=color)
-        newlat, newlon = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], obj['track']+obj['epd'])
-        draw.line([point, geo_to_xy( newlat, newlon)], fill=color)
-    except KeyError:
-        pass
-
-    # Draw the maximum one-second range
-    try:
-        north, _ = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], 0)
-        _, east = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], 90)
-        south, _ = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], 180)
-        _, west = geo.new_position(obj['lat'], obj['lon'], obj['speed']+obj['eps'], 270)
-        draw.arc(
-            [geo_to_xy(north, west), geo_to_xy(south, east)],
-            start=obj['track']-obj['epd']-90,
-            end=obj['track']+obj['epd']-90,
-            fill=color)
-    except KeyError:
-        pass
-
-    # Draw the minimum one-second range
-    try:
-        north, _ = geo.new_position(obj['lat'], obj['lon'], obj['speed']-obj['eps'], 0)
-        _, east = geo.new_position(obj['lat'], obj['lon'], obj['speed']-obj['eps'], 90)
-        south, _ = geo.new_position(obj['lat'], obj['lon'], obj['speed']-obj['eps'], 180)
-        _, west = geo.new_position(obj['lat'], obj['lon'], obj['speed']-obj['eps'], 270)
-        draw.arc(
-            [geo_to_xy(north, west), geo_to_xy(south, east)],
-            start=obj['track']-obj['epd']-90,
-            end=obj['track']+obj['epd']-90,
-            fill=color)
-    except KeyError:
-        pass
 
 for obj in bad_data:
     if obj['class'] == "TPV":
@@ -225,15 +189,8 @@ output.write("Time DT Lat Long JerkY AccY SpeedY DR_Lat JerkX AccX SpeedX DR_Lon
 
 last_point = None
 for obj in data:
-    if obj['class'] == "SKY":
-        used = 0
-        count = len(obj['satellites'])
-        for s in obj['satellites']:
-            if s['used']:
-                used += 1
-        continue
-    elif obj['class'] == "TPV":
-        if obj['used'] >= GPS_THRESHOLD:
+    if obj['class'] == "TPV":
+        if obj['num_used'] >= GPS_THRESHOLD:
             latitude = obj['lat']
             longitude = obj['lon']
             y_speed = obj['speed']
@@ -250,7 +207,7 @@ for obj in data:
     elif y_speed is None or z_bearing is None:
         continue
 
-    current = parse_time(obj['time'])
+    current = pirail.parse_time(obj['time'])
 
     DT = (current - last_time).total_seconds()
 
@@ -300,4 +257,6 @@ for obj in data:
 
 output.close()
 
-image.save("dead_reckon.png")
+image_file = "dead_reckon.png"
+print("Saved Image: %s" % image_file)
+image.save(image_file)

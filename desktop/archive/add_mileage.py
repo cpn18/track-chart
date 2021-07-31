@@ -5,9 +5,7 @@ import geo
 import gps_to_mileage
 import datetime
 
-def parse_time(time_string):
-    return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
-
+import pirail
 
 if len(sys.argv) != 3:
     print("USAGE: %s data_file known_file" % sys.argv[0])
@@ -79,7 +77,7 @@ with open(sys.argv[1]) as f:
             #if 'mileage' in obj:
             #    mileage = obj['mileage']
             if 'time' in obj:
-                last_time = parse_time(obj['time'])
+                last_time = pirail.parse_time(obj['time'])
             if 'track' in obj:
                 z_bearing = obj['track']
             if 'lat' in obj:
@@ -99,7 +97,7 @@ print("Leftover elements = %d" % len(acclist))
 
 for obj in acclist:
     if obj['class'] == "ATT":
-        current = parse_time(obj['time'])
+        current = pirail.parse_time(obj['time'])
         DT = (current - last_time).total_seconds()
 
         y_speed += -obj['acc_y'] * DT

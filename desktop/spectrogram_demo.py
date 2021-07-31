@@ -5,6 +5,8 @@ import math
 import sys
 import json
 
+import pirail
+
 # Fixing random state for reproducibility
 np.random.seed(19680801)
 
@@ -12,28 +14,19 @@ x_data=[]
 y_data=[]
 z_data=[]
 t_stamp=[]
-with open(sys.argv[1], "r") as f:
-    for line in f:
-        if line[0] == "#":
-            continue
-        items = line.split()
+for line_no,obj in pirail.read(sys.argv[1], classes=['ATT']):
+    ax = obj['acc_x']
+    ay = obj['acc_y']
+    az = obj['acc_z']
+    ax = obj['gyro_x']
+    ay = obj['gyro_y']
+    az = obj['gyro_z']
+    ts = np.datetime64(obj['time'].replace("Z", ""))
 
-        if items[1] == "ATT":
-            obj = json.loads(" ".join(items[2:-1]))
-            ax = obj['acc_x']
-            ay = obj['acc_y']
-            az = obj['acc_z']
-            ax = obj['gyro_x']
-            ay = obj['gyro_y']
-            az = obj['gyro_z']
-            ts = np.datetime64(obj['time'].replace("Z", ""))
-        else:
-            continue
-
-        t_stamp.append(ts)
-        x_data.append(ax)
-        y_data.append(ay)
-        z_data.append(az)
+    t_stamp.append(ts)
+    x_data.append(ax)
+    y_data.append(ay)
+    z_data.append(az)
 
 dt = 0.01
 t = np.arange(0.0, dt*len(t_stamp), dt)

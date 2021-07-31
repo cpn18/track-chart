@@ -7,6 +7,8 @@ import plate_c as aar_plate
 import class_i as fra_class
 import lidar_a1m8 as lidar_util
 
+import pirail
+
 # Image Size
 WIDTH=500
 HEIGHT=700
@@ -264,20 +266,17 @@ def clearance(filename):
     data = [99999]*360
     print(data)
     latitude = longitude = mileage = speed = 0
-    with open(filename, "r") as f:
-        for line in f:
-            obj = json.loads(line)
-            if obj['class'] == "LIDAR":
-                timestamp = obj['time']
-                for angle, distance in obj['scan']:
-                    distance = lidar_util.estimate_from_lidar(float(distance))
-                    if distance > 1000 and speed > .5:
-                        i = round(float(angle)) % 360
-                        data[i] = min(data[i], float(distance))
-            elif obj['class'] == "TPV":
-                if 'speed' in obj:
-                    speed = to_mph(obj['speed'])
-                    print(speed)
+    for line_no,obj in pirail.read(filename, classes=['TPV', 'LIDAR']):
+        if obj['class'] == "LIDAR":
+            timestamp = obj['time']
+            for angle, distance in obj['scan']:
+                distance = lidar_util.estimate_from_lidar(float(distance))
+                if distance > 1000 and speed > .5:
+                    i = round(float(angle)) % 360
+                    data[i] = min(data[i], float(distance))
+        elif obj['class'] == "TPV":
+            if 'speed' in obj:
+                speed = to_mph(obj['speed'])
 
     report = plot(data, timestamp, latitude, longitude, mileage, speed, 0)
     print(report)
@@ -286,56 +285,48 @@ def main(filename):
     last_lat = last_lon = speed = 0
     slice_count = 0
     data = [0] * 360
-    ghost = [0] * 360
-    with open(filename.replace("json", "kml"),"w") as k:
+    output = filename.replace("json", "kml")
+    with open(output, "w") as k:
         k.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         k.write('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
         k.write('<Document>\n')
-        with open(filename, "r") as f:
+        for line_no,obj in pirail.read(filename, classes=['TPV', 'LIDAR'])
             count = 0
-            for line in f:
-                obj = json.loads(line)
-                if obj['class'] == "TPV" and 'speed' in obj:
-                        speed = obj['speed']
-                elif obj['class'] == "LIDAR" and speed >= MIN_SPEED:
-                    data = [0]*360
-                    #for i in range(0,360):
-                    #    ghost[i] -= 1
-                    #    if ghost[i] == 0:
-                    #        data[i] = 0
-                    for angle, distance in obj['scan']:
-                        distance = lidar_util.estimate_from_lidar(float(distance))
-                        i = round(float(angle)) % 360
-                        data[i] = distance
-                        ghost[i] = GHOST
+            if obj['class'] == "TPV" and 'speed' in obj:
+                speed = obj['speed']
+            elif obj['class'] == "LIDAR" and speed >= MIN_SPEED:
+                data = [0]*360
+                for angle, distance in obj['scan']:
+                    distance = lidar_util.estimate_from_lidar(float(distance))
+                    i = round(float(angle)) % 360
+                    data[i] = distance
 
                     report = plot(data, obj['time'], obj['lat'], obj['lon'], obj['mileage'], speed, slice_count)
 
-                    if report['gauge_error'] or report['plate_error']:
-                        count += 1
-                        if OUTPUT:
-                            if (last_lat != obj['lat'] or last_lon != obj['lon']) and count > 10:
-                                print("%d %0.6f %0.6f %0.6f %0.2f %d" % (slice_count, obj['lat'], obj['lon'], obj['mileage'], report['gauge'], report['plate_score']))
-                                k.write('<Placemark>\n')
-                                k.write('<name>Point %d</name>\n' % slice_count)
-                                k.write('<description>\n')
-                                k.write('Mileage = %0.2f\n' % obj['mileage'])
-                                if report['gauge_error']:
-                                    k.write('Gage = %0.f in\n' % report['gauge'])
-                                if report['plate_error']:
-                                    k.write(aar_plate.full_name + ' obstruction')
-                                k.write('</description>\n')
-                                k.write('<Point>\n')
-                                k.write('<coordinates>%0.6f,%0.6f,%0.6f</coordinates>\n' % (obj['lon'],obj['lat'],obj['alt']))
-                                k.write('</Point>\n')
-                                k.write('</Placemark>\n')
-                            last_lat = obj['lat']
-                            last_lon = obj['lon']
-                    else:
-                        count = 0
-                    slice_count += 1
+                if report['gauge_error'] or report['plate_error']:
+                    count += 1
+                    if OUTPUT:
+                        if (last_lat != obj['lat'] or last_lon != obj['lon']) and count > 10:
+                            print("%d %0.6f %0.6f %0.6f %0.2f %d" % (slice_count, obj['lat'], obj['lon'], obj['mileage'], report['gauge'], report['plate_score']))
+                            k.write('<Placemark>\n')
+                            k.write('<name>Point %d</name>\n' % slice_count)
+                            k.write('<description>\n')
+                            k.write('Mileage = %0.2f\n' % obj['mileage'])
+                            if report['gauge_error']:
+                                k.write('Gage = %0.f in\n' % report['gauge'])
+                            if report['plate_error']:
+                                k.write(aar_plate.full_name + ' obstruction')
+                            k.write('</description>\n')
+                            k.write('<Point>\n')
+                            k.write('<coordinates>%0.6f,%0.6f,%0.6f</coordinates>\n' % (obj['lon'],obj['lat'],obj['alt']))
+                            k.write('</Point>\n')
+                            k.write('</Placemark>\n')
+                        last_lat = obj['lat']
+                        last_lon = obj['lon']
                 else:
-                    ghost = [0] * 360
+                    count = 0
+                slice_count += 1
+
         k.write('</Document>\n')
         k.write('</kml>\n')
 

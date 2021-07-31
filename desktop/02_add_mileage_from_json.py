@@ -5,71 +5,60 @@ import geo
 import gps_to_mileage
 import datetime
 
-def parse_time(time_string):
-    return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
-
+import pirail
 
 if len(sys.argv) != 3:
     print("USAGE: %s json_file known_file" % sys.argv[0])
     sys.exit(1)
 
-GPS_THRESHOLD = 0
+filename = sys.argv[1]
+known_file = sys.argv[2]
 
-GPS = gps_to_mileage.Gps2Miles(sys.argv[2])
+GPS_THRESHOLD = 0
+GPS_MIN_MODE = 3
+
+GPS = gps_to_mileage.Gps2Miles(known_file)
 
 acclist = []
 data = []
 last_tpv = None
-used = count = 0
-with open(sys.argv[1]) as f:
-    for line in f:
-        obj = json.loads(line)
-        if 'class' not in obj:
+
+for line_no, obj in pirail.read(filename):
+    if obj['class'] == "SKY":
+        acclist.append(obj)
+    elif obj['class'] == "ATT":
+        acclist.append(obj)
+    elif obj['class'] == "LIDAR":
+        acclist.append(obj)
+    elif obj['class'] == "WAV":
+        acclist.append(obj)
+    elif obj['class'] == "TPV":
+        if obj['num_used'] < GPS_THRESHOLD or obj['mode'] < GPS_MIN_MODE:
             continue
-        if obj['class'] == "SKY":
-            acclist.append(obj)
-            used = 0
-            count = len(obj['satellites'])
-            for s in obj['satellites']:
-                if s['used']:
-                    used += 1
-            print("%d/%d" % (used,count))
-            data.append(obj)
-        elif obj['class'] == "LIDAR":
-            acclist.append(obj)
-        elif obj['class'] == "WAV":
-            acclist.append(obj)
-        elif obj['class'] == "TPV" and used >= GPS_THRESHOLD:
-            if obj['mode'] < 3:
-                continue
-            if last_tpv is not None:
-                if len(acclist) > 0:
-                    time_start = parse_time(obj['time'])
-                    time_delta = time_start - parse_time(last_tpv['time'])
-                    delta_lat = (obj['lat'] - last_tpv['lat'])
-                    delta_lon = (obj['lon'] - last_tpv['lon'])
-                    delta_alt = (obj['alt'] - last_tpv['alt'])
-                    print ("delta_lat", delta_lat)
-                    print ("delta_lon", delta_lon)
-                    print ("time_delta", time_delta.total_seconds())
-                    for acc in acclist:
-                        acc_time = parse_time(acc['time'])
+        if last_tpv is not None:
+            if len(acclist) > 0:
+                time_start = pirail.parse_time(obj['time'])
+                time_delta = time_start - pirail.parse_time(last_tpv['time'])
+                delta_lat = (obj['lat'] - last_tpv['lat'])
+                delta_lon = (obj['lon'] - last_tpv['lon'])
+                delta_alt = (obj['alt'] - last_tpv['alt'])
+                #print ("delta_lat", delta_lat)
+                #print ("delta_lon", delta_lon)
+                #print ("time_delta", time_delta.total_seconds())
+                for acc in acclist:
+                    acc_time = pirail.parse_time(acc['time'])
 
-                        millsec = (acc_time - time_start).total_seconds() / time_delta.total_seconds()
+                    millsec = (acc_time - time_start).total_seconds() / time_delta.total_seconds()
 
-                        acc['lat'] = last_tpv['lat'] + millsec*delta_lat
-                        acc['lon'] = last_tpv['lon'] + millsec*delta_lon
-                        acc['alt'] = last_tpv['alt'] + millsec*delta_alt
-                        acc['mileage'], acc['certainty'] = GPS.find_mileage(acc['lat'], acc['lon'])
-                        data.append(acc)
-            obj['mileage'], obj['certainty'] = GPS.find_mileage(obj['lat'], obj['lon'])
-            if 8.6 <= obj['mileage'] <= 8.7:
-                print(obj, len(acclist))
-            data.append(obj)
-            last_tpv = obj
-            acclist = []
-        elif obj['class'] == "ATT":
-            acclist.append(obj)
+                    acc['lat'] = last_tpv['lat'] + millsec*delta_lat
+                    acc['lon'] = last_tpv['lon'] + millsec*delta_lon
+                    acc['alt'] = last_tpv['alt'] + millsec*delta_alt
+                    acc['mileage'], acc['certainty'] = GPS.find_mileage(acc['lat'], acc['lon'])
+                    data.append(acc)
+        obj['mileage'], obj['certainty'] = GPS.find_mileage(obj['lat'], obj['lon'])
+        data.append(obj)
+        last_tpv = obj
+        acclist = []
 
 print("Leftover elements = %d" % len(acclist))
 
@@ -79,7 +68,7 @@ SORTBY='time'
 if SORTBY != 'time':
     data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
 
-with open(sys.argv[1].replace(".json", "_with_mileage_sort_by_%s.json" % SORTBY), "w") as f:
+with open(filename.replace(".json", "_with_mileage_sort_by_%s.json" % SORTBY), "w") as f:
     for obj in data:
         f.write(json.dumps(obj)+"\n")
 

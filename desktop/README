@@ -1,0 +1,8 @@
+01_csv_to_json.py
+
+Converts the PiRail CSV files into JSON.  The file contains one JSON
+record on each line.
+
+02_add_mileage_from_json.py
+
+Using "known" data points, adds estimated mileage to each JSON record.

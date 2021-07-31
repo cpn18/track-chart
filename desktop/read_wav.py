@@ -6,9 +6,6 @@ import numpy as np
 SCALE=0.5
 UPSCALE=2.0
 
-filename="/home/jminer/hobo/20201108153645_left.wav"
-filename="/run/media/jminer/EE17-B3FB/PIRAIL/20210606/202106061327_left.wav"
-
 def read_wav(filename):
     x = []
     xr = []
@@ -49,4 +46,4 @@ def read_wav(filename):
     plt.show()
 
 if __name__ == "__main__":
-    read_wav(filename)
+    read_wav(sys.argv[1])

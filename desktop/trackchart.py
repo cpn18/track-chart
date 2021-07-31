@@ -15,6 +15,8 @@ import pickle
 import lidar_util
 import class_i as aar
 
+import pirail
+
 TIME_THRESHOLD = 3600 # seconds
 GPS_THRESHOLD = 10 # number of used satellites
 MILEAGE_THRESHOLD = 0.005 # miles
@@ -62,77 +64,6 @@ def draw_title(tc, title="PiRail"):
     draw.text((x, y), title)
     del draw
 
-def parse_line(line):
-    if line[1] == "SKY":
-        obj = json.loads(" ".join(line[2:-1]))
-    elif line[1] == "TPV":
-        obj = json.loads(" ".join(line[2:-1]))
-    elif line[1] == "ATT":
-        obj = json.loads(" ".join(line[2:-1]))
-    elif line[1] in ["CONFIG", "LIDAR", "LOG"]:
-        return None
-    elif line[1] == "G":
-        obj = {
-            'lat': float(line[2]),
-            'lon': float(line[3]),
-        }
-        try:
-            obj.update({'alt': float(line[4]),})
-        except ValueError:
-            pass
-        try:
-            obj.update({'epx': float(line[5]),})
-        except ValueError:
-            pass
-        try:
-            obj.update({'epy': float(line[6]),})
-        except ValueError:
-            pass
-        try:
-            obj.update({'epv': float(line[7]),})
-        except ValueError:
-            pass
-        try:
-            obj.update({'speed': float(line[8]),})
-        except ValueError:
-            pass
-        try:
-            obj.update({'eps': float(line[9]),})
-        except ValueError:
-            pass
-        try:
-            obj.update({'track': float(line[10]),})
-        except ValueError:
-            pass
-    elif line[1] == "A":
-        obj = {
-            'acc_x': float(line[2]),
-            'acc_y': float(line[3]),
-            'acc_z': float(line[4]),
-            'gyro_x': float(line[5]),
-            'gyro_y': float(line[6]),
-            'gyro_z': float(line[7]),
-        }
-    elif line[1] == "L":
-        obj = {
-            'lidar': eval(line[2]),
-        }
-    elif line[1] == "M":
-        return None
-    else:
-        print(line)
-        sys.exit(1)
-
-    if not 'time' in obj: 
-        obj.update({'time': line[0]})
-    if not 'class' in obj: 
-        obj.update({'class': line[1]})
-
-    return obj
-
-def parse_time(time_string):
-    return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
-
 def read_data(tc):
     tc['D'] = []
     queue = []
@@ -140,7 +71,6 @@ def read_data(tc):
 
     if tc['data_file'] is None:
         return
-
 
     try:
         if is_newer(tc['data_file']+".pickle", tc['data_file']):
@@ -151,9 +81,8 @@ def read_data(tc):
         print(ex)
         pass
 
-    with open(tc['data_file']) as f:
-        for line in f:
-            tc['D'].append(json.loads(line))
+    for line_no,obj in pirail.read(tc['data_file']):
+        tc['D'].append(obj)
 
     #print ("entries", len(tc['D']))
 
@@ -169,7 +98,7 @@ def read_data(tc):
             continue
 
         if last_time is not None:
-            DT = (parse_time(obj['time']) - parse_time(last_time)).total_seconds()
+            DT = (pirail.parse_time(obj['time']) - pirail.parse_time(last_time)).total_seconds()
             last_time = obj['time']
         else:
             DT = 0
@@ -753,7 +682,7 @@ def string_chart_by_time(tc):
                 skip = True
             else:
                 skip = False
-            objtime = parse_time(obj['time'])
+            objtime = pirail.parse_time(obj['time'])
             if 'speed' in obj:
                 speed = obj['speed']
             if mintime is None or objtime < mintime:

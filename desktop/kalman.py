@@ -5,25 +5,17 @@ from numpy import pi, cos, sin, sqrt, diag
 from numpy.linalg import inv
 from numpy.random import randn
 
+import pirail
+
 dt = 1.0
 
 # position
 x = []
 y = []
-with open(sys.argv[1], "r") as f:
-    for line in f:
-        if line[0] == "#":
-            continue
-        items = line.split()
-        if items[1] == "TPV":
-            obj = json.loads(" ".join(items[2:-1]))
-        #elif items[1] == "SKY":
-        #    obj = json.loads(" ".join(items[2:-1]))
-        else:
-            continue
-        if 'lon' in obj and 'lat' in obj:
-            x.append(obj['lon'])
-            y.append(obj['lat'])
+for line_no,obj in pirail.read(sys.argv[1], classes=['TPV']):
+    if 'lon' in obj and 'lat' in obj:
+        x.append(obj['lon'])
+        y.append(obj['lat'])
 
 # velocity
 dxdt = [0]

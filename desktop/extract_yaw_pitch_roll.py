@@ -1,10 +1,19 @@
+#!/usr/bin/env python3
+
 import sys
 import json
 
-print("Time", "Latitude", "Longitude", "Yaw", "Pitch", "Roll")
-with open(sys.argv[1], "r") as f:
-    for line in f:
-        obj = json.loads(line)
-        if 'roll' in obj:
-            print(obj['time'], obj['lat'], obj['lon'], obj['yaw'], obj['pitch'], obj['roll'])
+import pirail
 
+print("Time Latitude Longitude Yaw Pitch Roll")
+for line_no, obj in pirail.read(sys.argv[1], classes=['ATT']):
+    if 'roll' in obj:
+        print("%s %f %f %f %f %f" % (
+            obj['time'],
+            obj['lat'],
+            obj['lon'],
+            obj['yaw'],
+            obj['pitch'],
+            obj['roll'],
+            )
+        )
