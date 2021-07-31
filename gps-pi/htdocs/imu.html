@@ -4,6 +4,7 @@
 <title>PiRail IMU Status</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script type="text/javascript" src="/jquery.js"></script>
+<script type="text/javascript" src="/pirail_draw.js"></script>
 <script type="text/javascript" src="/pirail_imu.js"></script>
 </head>
 <body>
@@ -23,10 +24,13 @@
 <tr><th align="right">IMU:</th><td id="imu_status" align="right">OFF</td><td></td></tr>
 <tr><td colspan=3 align=center><i><p id="time"></p></i></td><tr>
 </table>
+<br>
+<canvas id="viewport" width="256" height="256">
 <script>
     $(document).ready(function()
     {
-        imu_stream();
+        imagedata = imu_setup("viewport");
+        imu_stream("viewport", imagedata);
     });
 </script>
 </body>

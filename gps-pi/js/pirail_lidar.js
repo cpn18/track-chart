@@ -49,9 +49,11 @@ function lidar_update(name, imagedata, obj) {
 
 	// The center of the LIDAR hub is offset toward the bottom
 	// of the bit map
-	x = x_origin * canvas.width;
-	y = y_origin * canvas.height;
-	draw_point(name, imagedata, x, y, [0, 255, 0, 255]);
+	cx = x_origin * canvas.width;
+	cy = y_origin * canvas.height;
+	draw_point(name, imagedata, cx, cy, [0, 255, 0, 255]);
+	draw_circle(name, imagedata, cx, cy, 1000*scale, [0, 255, 0, 255]);
+	draw_circle(name, imagedata, cx, cy, 2000*scale, [0, 255, 0, 255]);
 
 	// Process all the data in the scan array
 	for (var i=0; i<obj.scan.length; i++) {
