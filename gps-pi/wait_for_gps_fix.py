@@ -5,6 +5,24 @@ Wait for GPS Fix and Set System Time
 import os
 import sys
 import gps
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """ Threaded HTTP Server """
+
+class MyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/favicon.ico":
+            self.send_error(404)
+        else:
+            self.send_response(200)
+            output="<html><head><meta http-equiv=\"refresh\" content=\"1;URL='/'\" /></head><body><h1 align=center>Waiting for GPS Sync... Check Antenna!</h1></body></html>"
+            self.send_header("Content-type", "text/html")
+            self.send_header("Content-length", str(len(output)))
+            self.end_headers()
+            self.wfile.write(output.encode('utf-8'))
 
 def set_date(gps_date):
     """ Set the system clock """
@@ -42,8 +60,17 @@ def wait_for_timesync():
             print(ex)
             sys.exit(1)
 
+def web_server(httpd):
+    httpd.serve_forever()
+
 if __name__ == "__main__":
+    httpd = ThreadedHTTPServer(("", 80), MyHandler)
+    Twww = threading.Thread(target=web_server, args=(httpd,))
+    Twww.start()
+
     # Make sure we have a time sync
     wait_for_timesync()
-
-sys.exit(0)
+    httpd.shutdown()
+    httpd.server_close()
+    Twww.join()
+    sys.exit(0)
