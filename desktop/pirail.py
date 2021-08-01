@@ -52,3 +52,8 @@ def parse_time(time_string):
     Parse GPS time string to datetime
     """
     return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+def vector_to_coordinates(angle, distance):
+    x = d * math.sin(math.radians(angle))
+    y = d * math.cos(math.radians(angle))
+    return (x, y)

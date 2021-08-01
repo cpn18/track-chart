@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Based on a script from Kyle Masters
+
 if [ "$1" == "" ]; then
 	echo "USGAGE: $0 output_file"
 	exit 1

@@ -1,6 +1,10 @@
+"""
+Based on:
+
+https://stackoverflow.com/questions/15736995/how-can-i-quickly-estimate-the-distance-between-two-latitude-longitude-points
+"""
 from math import degrees,radians, cos, sin, asin, sqrt,atan2
 
-# https://stackoverflow.com/questions/15736995/how-can-i-quickly-estimate-the-distance-between-two-latitude-longitude-points
 def haversine(lon1,lat1,lon2,lat2):
   """
   Calculate the great circle distance between two points
@@ -31,18 +35,19 @@ def great_circle(lat1,lon1,lat2,lon2):
 
 ####
 
-METERS_TO_DEGREES = 111111.0
+LATITUDE_TO_METERS = 111128.0
+LONGITUDE_TO_METERS = 111120.0
 def meters_to_latitude(meters):
-    return meters / METERS_TO_DEGREES
+    return meters / LATITUDE_TO_METERS
 
 def latitude_to_meters(lat):
-    return lat * METERS_TO_DEGREES
+    return lat * LATITUDE_TO_METERS
 
 def meters_to_longitude(meters, lat=0):
-    return meters / (METERS_TO_DEGREES * cos(radians(lat)))
+    return meters / (LONGITUDE_TO_METERS * cos(radians(lat)))
 
 def longitude_to_meters(lon, lat=0):
-    return lon * (METERS_TO_DEGREES * cos(radians(lat)))
+    return lon * (LONGITUDE_TO_METERS * cos(radians(lat)))
 
 def new_position(lat, lon, distance, bearing):
     angle = radians(bearing)
@@ -52,9 +57,9 @@ def new_position(lat, lon, distance, bearing):
 
 if __name__ == "__main__":
     # Unit Testing
-    print(new_position(0,0,111111,0))
+    print(new_position(0,0,LATITUDE_TO_METERS,0))
     print(new_position(0,0,111111,45))
-    print(new_position(0,0,111111,90))
+    print(new_position(0,0,LONGITUDE_TO_METERS,90))
     print(new_position(0,0,111111,135))
-    print(new_position(0,0,111111,180))
-    print(new_position(0,0,111111,270))
+    print(new_position(0,0,LATITUDE_TO_METERS,180))
+    print(new_position(0,0,LONGITUDE_TO_METERS,270))

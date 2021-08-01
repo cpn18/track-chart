@@ -5,24 +5,8 @@ import math
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
+import lidar_a1m8 as lidar_util
 import pirail
-
-OFFSET = 0
-RANGE = 360
-
-def read_file(filename):
-    data = []
-    for line_no,obj in pirail.read(filename, classes=['LIDAR']):
-        data.append(obj)
-    return data
-
-def radial_to_xy(angle, distance):
-    a = round(angle+OFFSET) % RANGE
-    d = float(distance)
-    x = d * math.sin(math.radians(a))
-    y = d * math.cos(math.radians(a))
-    return (x, y)
-
 
 def main():
     try:
@@ -31,19 +15,22 @@ def main():
         print("USAGE: %s filename" % sys.argv[0])
         sys.exit(1)
 
+    data = []
+    for line_no,obj in pirail.read(filename, classes=['LIDAR']):
+        data.append(obj)
+
     x_data=[]
     y_data=[]
     z_data=[]
     count = 1
-    data = read_file(filename)
     base_mileage = data[0]['mileage']
     for scan in data:
         count += 1
-        scan_data = scan['scan']
         if count % 10 == 0:
-            for angle, distance in scan_data:
+            for angle, distance in scan['scan']:
+                distance = lidar_util.estimate_from_lidar(float(distance))
                 if distance > 0.0:
-                    x, y = radial_to_xy(angle, distance)
+                    x, y = pirail.vector_to_coordinates(angle+OFFSET, distance)
                     x_data.append(x)
                     y_data.append(y)
                     z_data.append(scan['mileage'] - base_mileage)

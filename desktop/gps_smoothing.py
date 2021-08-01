@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+"""
+GPS Smoothing
+"""
 import sys
 import json
 import math

@@ -18,12 +18,6 @@ THRESHOLD = 500 # mm
 
 MM_TO_INCH = 0.0393701
 
-def ad_to_xy(a, d):
-    """ Convert Angle/Distance to X/Y """
-    x = d * math.sin(math.radians(a))
-    y = d * math.cos(math.radians(a))
-    return (x, y)
-
 def my_min(data, threshold):
     """ Find a minimum above a threshold """
     retval = 999999
@@ -47,7 +41,7 @@ def main(filename):
                 a = round(angle+OFFSET) % RANGE
                 d = float(distance)
                 if d > 0:
-                    (x, y) = ad_to_xy(a, d)
+                    (x, y) = pirail.vector_to_coordinates(a, d)
                     s[a] = y
                     data[a].append(d)
 
@@ -72,7 +66,7 @@ def main(filename):
                 avgd[a] = d
             else:
                 d = 0
-            (x, y) = ad_to_xy(a, d)
+            (x, y) = pirail.vector_to_coordinates(a, d)
             if a == 0:
                 trend = 0
             elif d > avgd[a-1]:
@@ -102,7 +96,7 @@ def main(filename):
                 d = my_min(data[a], THRESHOLD) 
             else:
                 d = 0
-            (x, y) = ad_to_xy(a, d)
+            (x, y) = pirail.vector_to_coordinates(a, d)
             f.write("%d %f %f %f\n" % (a, d, x, y))
 
 if len(sys.argv) != 2:
