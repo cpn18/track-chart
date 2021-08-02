@@ -21,8 +21,11 @@ function lidar_stream(name, imagedata)
 
   lidarStream.addEventListener("lidar", function(event) {
     var lidar = JSON.parse(event.data)
-    lidar_update(name, imagedata, lidar);
-    document.getElementById('lidar_status').innerText = "ON";
+    // console.log(lidar);
+    if (lidar.scan != undefined ) {
+      lidar_update(name, imagedata, lidar);
+      document.getElementById('lidar_status').innerText = "ON";
+    }
   });
 }
 
