@@ -12,12 +12,14 @@ import pirail
 AA = 0.03 # Complementary filter constant
 M_PI = 3.14159265358979323846
 
-if len(sys.argv) != 2:
-    print("USAGE: %s data_file" % sys.argv[0])
+if len(sys.argv) < 2:
+    print("USAGE: %s [args] data_file" % sys.argv[0])
     sys.exit(1)
+else:
+    data_file = sys.argv[-1]
 
 data = []
-with open(sys.argv[1]) as f:
+with open(data_file) as f:
     for line in f:
         line = line.replace("'", '"')
         line = line.replace("True", "true")
@@ -103,6 +105,6 @@ for obj in data:
 #        obj['pitch'] -= avg_pitch
 #        obj['yaw'] -= avg_yaw
 
-with open(sys.argv[1].replace('.csv', '.json'), "w") as f:
+with open(data_file.replace('.csv', '.json'), "w") as f:
     for obj in data:
         f.write(json.dumps(obj)+"\n")

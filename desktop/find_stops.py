@@ -7,9 +7,9 @@ import pirail
 TIME_THRESHOLD = 30
 
 try:
-    filename = sys.argv[1]
+    filename = sys.argv[-1]
 except IndexError:
-    print("USAGE: %s datafile.json" % sys.argv[0])
+    print("USAGE: %s [args] data_file.json" % sys.argv[0])
     sys.exit(1)
 
 last_speed = None

@@ -10,9 +10,9 @@ import pirail
 
 def main():
     try:
-        filename = sys.argv[1]
+        filename = sys.argv[-1]
     except:
-        print("USAGE: %s filename" % sys.argv[0])
+        print("USAGE: %s [args] data_file.json" % sys.argv[0])
         sys.exit(1)
 
     data = []

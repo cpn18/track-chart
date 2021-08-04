@@ -35,7 +35,7 @@ def main(filename):
     with open("clearance.csv", "w") as clearances:
         clearances.write("Date Time Mileage Clearance\n")
     
-        for line_no, obj in pirail.read(sys.argv[1], classes=['LIDAR']):
+        for line_no, obj in pirail.read(filename, classes=['LIDAR']):
             for angle, distance in obj['scan']:
                 distance = lidar_util.estimate_from_lidar(distance)
                 a = round(angle+OFFSET) % RANGE
@@ -99,8 +99,10 @@ def main(filename):
             (x, y) = pirail.vector_to_coordinates(a, d)
             f.write("%d %f %f %f\n" % (a, d, x, y))
 
-if len(sys.argv) != 2:
+if len(sys.argv) < 2:
     print("USAGE: %s data_file.json" % sys.argv[0])
     sys.exit(1)
 
-main(sys.argv[1])
+data_file = sys.argv[-1]
+
+main(data_file)

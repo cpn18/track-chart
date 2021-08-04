@@ -12,7 +12,7 @@ dt = 1.0
 # position
 x = []
 y = []
-for line_no,obj in pirail.read(sys.argv[1], classes=['TPV']):
+for line_no,obj in pirail.read(sys.argv[-1], classes=['TPV']):
     if 'lon' in obj and 'lat' in obj:
         x.append(obj['lon'])
         y.append(obj['lat'])

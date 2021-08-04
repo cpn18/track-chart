@@ -10,10 +10,10 @@ def main():
       tc = trackchart.new([
            (1024,768),
            20,
-           float(sys.argv[1]),
-           float(sys.argv[2]),
+           float(sys.argv[-3]),
+           float(sys.argv[-2]),
            "../known/wolfeboro.csv",
-           sys.argv[3],
+           sys.argv[-1],
            ])
     except (IndexError,ValueError):
       print("Usage: %s start_mile end_mile data.cvs" % sys.argv[0])
@@ -34,7 +34,7 @@ def main():
     trackchart.sidings(tc)
     trackchart.draw_title(tc)
 
-    filename = "images/wolfeboro_%s_%s.png" % (sys.argv[1], sys.argv[2])
+    filename = "images/wolfeboro_%s_%s.png" % (sys.argv[-3], sys.argv[-2])
     tc['image'].save(filename)
     os.system("eog %s" % filename)
 

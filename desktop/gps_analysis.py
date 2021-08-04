@@ -14,7 +14,7 @@ GPS_THRESHOLD = 0
 def main(filename):
 
     print("Time Latitude Longitude Used Count")
-    for line_no, obj in pirail.read(sys.argv[1], classes=['SKY', 'TPV']):
+    for line_no, obj in pirail.read(filename, classes=['SKY', 'TPV']):
         if obj['class'] == "SKY":
             used=count=0
             for s in obj['satellites']:
@@ -27,7 +27,7 @@ def main(filename):
                     print("%s %f %f %d %d" % (obj['time'], obj['lat'], obj['lon'], used, count))
 
 if len(sys.argv) < 2:
-    print("USAGE: %s datafile.json" % sys.argv[0])
+    print("USAGE: %s [args] data_file.json" % sys.argv[0])
     sys.exit(1)
 
-main(sys.argv[1])
+main(sys.argv[-1])

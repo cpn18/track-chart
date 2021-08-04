@@ -336,9 +336,9 @@ def main(filename):
 #sys.exit(0)
 
 try:
-    datafile = sys.argv[1]
+    datafile = sys.argv[-1]
 except:
-    print("USAGE: %s data.json" % sys.argv[0])
+    print("USAGE: %s [args] data_file.json" % sys.argv[0])
     sys.exit(1)
 
 if ANGLE_OFFSET == 0:

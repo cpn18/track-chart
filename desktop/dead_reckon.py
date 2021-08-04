@@ -84,9 +84,9 @@ def draw_gps_fix(obj,color):
             fill=color)
 
 try:
-    filename = sys.argv[1]
+    filename = sys.argv[-1]
 except IndexError:
-    print("USGAE: %s datafile.json" % sys.argv[0])
+    print("USGAE: %s [args] data_file.json" % sys.argv[0])
     sys.exit(1)
 
 ###

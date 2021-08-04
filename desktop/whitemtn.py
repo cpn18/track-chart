@@ -13,8 +13,8 @@ def main():
     """
     try:
         mychart = trackchart.new([(1024, 768),
-                                 20, float(sys.argv[1]), float(sys.argv[2]),
-                                 "../known/whitemnt.csv", sys.argv[3]])
+                                 20, float(sys.argv[-3]), float(sys.argv[-2]),
+                                 "../known/whitemnt.csv", sys.argv[-1]])
     except (IndexError, ValueError):
         print("Usage: %s start_mile end_mile file.json" % sys.argv[0])
         sys.exit()
@@ -53,7 +53,7 @@ def main():
     trackchart.string_chart_by_time(mychart)
 
 
-    filename = "images/whitemtn_%s_%s.png" % (sys.argv[1], sys.argv[2])
+    filename = "images/whitemtn_%s_%s.png" % (sys.argv[-3], sys.argv[-2])
     mychart['image'].save(filename)
     os.system("eog %s" % filename)
 

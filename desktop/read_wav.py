@@ -46,4 +46,4 @@ def read_wav(filename):
     plt.show()
 
 if __name__ == "__main__":
-    read_wav(sys.argv[1])
+    read_wav(sys.argv[-1])

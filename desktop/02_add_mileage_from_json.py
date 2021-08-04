@@ -7,12 +7,12 @@ import datetime
 
 import pirail
 
-if len(sys.argv) != 3:
-    print("USAGE: %s json_file known_file" % sys.argv[0])
+if len(sys.argv) < 3:
+    print("USAGE: %s [args] json_file known_file" % sys.argv[0])
     sys.exit(1)
 
-filename = sys.argv[1]
-known_file = sys.argv[2]
+json_file = sys.argv[-2]
+known_file = sys.argv[-1]
 
 GPS_THRESHOLD = 0
 GPS_MIN_MODE = 3
@@ -23,7 +23,7 @@ acclist = []
 data = []
 last_tpv = None
 
-for line_no, obj in pirail.read(filename):
+for line_no, obj in pirail.read(json_file):
     if obj['class'] == "SKY":
         acclist.append(obj)
     elif obj['class'] == "ATT":
@@ -68,7 +68,7 @@ SORTBY='time'
 if SORTBY != 'time':
     data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
 
-with open(filename.replace(".json", "_with_mileage_sort_by_%s.json" % SORTBY), "w") as f:
+with open(json_file.replace(".json", "_with_mileage_sort_by_%s.json" % SORTBY), "w") as f:
     for obj in data:
         f.write(json.dumps(obj)+"\n")
 

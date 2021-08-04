@@ -10,7 +10,11 @@ import pirail
 
 GPS_THRESHOLD = 10
 
-filename = sys.argv[1]
+if len(sys.argv) < 2:
+    print("USAGE: %s [args] data_file.json" % sys.argv[0])
+    sys.exit(1)
+
+filename = sys.argv[-1]
 output = filename.replace(".json", ".kml")
 
 with open(output, "w") as kml:
