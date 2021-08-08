@@ -52,14 +52,17 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_header("content-type", content_type)
             self.end_headers()
             while not DONE:
-                lines = [
-                    "event: att\n",
-                    "data: " + json.dumps(ATT) + "\n",
-                    "\n",
-                ]
-                for line in lines:
-                    self.wfile.write(line.encode('utf-8'))
-                time.sleep(STREAM_DELAY)
+                try:
+                    lines = [
+                        "event: att\n",
+                        "data: " + json.dumps(ATT) + "\n",
+                        "\n",
+                    ]
+                    for line in lines:
+                        self.wfile.write(line.encode('utf-8'))
+                    time.sleep(STREAM_DELAY)
+                except BrokenPipeError, ConnectionResetError:
+                    break
             return
         else:
             self.send_error(404, self.path)

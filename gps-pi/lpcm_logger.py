@@ -44,14 +44,17 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_header("content-type", content_type)
             self.end_headers()
             while not DONE:
-                lines = [
-                    "event: lpcm\n",
-                    "data: " + json.dumps(LPCM_DATA) + "\n",
-                    "\n",
-                ]
-                for line in lines:
-                    self.wfile.write(line.encode('utf-8'))
-                time.sleep(STREAM_DELAY)
+                try:
+                    lines = [
+                        "event: lpcm\n",
+                        "data: " + json.dumps(LPCM_DATA) + "\n",
+                        "\n",
+                    ]
+                    for line in lines:
+                        self.wfile.write(line.encode('utf-8'))
+                    time.sleep(STREAM_DELAY)
+                except BrokenPipeError, ConnectionResetError:
+                    break
             return
         elif self.path == "/lpcm.html":
             with open("lpcm.html", "r") as j:

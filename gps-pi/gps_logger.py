@@ -68,27 +68,30 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", content_type)
             self.end_headers()
             while not DONE:
-                if TPV['time'] < SKY['time']:
-                    lines = [
-                        "event: tpv\n",
-                        "data: "+json.dumps(TPV) + "\n",
-                        "\n",
-                        "event: sky\n",
-                        "data: "+json.dumps(SKY) + "\n",
-                        "\n",
-                    ]
-                else:
-                    lines = [
-                        "event: sky\n",
-                        "data: "+json.dumps(SKY) + "\n",
-                        "\n",
-                        "event: tpv\n",
-                        "data: "+json.dumps(TPV) + "\n",
-                        "\n",
-                    ]
-                for line in lines:
-                    self.wfile.write(line.encode('utf-8'))
-                time.sleep(STREAM_DELAY)
+                try:
+                    if TPV['time'] < SKY['time']:
+                        lines = [
+                            "event: tpv\n",
+                            "data: "+json.dumps(TPV) + "\n",
+                            "\n",
+                            "event: sky\n",
+                            "data: "+json.dumps(SKY) + "\n",
+                            "\n",
+                        ]
+                    else:
+                        lines = [
+                            "event: sky\n",
+                            "data: "+json.dumps(SKY) + "\n",
+                            "\n",
+                            "event: tpv\n",
+                            "data: "+json.dumps(TPV) + "\n",
+                            "\n",
+                        ]
+                    for line in lines:
+                        self.wfile.write(line.encode('utf-8'))
+                    time.sleep(STREAM_DELAY)
+                except BrokenPipeError, ConnectionResetError:
+                    break
             return
         elif self.path == "/gps":
             content_type = "application/json"

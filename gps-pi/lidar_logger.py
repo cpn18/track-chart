@@ -57,14 +57,17 @@ class MyHandler(BaseHTTPRequestHandler):
             s.send_header("content-type", content_type)
             s.end_headers()
             while not DONE:
-                lines = [
-                        "event: lidar\n",
-                        "data: " + json.dumps(LIDAR_DATA) + "\n",
-                        "\n",
-                        ]
-                for line in lines:
-                    s.wfile.write(line.encode('utf-8'))
-                time.sleep(STREAM_DELAY)
+                try:
+                    lines = [
+                            "event: lidar\n",
+                            "data: " + json.dumps(LIDAR_DATA) + "\n",
+                            "\n",
+                            ]
+                    for line in lines:
+                        s.wfile.write(line.encode('utf-8'))
+                    time.sleep(STREAM_DELAY)
+                except BrokenPipeError, ConnectionResetError:
+                    break
             return
         else:
             s.send_error(404, s.path)
