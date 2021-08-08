@@ -290,7 +290,7 @@ def main(filename):
         k.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         k.write('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
         k.write('<Document>\n')
-        for line_no,obj in pirail.read(filename, classes=['TPV', 'LIDAR'])
+        for line_no,obj in pirail.read(filename, classes=['TPV', 'LIDAR']):
             count = 0
             if obj['class'] == "TPV" and 'speed' in obj:
                 speed = obj['speed']
