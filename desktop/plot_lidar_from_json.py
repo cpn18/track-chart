@@ -20,7 +20,7 @@ LIDAR_Y = .8 * HEIGHT
 LIDAR_RADIUS = .4 * WIDTH
 #LIDAR_HEIGHT = 381.0 # mm above rail
 LIDAR_HEIGHT = (304 + 352) / 2
-LIDAR_OFFSET = (-944 + 390) / 2
+LIDAR_OFFSET = 0
 
 
 DIRECTION=-1        # -1=backwards, 1=forwards
