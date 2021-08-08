@@ -140,7 +140,7 @@ scale = min(
     width/geo.longitude_to_meters(max_lon - min_lon,mid_lat),
     height/geo.latitude_to_meters(max_lat - min_lat)
 )
-print("Scale: %d" % scale)
+print("Scale: %f" % scale)
 
 # Normallize Data by reseting to zero average
 if NORMALIZE:
