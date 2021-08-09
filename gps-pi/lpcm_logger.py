@@ -110,7 +110,7 @@ def lpcm_logger(output_directory):
                     if os.path.isfile(os.path.join(output_directory, capture_file)):
                         LPCM_DATA[channel] = capture_file
 
-                if os.system("./lpcm_collect.sh %s %s \"%s\"" % (output_directory, filename, config['arecord'])) != 0:
+                if os.system("./lpcm_collect.sh %s %s \"%s\"" % (output_directory, filename, config['lpcm']['arecord'])) != 0:
                     time.sleep(ERROR_DELAY)
                 else:
                     lpcm_output.write(
