@@ -22,6 +22,7 @@
     "lpcm": {
 	"enable": false,
 	"cmd": ["lpcm_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
+        "arecord": "--format S16_LE --rate=44100 --channels=1 --duration=60",
         "port": 8083
     }
 }

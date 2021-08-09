@@ -3,20 +3,22 @@
 outputdir=$1
 timestamp=$2
 
+if [ "$3" == "" ]; then
+  args="--format S16_LE --rate=44100 --channels=1 --duration=60"
+else
+  args=$3
+fi
+
 collect()
 {
   arecord \
-    -d 60 \
     --device=hw:CARD=Device,DEV=0 \
-    --format S16_LE \
-    --rate 44100 \
-    -c1 ${outputdir}/${timestamp}_left.wav &
+    ${args} \
+    ${outputdir}/${timestamp}_left.wav &
   arecord \
-    -d 60 \
     --device=hw:CARD=Device_1,DEV=0 \
-    --format S16_LE \
-    --rate 44100 \
-    -c1 ${outputdir}/${timestamp}_right.wav &
+    ${args} \
+    ${outputdir}/${timestamp}_right.wav &
   wait
 }
 
