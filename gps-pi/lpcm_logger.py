@@ -53,7 +53,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     for line in lines:
                         self.wfile.write(line.encode('utf-8'))
                     time.sleep(STREAM_DELAY)
-                except BrokenPipeError, ConnectionResetError:
+                except (BrokenPipeError, ConnectionResetError):
                     break
             return
         elif self.path == "/lpcm.html":

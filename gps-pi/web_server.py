@@ -154,7 +154,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     for line in response.iter_lines():
                         line = (line.decode('utf-8') + "\n").encode('utf-8')
                         self.wfile.write(line)
-                except BrokenPipeError, ConnectionResetError:
+                except (BrokenPipeError, ConnectionResetError):
                     break
             return
         elif self.path.startswith("/mark?memo=") or self.path.startswith("/hold?memo="):
@@ -205,7 +205,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     for line in response.iter_lines():
                         line = (line.decode('utf-8') + "\n").encode('utf-8')
                         self.wfile.write(line)
-                except BrokenPipeError, ConnectionResetError:
+                except (BrokenPipeError, ConnectionResetError):
                     break
             return
         elif self.path == "/lidar":
@@ -243,7 +243,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     for line in response.iter_lines():
                         line = (line.decode('utf-8') + "\n").encode('utf-8')
                         self.wfile.write(line)
-                except BrokenPipeError, ConnectionResetError:
+                except (BrokenPipeError, ConnectionResetError):
                     break
             return
         elif self.path == "/lpcm":
@@ -281,7 +281,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     for line in response.iter_lines():
                         line = (line.decode('utf-8') + "\n").encode('utf-8')
                         self.wfile.write(line)
-                except BrokenPipeError, ConnectionResetError:
+                except (BrokenPipeError, ConnectionResetError):
                     break
             return
         else:
