@@ -41,6 +41,7 @@ function imu_stream(viewport, imagedata) {
 	// Fade Out
 	fade_points(viewport, imagedata, decay);
 
+	// Draw Gauge
 	cx = 0.5 * canvas.width;
 	cy = 0.5 * canvas.height;
 	draw_circle(viewport, imagedata, cx, cy, 100, [0,0,0,255]);
@@ -48,9 +49,9 @@ function imu_stream(viewport, imagedata) {
 	draw_line(viewport, imagedata, cx, 10, cx, canvas.height-10, [0,0,0,255]);
 	
 	// Roll
-	a1 = 180+att.roll;
+	a1 = 180-att.roll;
 	d1 = 100;
-	a2 = att.roll;
+	a2 = -att.roll;
 	d2 = 100;
 
 	// Pitch
@@ -67,15 +68,15 @@ function imu_stream(viewport, imagedata) {
 	draw_line(viewport, imagedata, yx, cy-10, yx, cy+10, [0,255,0,255]);
 
 	// ACC X
-	ax = cx + att.acc_x
+	ax = cx + 2*att.acc_x
 	draw_line(viewport, imagedata, ax, cy-10, ax, cy+10, [255,0,0,255]);
 
 	// ACC Y
-	ay = cy + att.acc_y
+	ay = cy + 2*att.acc_y
 	draw_line(viewport, imagedata, cx-10, ay, cx+10, ay, [255,0,0,255]);
 
 	// ACC_Z
-	draw_circle(viewport, imagedata, ax, ay, att.acc_z, [255,0,0,255]);
+	draw_circle(viewport, imagedata, ax, ay, 2*att.acc_z, [255,0,0,255]);
 
 	context.putImageData(imagedata, 0, 0);
     });
