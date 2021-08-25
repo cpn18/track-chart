@@ -49,9 +49,9 @@ function imu_stream(viewport, imagedata) {
 	draw_line(viewport, imagedata, cx, 10, cx, canvas.height-10, [0,0,0,255]);
 	
 	// Roll
-	a1 = 180-att.roll;
+	a1 = att.roll - 180;
 	d1 = 100;
-	a2 = -att.roll;
+	a2 = att.roll;
 	d2 = 100;
 
 	// Pitch
