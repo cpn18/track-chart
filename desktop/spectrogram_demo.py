@@ -37,10 +37,10 @@ Fs = int(1.0 / dt)  # the sampling frequency
 
 fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(nrows=6, sharex=True)
 ax1.plot(t, x_data)
-ax2.plot(t, y_data)
-ax3.plot(t, z_data)
-Pxx, freqs, bins, im = ax4.specgram(x_data, NFFT=NFFT, Fs=Fs, noverlap=900)
-Pxx, freqs, bins, im = ax5.specgram(y_data, NFFT=NFFT, Fs=Fs, noverlap=900)
+ax3.plot(t, y_data)
+ax5.plot(t, z_data)
+Pxx, freqs, bins, im = ax2.specgram(x_data, NFFT=NFFT, Fs=Fs, noverlap=900)
+Pxx, freqs, bins, im = ax4.specgram(y_data, NFFT=NFFT, Fs=Fs, noverlap=900)
 Pxx, freqs, bins, im = ax6.specgram(z_data, NFFT=NFFT, Fs=Fs, noverlap=900)
 # The `specgram` method returns 4 objects. They are:
 # - Pxx: the periodogram

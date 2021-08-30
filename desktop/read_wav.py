@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 import wave
 import matplotlib.pyplot as plt
 import numpy as np
@@ -39,9 +40,9 @@ def read_wav(filename):
     t = np.arange(0.0,Fs*len(ts), Fs) 
 
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4, sharex=True)
-    ax1.plot(t, x)
-    ax2.plot(t, xr)
-    Pxx, freqs, bins, im = ax3.specgram(x, NFFT=NFFT, Fs=Fr, noverlap=900)
+    Pxx, freqs, bins, im = ax1.specgram(x, NFFT=NFFT, Fs=Fr, noverlap=900)
+    ax2.plot(t, x)
+    ax3.plot(t, xr)
     Pxx, freqs, bins, im = ax4.specgram(xr, NFFT=NFFT, Fs=Fr, noverlap=900)
     plt.show()
 

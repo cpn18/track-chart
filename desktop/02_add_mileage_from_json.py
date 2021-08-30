@@ -24,13 +24,7 @@ data = []
 last_tpv = None
 
 for line_no, obj in pirail.read(json_file):
-    if obj['class'] == "SKY":
-        acclist.append(obj)
-    elif obj['class'] == "ATT":
-        acclist.append(obj)
-    elif obj['class'] == "LIDAR":
-        acclist.append(obj)
-    elif obj['class'] == "WAV":
+    if obj['class'] in ["SKY", "ATT", "LIDAR", "LPCM"]:
         acclist.append(obj)
     elif obj['class'] == "TPV":
         if obj['num_used'] < GPS_THRESHOLD or obj['mode'] < GPS_MIN_MODE:
