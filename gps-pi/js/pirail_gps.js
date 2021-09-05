@@ -62,19 +62,19 @@ function gps_stream(viewport, imagedata) {
         // console.log(tpv);
 
 	document.getElementById("gpstime").innerHTML = tpv.time.replace('T', '<br>');
-	document.getElementById("ept").innerText = "+/-"+tpv.ept+"s";
+	document.getElementById("ept").innerHTML = "&plusmn;"+tpv.ept+"s";
 
-	document.getElementById("lat").innerText = tpv.lat.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits: 6});
-	document.getElementById("epy").innerText = "+/-"+Math.round(tpv.epy*m_to_ft)+"ft";
+	document.getElementById("lat").innerHTML = tpv.lat.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;";
+	document.getElementById("epy").innerHTML = "&plusmn;"+Math.round(tpv.epy*m_to_ft)+"ft";
 
-	document.getElementById("lon").innerText = tpv.lon.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits: 6});
-	document.getElementById("epx").innerText = "+/-"+Math.round(tpv.epx*m_to_ft)+"ft";
+	document.getElementById("lon").innerHTML = tpv.lon.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;";
+	document.getElementById("epx").innerHTML = "&plusmn;"+Math.round(tpv.epx*m_to_ft)+"ft";
 
-	document.getElementById("alt").innerText = tpv.alt.toLocaleString(undefined,{minimumFractionDigits:1, maximumFractionDigits: 1});
-	document.getElementById("epv").innerText = "+/-"+Math.round(tpv.epv*m_to_ft)+"ft";
+	document.getElementById("alt").innerHTML = tpv.alt.toLocaleString(undefined,{minimumFractionDigits:1, maximumFractionDigits: 1})+"&rsquo;";
+	document.getElementById("epv").innerHTML = "&plusmn;"+Math.round(tpv.epv*m_to_ft)+"ft";
 
 	document.getElementById("speed").innerText = Math.round(tpv.speed*ms_to_mph);
-	document.getElementById("eps").innerText = "+/-"+Math.round(tpv.eps*ms_to_mph)+"mph";
+	document.getElementById("eps").innerHTML = "&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph";
 
 	document.getElementById("mode").innerText = tpv.mode + "D ";
 
