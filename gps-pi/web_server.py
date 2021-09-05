@@ -12,6 +12,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import requests
 
+STREAM_DELAY = 1
+
 DOCUMENT_MAP = {
     "/": "htdocs/index.html",
     "/index.html": "htdocs/index.html",
@@ -281,6 +283,32 @@ class MyHandler(BaseHTTPRequestHandler):
                     for line in response.iter_lines():
                         line = (line.decode('utf-8') + "\n").encode('utf-8')
                         self.wfile.write(line)
+                except (BrokenPipeError, ConnectionResetError):
+                    break
+            return
+        elif self.path == "/sys-stream":
+            content_type = "text/event-stream"
+            headers = {
+                "accept": content_type,
+            }
+            self.send_response(200)
+            self.send_header("Content-type", content_type)
+            self.end_headers()
+            while not DONE:
+                stat = os.statvfs(OUTPUT)
+
+                SYS = {
+                    "used_percent": 1 - int(stat.f_bavail / stat.f_blocks),
+                }
+                try:
+                    lines = [
+                        "event: sys\n",
+                        "data: " + json.dumps(SYS) + "\n",
+                        "\n",
+                    ]
+                    for line in lines:
+                        self.wfile.write(line.encode('utf-8'))
+                    time.sleep(STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     break
             return

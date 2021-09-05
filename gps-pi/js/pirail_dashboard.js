@@ -40,6 +40,10 @@ function dashboard() {
     console.log(lpcmStream.readyState);
     console.log(lpcmStream.url);
 
+    const sysStream = new EventSource("/sys-stream");
+    console.log(sysStream.readyState);
+    console.log(sysStream.url);
+
     gpsStream.onopen = function() {
 	console.log("gps connection opened");
         document.getElementById("mode").innerText = "...";
@@ -129,6 +133,24 @@ function dashboard() {
 	var lpcm = JSON.parse(event.data);
 	// console.log(lpcm);
 	document.getElementById("lpcm_status").innerText = "ON";
+    });
+
+    sysStream.onopen = function() {
+	console.log("sys connection opened");
+        document.getElementById("used").innerText = "...";
+	};
+
+    sysStream.onerror = function() {
+      console.log("sys connection error");
+      document.getElementById("msg").innerHTML = "&nbsp;";
+      document.getElementById("used").innerText = "...";
+    };
+
+    sysStream.addEventListener("sys", function(event) {
+        // console.log(event);
+	var sys = JSON.parse(event.data);
+	// console.log(lpcm);
+	document.getElementById("used").innerText = sys.used_percent;
     });
 
   document.getElementById("msg").innerHTML = "&nbsp;";
