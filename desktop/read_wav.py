@@ -4,11 +4,15 @@ import wave
 import matplotlib.pyplot as plt
 import numpy as np
 
-SCALE=0.5
-UPSCALE=2.0
+
+TIME_ADJUST = True
+
+CROSS_RATIO = 0.75
+
+UPSCALE = 1.0
 
 def read_wav(filename):
-    x = []
+    xl = []
     xr = []
     ts = []
     with wave.open(filename, "rb") as wf:
@@ -19,7 +23,7 @@ def read_wav(filename):
         for i in range(params.nframes):
             data = wf.readframes(1)
             value = int.from_bytes(data, "little", signed=True)
-            x.append(value)
+            xl.append(value)
             ts.append(tc)
             tc += Fs
 
@@ -30,20 +34,56 @@ def read_wav(filename):
             value = int.from_bytes(data, "little", signed=True)
             xr.append(value)
 
-    for i in range(len(x)):
-        nx = UPSCALE*(x[i] - SCALE*xr[i])
-        xr[i] = UPSCALE*(xr[i] - SCALE*x[i])
-        x[i] = nx
+    if TIME_ADJUST:
+        mindiff=999999
+        minoffset=0
+        for offset in range(1000):
+            diffsum = 0
+            for i in range(500):
+                diffsum += xl[i] - xr[i+offset]
+            diffsum = abs(diffsum)
+            if diffsum < mindiff:
+                mindiff = diffsum
+                minoffset = offset
+        print("Offset = %d (samples)" % minoffset)
+
+        new_xl = [0] * len(xl)
+        new_xr = [0] * len(xl)
+        for i in range(len(xl)):
+            new_xl[i] = xl[i]
+            try:
+                new_xr[i] = xr[i + minoffset]
+            except IndexError:
+                new_xr[i] = 0
+
+        xl = new_xl
+        xr = new_xr
+
+    if CROSS_RATIO != 0:
+        for i in range(len(xl)):
+            xl_val = abs(xl[i])
+            xr_val = abs(xr[i])
+            if xl_val > xr_val:
+                xl[i] -= CROSS_RATIO * xr[i]
+            elif xr_val > xl_val:
+                xr[i] -= CROSS_RATIO * xl[i]
+
+    if UPSCALE != 1:
+        for i in range(len(xl)):
+            xl[i] *= UPSCALE
+            xr[i] *= UPSCALE
 
     NFFT = 1024
     t = np.array(ts)
     t = np.arange(0.0,Fs*len(ts), Fs) 
 
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4, sharex=True)
-    Pxx, freqs, bins, im = ax1.specgram(x, NFFT=NFFT, Fs=Fr, noverlap=900)
-    ax2.plot(t, x)
+    Pxx, freqs, bins, im = ax1.specgram(xl, NFFT=NFFT, Fs=Fr, noverlap=900)
+    ax2.plot(t, xl)
     ax3.plot(t, xr)
     Pxx, freqs, bins, im = ax4.specgram(xr, NFFT=NFFT, Fs=Fr, noverlap=900)
+
+    plt.title("Time Adjust = %s, Cross Ratio = %0.2f, Scaling = %0.2f" % (TIME_ADJUST, CROSS_RATIO, UPSCALE))
     plt.show()
 
 if __name__ == "__main__":
