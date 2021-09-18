@@ -298,7 +298,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 stat = os.statvfs(OUTPUT)
 
                 SYS = {
-                    "used_percent": 1 - int(stat.f_bavail / stat.f_blocks),
+                    "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
                 }
                 try:
                     lines = [
