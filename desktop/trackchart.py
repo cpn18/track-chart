@@ -884,7 +884,7 @@ def accel(tc):
 
     # Read from file
     for obj in tc['D']:
-        print(obj)
+        #print(obj)
         mileage = obj['mileage']
         if not(first <= mileage <= last):
             continue
