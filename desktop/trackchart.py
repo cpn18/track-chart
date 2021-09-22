@@ -20,10 +20,10 @@ import pirail
 TIME_THRESHOLD = 3600 # seconds
 GPS_THRESHOLD = 10 # number of used satellites
 MILEAGE_THRESHOLD = 0.005 # miles
+STRING_WIDTH = 2 # pixels
 
-RAD_TO_DEG = 57.29578
-M_PI = 3.14159265358979323846
 AA = 0.40 # Complementary filter constant
+MS_TO_MPH = 2.23694 # m/s to MPH
 
 COLORS = {
     "black": (0,0,0),
@@ -107,9 +107,9 @@ def read_data(tc):
         gyroXangle+=obj['gyro_x']*DT;
         gyroYangle+=obj['gyro_y']*DT;
         gyroZangle+=obj['gyro_z']*DT;
-        AccXangle = (float) (math.atan2(obj['acc_y'],obj['acc_z'])+M_PI)*RAD_TO_DEG;
-        AccYangle = (float) (math.atan2(obj['acc_z'],obj['acc_x'])+M_PI)*RAD_TO_DEG;
-        AccZangle = (float) (math.atan2(obj['acc_y'],obj['acc_x'])+M_PI)*RAD_TO_DEG;
+        AccXangle = math.degrees((float) (math.atan2(obj['acc_y'],obj['acc_z'])+math.pi));
+        AccYangle = math.degrees((float) (math.atan2(obj['acc_z'],obj['acc_x'])+math.pi));
+        AccZangle = math.degrees((float) (math.atan2(obj['acc_y'],obj['acc_x'])+math.pi));
         # Complementary Filter
         CFangleX=AA*(CFangleX+obj['gyro_x']*DT) +(1 - AA) * AccXangle;
         CFangleY=AA*(CFangleY+obj['gyro_y']*DT) +(1 - AA) * AccYangle;
@@ -680,12 +680,11 @@ def string_chart_by_time(tc):
             if obj['speed'] < obj['eps']:
                 if skip:
                     continue
-                skip = True
+                #skip = True
             else:
                 skip = False
             objtime = pirail.parse_time(obj['time'])
-            if 'speed' in obj:
-                speed = obj['speed']
+            speed = obj['speed']
             if mintime is None or objtime < mintime:
                 mintime = objtime
             if maxtime is None or objtime > maxtime:
@@ -704,7 +703,7 @@ def string_chart_by_time(tc):
     for obj in timedata:
         mileage = obj['mileage']
         objtime = obj['time']
-        speed = obj['speed'] * 2.23694
+        speed = obj['speed'] * MS_TO_MPH
         x = mile_to_pixel(tc, mileage-first)
         y = (im.size[1]-2*margin) * (objtime - mintime).total_seconds() / (maxtime-mintime).total_seconds() + margin
 
@@ -713,7 +712,7 @@ def string_chart_by_time(tc):
         else:
             timediff = (objtime - lasttime).total_seconds()
 
-        if speed > 20:
+        if speed > 25:
             color=COLORS['red']
         elif speed > 15:
             color=COLORS['orange']
@@ -725,7 +724,7 @@ def string_chart_by_time(tc):
         if lastx is None or timediff > TIME_THRESHOLD:
             draw.point((x, y), fill=color)
         else:
-            draw.line((lastx, lasty, x, y),fill=color)
+            draw.line((lastx, lasty, x, y), fill=color, width=STRING_WIDTH)
 
         lastx = x
         lasty = y
