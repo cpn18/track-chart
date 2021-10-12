@@ -27,14 +27,36 @@ with open(data_file) as f:
         if items[-1] != "*":
             continue
         print(" ".join(items[2:-1]))
-        obj = json.loads(" ".join(items[2:-1]))
+        try:
+            obj = json.loads(" ".join(items[2:-1]))
+        except json.decoder.JSONDecodeError:
+            # Ignore data that fails to parse JSON
+            continue
+
+        # Add fields if not present
         if not 'class' in obj:
             obj['class'] = 'DEBUG'
+        if not 'time' in obj:
+            obj['time'] = items[0]
+
         data.append(obj)
 
 SORTBY='time'
 if SORTBY != 'time':
     data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
+
+# Add num_sat and num_used
+num_sat = num_used = 0
+for obj in data:
+    if obj['class'] == "SKY":
+        num_sat = num_used = 0
+        for s in obj['satellites']:
+            num_sat += 1
+            if s['used']:
+                num_used += 1
+    elif obj['class'] == "TPV" and not 'num_used' in obj:
+        obj['num_sat'] = num_sat
+        obj['num_used'] = num_used
 
 # Calculate Yaw/Pitch/Roll
 # Based on:
