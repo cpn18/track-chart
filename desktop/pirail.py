@@ -5,6 +5,9 @@ import json
 import datetime
 import sys
 
+# Number of Satellites
+GPS_THRESHOLD = 10
+
 def string_to_val(string):
     """ Convert a string to a value """
     try:

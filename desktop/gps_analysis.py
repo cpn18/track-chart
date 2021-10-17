@@ -9,8 +9,6 @@ import json
 
 import pirail
 
-GPS_THRESHOLD = 0
-
 def main(filename):
     used=count=0
 
@@ -28,7 +26,7 @@ def main(filename):
             if 'num_used' in obj:
                 used = obj['num_used']
             if 'lat' in obj and 'lon' in obj:
-                if used >= GPS_THRESHOLD:
+                if used >= pirail.GPS_THRESHOLD:
                     print("%s %f %f %d %d" % (obj['time'], obj['lat'], obj['lon'], used, count))
 
 if len(sys.argv) < 2:

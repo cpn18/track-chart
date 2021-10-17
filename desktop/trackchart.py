@@ -11,14 +11,12 @@ import csv
 import json
 import gps_to_mileage
 import dateutil.parser as dp
-import pickle
 import lidar_util
 import class_i as aar
 
 import pirail
 
 TIME_THRESHOLD = 3600 # seconds
-GPS_THRESHOLD = 10 # number of used satellites
 MILEAGE_THRESHOLD = 0.005 # miles
 STRING_WIDTH = 2 # pixels
 
@@ -47,7 +45,6 @@ def new(args):
             'known_file': known_file,
             'data_file': data_file,
             'G': gps_to_mileage.Gps2Miles(known_file),
-            'D': [],
     }
 
 def is_newer(file1, file2):
@@ -64,76 +61,6 @@ def draw_title(tc, title="PiRail"):
     y = im.size[1] - y_size - 1
     draw.text((x, y), title)
     del draw
-
-def read_data(tc):
-    tc['D'] = []
-    queue = []
-    first = last = None
-
-    if tc['data_file'] is None:
-        return
-
-    try:
-        if is_newer(tc['data_file']+".pickle", tc['data_file']):
-            with open(tc['data_file']+".pickle","rb") as f:
-                tc['D'] = pickle.load(f)
-            return
-    except Exception as ex:
-        print(ex)
-        pass
-
-    for line_no,obj in pirail.read(tc['data_file']):
-        tc['D'].append(obj)
-
-    #print ("entries", len(tc['D']))
-
-    # Calculate Yaw/Pitch/Roll
-    # Based on:
-    # https://github.com/ozzmaker/BerryIMU/blob/master/python-BerryIMU-gryo-accel-compass/berryIMU-simple.py
-    gyroXangle = gyroYangle = gyroZangle = CFangleX = CFangleY = CFangleZ = 0
-    last_time = None
-    for obj in tc['D']:
-        if obj['class'] != "ATT":
-            continue
-        if 'roll' in obj and 'yaw' in obj and 'pitch' in obj:
-            continue
-
-        if last_time is not None:
-            DT = (pirail.parse_time(obj['time']) - pirail.parse_time(last_time)).total_seconds()
-            last_time = obj['time']
-        else:
-            DT = 0
-
-        gyroXangle+=obj['gyro_x']*DT;
-        gyroYangle+=obj['gyro_y']*DT;
-        gyroZangle+=obj['gyro_z']*DT;
-        AccXangle = math.degrees((float) (math.atan2(obj['acc_y'],obj['acc_z'])+math.pi));
-        AccYangle = math.degrees((float) (math.atan2(obj['acc_z'],obj['acc_x'])+math.pi));
-        AccZangle = math.degrees((float) (math.atan2(obj['acc_y'],obj['acc_x'])+math.pi));
-        # Complementary Filter
-        CFangleX=AA*(CFangleX+obj['gyro_x']*DT) +(1 - AA) * AccXangle;
-        CFangleY=AA*(CFangleY+obj['gyro_y']*DT) +(1 - AA) * AccYangle;
-        CFangleZ=AA*(CFangleZ+obj['gyro_z']*DT) +(1 - AA) * AccZangle;
-
-        obj['roll'] = CFangleY
-        obj['pitch'] = CFangleX
-        obj['yaw'] = CFangleZ
-
-
-    # Calculate Mileage
-    for obj in tc['D']:
-        if 'mileage' in obj:
-            continue
-        if 'lat' in obj and 'lon' in obj:
-            obj['mileage'], obj['certainty'] = tc['G'].find_mileage(obj['lat'], obj['lon'])
-        else:
-            obj['mileage'] = obj['certainty'] = 0
-
-    # Sort by mileage
-    tc['D'] = sorted(tc['D'], key=lambda k: k['mileage'], reverse=False)
-
-    with open(tc['data_file'] + ".pickle", "wb" ) as f:
-        pickle.dump(tc['D'], f, pickle.HIGHEST_PROTOCOL)
 
 def mile_to_pixel(tc, m):
     """
@@ -525,50 +452,19 @@ def controlpoints(tc):
 
 def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45, write_file=True):
     (first, last, pixel_per_mile) = tc['mileposts']
-    if input_data is None:
-        input_data = tc['D']
 
-    #print("Input=%d" % len(input_data))
     data = []
     used = 0
-    for obj in input_data:
-        if obj['class'] == "SKY":
-            used=0
-            for s in obj['satellites']:
-                if s['used']:
-                    used += 1
-            #print(used, len(obj['satellites']))
-            continue
-        elif obj['class'] != "TPV":
+    for line_no, obj in pirail.read(tc['data_file'], classes=['TPV'], args={
+            'start-mileage': first,
+            'end-mileage': last,
+        }):
+
+        if obj['num_used'] < pirail.GPS_THRESHOLD:
             continue
 
-        if used < GPS_THRESHOLD:
-            #print(used, "less than", GPS_THRESHOLD)
-            continue
-
-        #print(obj)
-
-        used = 0
-
-        mileage = obj['mileage']
-        if not (first <= mileage <= last):
-            continue
-        #if obj['speed'] <= obj['eps']:
-        #    print("too slow", obj)
-        #    continue
         try:
-            #print(mileage)
-            new_obj = {
-                'class': obj['class'],
-                'speed': obj['speed'],
-                'eps': obj['eps'],
-                'lat': obj['lat'],
-                'lon': obj['lon'],
-                'alt': obj['alt'],
-                'track': obj['track'],
-                'mileage': obj['mileage'],
-            }
-            data.append(new_obj)
+            data.append(obj)
         except KeyError as ex:
             print("skipped", ex, obj)
 
@@ -670,32 +566,33 @@ def string_chart_by_time(tc):
     skip = False
     lastm = None
     speed = 0
-    for obj in tc['D']:
-        mileage = obj['mileage']
-        if not(first <= mileage <= last):
+    for line_no, obj in pirail.read(tc['data_file'], classes=['TPV'], args={
+            'start-mileage': first,
+            'end-mileage': last,
+        }):
+ 
+        if obj['num_used'] < pirail.GPS_THRESHOLD:
             continue
-        if obj['class'] == "G" or obj['class'] == "TPV":
-            if obj['num_used'] < GPS_THRESHOLD:
-                continue
-            if obj['speed'] < obj['eps']:
-                if skip:
-                    continue
-                #skip = True
-            else:
-                skip = False
-            objtime = pirail.parse_time(obj['time'])
-            speed = obj['speed']
-            if mintime is None or objtime < mintime:
-                mintime = objtime
-            if maxtime is None or objtime > maxtime:
-                maxtime = objtime
-            if lastm is None or abs(mileage - lastm) >= MILEAGE_THRESHOLD:
-                timedata.append({
-                    'time': objtime,
-                    'mileage': mileage,
-                    'speed': speed,
-                })
-                lastm = mileage
+        #if obj['speed'] < obj['eps']:
+        #    if skip:
+        #        continue
+        #    skip = True
+        #else:
+        #    skip = False
+        mileage = obj['mileage']
+        objtime = pirail.parse_time(obj['time'])
+        speed = obj['speed']
+        if mintime is None or objtime < mintime:
+            mintime = objtime
+        if maxtime is None or objtime > maxtime:
+            maxtime = objtime
+        if lastm is None or abs(mileage - lastm) >= MILEAGE_THRESHOLD:
+            timedata.append({
+                'time': objtime,
+                'mileage': mileage,
+                'speed': speed,
+            })
+            lastm = mileage
 
     timedata = sorted(timedata, key=lambda k: k['time'], reverse=False)
 
@@ -882,11 +779,12 @@ def accel(tc):
     accel_file.write("mileage acc_x acc_y acc_z gyro_x gyro_y gyro_z\n")
 
     # Read from file
-    for obj in tc['D']:
+    for line_no, obj in pirail.read(tc['data_file'], args={
+            'start-mileage': first,
+            'end-mileage': last,
+        }):
         #print(obj)
         mileage = obj['mileage']
-        if not(first <= mileage <= last):
-            continue
 
         x = mile_to_pixel(tc, mileage-first)
 
@@ -974,7 +872,7 @@ def gage(tc):
     ghost = [0] * 360
     total_slope = total_slope_count = 0
     # Read from file
-    for obj in tc['D']:
+    for line_no, obj in pirail(tc['data_file']):
         if obj['class'] not in ["LIDAR", "L"]:
             continue
         mileage = obj['mileage']

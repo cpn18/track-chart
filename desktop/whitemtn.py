@@ -19,8 +19,6 @@ def main():
         print("Usage: %s start_mile end_mile file.json" % sys.argv[0])
         sys.exit()
 
-    trackchart.read_data(mychart)
-
     #print("border")
     #trackchart.border(mychart)
     print("mainline")

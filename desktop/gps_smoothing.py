@@ -8,12 +8,10 @@ import math
 
 import pirail
 
-GPS_THRESHOLD = 10
-
 data = []
 for line_no,obj in pirail.read(sys.argv[-1], classes=['SKY', 'TPV']):
     if obj['class'] == "TPV":
-        if obj['num_used'] >= GPS_THRESHOLD and 'lon' in obj and 'lat' in obj:
+        if obj['num_used'] >= pirail.GPS_THRESHOLD and 'lon' in obj and 'lat' in obj:
             data.append(obj)
     elif obj['class'] == "SKY":
         used = count = 0
