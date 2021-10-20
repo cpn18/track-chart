@@ -25,7 +25,7 @@ def main():
     trackchart.stations(tc)
     trackchart.elevation(tc)
     trackchart.curvature(tc)
-    trackchart.accel(tc)
+    trackchart.accel2(tc)
     trackchart.townlines(tc)
     trackchart.yardlimits(tc)
     trackchart.controlpoints(tc)

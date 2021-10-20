@@ -733,6 +733,65 @@ def curvature(tc):
 
     del draw
 
+def accel2(tc):
+    """
+    Draw Acceleration Data
+    """
+    scale = 1
+    im = tc['image']
+    margin = tc['margin']
+    (first, last, pixel_per_mile) = tc['mileposts']
+    draw = ImageDraw.Draw(im)
+
+    yz = int((im.size[1]-margin)*0.26)
+    ACCzp = [None] * im.size[0]
+    draw.text((margin, yz), "AZ", fill=COLORS['black'])
+
+    # Read from file
+    z_sum = z_count = 0
+    for line_no, obj in pirail.read(tc['data_file'], classes=["ATT"], args={
+            'start-mileage': first,
+            'end-mileage': last,
+        }):
+        z_sum += obj['acc_z']
+        z_count += 1
+    # Normalize data by subtracting the average
+    z_avg = z_sum / z_count
+
+    # Read from file again
+    for line_no, obj in pirail.read(tc['data_file'], classes=["TPV", "ATT"], args={
+            'start-mileage': first,
+            'end-mileage': last,
+        }):
+        mileage = obj['mileage']
+        x = mile_to_pixel(tc, mileage-first)
+        if obj['class'] == "TPV":
+            speed = obj['speed']
+            eps = obj['eps']
+        elif obj['class'] == "ATT":
+            if speed < eps:
+                pass
+            else:
+                ACCz = obj['acc_z'] - z_avg
+                # Look for maximum magnitude
+                if ACCzp[x] is None or abs(ACCz) > abs(ACCzp[x]):
+                    ACCzp[x] = ACCz
+
+    # Plot the data
+    last_x = None
+    for x in range(margin, im.size[0]-2*margin):
+        if ACCzp[x] is None:
+            continue
+        y = yz-scale*ACCzp[x]
+        if last_x is None:
+            draw.point((x,y), fill=COLORS['black'])
+        else:
+            draw.line((x,y,last_x,last_y), fill=COLORS['black'])
+        last_x = x
+        last_y = y
+
+    del draw
+
 def accel(tc):
     """
     Draw Acceleration Data
