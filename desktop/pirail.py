@@ -1,6 +1,7 @@
 """
 PiRail Common Utilities
 """
+import gzip
 import json
 import datetime
 import sys
@@ -55,6 +56,9 @@ def read(filename, handlers=None, classes=None, args=None):
     handler function, indexed by class.
     Otherwise, yields the result.
     """
+    my_open = open
+    if filename.endswith(".gz"):
+        my_open = gzip.open
 
     if args is None:
         args = parse_cmd_line_args()
@@ -68,7 +72,7 @@ def read(filename, handlers=None, classes=None, args=None):
     start_longitude = args.get("start-longitude", None)
     end_longitude = args.get("end-longitude", None)
 
-    with open(filename) as f:
+    with my_open(filename) as f:
         count = 0
         for line in f:
             count += 1
