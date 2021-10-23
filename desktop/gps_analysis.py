@@ -9,9 +9,8 @@ import json
 
 import pirail
 
-GPS_THRESHOLD = 0
-
 def main(filename):
+    used=count=0
 
     print("Time Latitude Longitude Used Count")
     for line_no, obj in pirail.read(filename, classes=['SKY', 'TPV']):
@@ -22,8 +21,12 @@ def main(filename):
                 if s['used']:
                     used += 1
         elif obj['class'] == "TPV":
-            if 'lat' not in obj or 'lon' not in obj:
-                if used >= GPS_THRESHOLD:
+            if 'num_sat' in obj:
+                count = obj['num_sat']
+            if 'num_used' in obj:
+                used = obj['num_used']
+            if 'lat' in obj and 'lon' in obj:
+                if used >= pirail.GPS_THRESHOLD:
                     print("%s %f %f %d %d" % (obj['time'], obj['lat'], obj['lon'], used, count))
 
 if len(sys.argv) < 2:

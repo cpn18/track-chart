@@ -1,19 +1,19 @@
 #Type,Latitude,Longitude,Mileage,Description,
 #Magic Number between Boston and Sanbornville Mileage is 97.70
-- K - - 0 MP '{"name": "W0", "alt_name": "S12", "survey": "0+0"}' *
+- K - - 0 MP '{"name": "S0", "alt_name": "W12", "survey": "0+0"}' *
 - K - - 0.98 E *
-- K 43.563478 -71.041782 1 MP '{"name": "W1", "alt_name": "S11", "survey": "53+44.8"}' *
-- K 43.573819 -71.055427 2 MP '{"name": "W2", "alt_name": "S10", "survey": "106+16.0"}' *
-- K 43.585201 -71.067623 3 MP '{"name": "W3", "alt_name": "S9", "survey": "159+0"}' *
-- K 43.597058 -71.078355 4 MP '{"name": "W4", "alt_name": "S8", "survey": "211+47"}' *
-- K 43.606853 -71.092933 5 MP '{"name": "W5", "alt_name": "S7", "survey": "264+09"}' *
-- K 43.610742 -71.111327 6 MP '{"name": "W6", "alt_name": "S6", "survey": "316+77.7"}' *
-- K 43.616032 -71.129243 7 MP '{"name": "W7", "alt_name": "S5", "survey": "369+42.0"}' *
-- K 43.617841 -71.14875 8 MP '{"name": "W8", "alt_name": "S4", "survey": "422+05.1"}' *
-- K 43.615957 -71.168217 9 MP '{"name": "W9", "alt_name": "S3", "survey": "474+71"}' *
-- K - - 10 MP '{"name": "W10", "alt_name": "S2", "survey": "527+37"}' *
-- K - - 11 MP '{"name": "W11", "alt_name": "S1", "survey": "580+04"}' *
-- K 43.583773 -71.212857 12 MP '{"name": "W12", "alt_name": "S0", "survey": "632+75.3"}' *
+- K 43.563478 -71.041782 1 MP '{"name": "S1", "alt_name": "W11", "survey": "53+44.8"}' *
+- K 43.573819 -71.055427 2 MP '{"name": "S2", "alt_name": "W10", "survey": "106+16.0"}' *
+- K 43.585201 -71.067623 3 MP '{"name": "S3", "alt_name": "W9", "survey": "159+0"}' *
+- K 43.597058 -71.078355 4 MP '{"name": "S4", "alt_name": "W8", "survey": "211+47"}' *
+- K 43.606853 -71.092933 5 MP '{"name": "S5", "alt_name": "W7", "survey": "264+09"}' *
+- K 43.610742 -71.111327 6 MP '{"name": "S6", "alt_name": "W6", "survey": "316+77.7"}' *
+- K 43.616032 -71.129243 7 MP '{"name": "S7", "alt_name": "W5", "survey": "369+42.0"}' *
+- K 43.617841 -71.14875 8 MP '{"name": "S8", "alt_name": "W4", "survey": "422+05.1"}' *
+- K 43.615957 -71.168217 9 MP '{"name": "S9", "alt_name": "W3", "survey": "474+71"}' *
+- K - - 10 MP '{"name": "S10", "alt_name": "W2", "survey": "527+37"}' *
+- K - - 11 MP '{"name": "S11", "alt_name": "W1", "survey": "580+04"}' *
+- K 43.583773 -71.212857 12 MP '{"name": "S12", "alt_name": "W0", "survey": "632+75.3"}' *
 - K - - 0 S '{"name": "Sanbornville", "offset": 0}' *
 - K - - 0.97 S '{"name": "Wakefield", "offset": 0}' *
 - K 43.563042 -71.041276 0.98 X '{"name": "White Mountain (845297T)"}' *

@@ -8,8 +8,6 @@ import csv
 
 import pirail
 
-GPS_THRESHOLD = 10
-
 if len(sys.argv) < 2:
     print("USAGE: %s [args] data_file.json" % sys.argv[0])
     sys.exit(1)
@@ -27,7 +25,7 @@ with open(output, "w") as kml:
     kml.write('<coordinates>\n')
 
     for line_no, obj in pirail.read(sys.argv[1], classes=['TPV']):
-        if obj['num_used'] > GPS_THRESHOLD:
+        if obj['num_used'] >= pirail.GPS_THRESHOLD:
             kml.write("%f,%f,%f\n" % (
                 obj['lon'],
                 obj['lat'],

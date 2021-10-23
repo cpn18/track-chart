@@ -14,8 +14,6 @@ NORMALIZE = True
 
 TIME_THRESHOLD = 5.0 # seconds
 
-GPS_THRESHOLD = 10 # number of used satellites
-
 #FILL=(255,255,255)
 FILL=None
 COLOR_GREEN=(0,255,0)
@@ -114,7 +112,7 @@ for line_no, obj in pirail.read(filename, classes=['ATT', 'TPV']):
         z_sum += obj['gyro_z']
         acc_count += 1
     elif obj['class'] == 'TPV':
-        if obj['num_used'] >= GPS_THRESHOLD:
+        if obj['num_used'] >= pirail.GPS_THRESHOLD:
             min_lat = min(min_lat, obj['lat'])
             max_lat = max(max_lat, obj['lat'])
             min_lon = min(min_lon, obj['lon'])
@@ -190,7 +188,7 @@ output.write("Time DT Lat Long JerkY AccY SpeedY DR_Lat JerkX AccX SpeedX DR_Lon
 last_point = None
 for obj in data:
     if obj['class'] == "TPV":
-        if obj['num_used'] >= GPS_THRESHOLD:
+        if obj['num_used'] >= pirail.GPS_THRESHOLD:
             latitude = obj['lat']
             longitude = obj['lon']
             y_speed = obj['speed']

@@ -18,8 +18,6 @@ except (IndexError,ValueError):
   print("Usage: %s start_mile end_mile" % sys.argv[0])
   sys.exit()
 
-trackchart.read_data(tc)
-
 trackchart.mainline(tc)
 trackchart.mileposts(tc,from_file=True)
 trackchart.bridges_and_crossings(tc)
