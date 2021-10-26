@@ -169,15 +169,15 @@ class Gps2Miles:
             pass
 
         # Reestimate
-        for i in range(len(self.points)):
-            j = i + 1
-            while 'lat' not in self.points[j]:
-                j += 1
-            if self.points[i]['mileage'] <= mileage <= self.points[j]['mileage']:
+        for close1 in range(len(self.points)):
+            close2 = close1 + 1
+            while 'lat' not in self.points[close2]:
+                close2 += 1
+            if self.points[close1]['mileage'] <= mileage <= self.points[close2]['mileage']:
                 # First known point to here
                 distance1 = geo.great_circle(
-                    self.points[i]['lat'],
-                    self.points[i]['lon'],
+                    self.points[close1]['lat'],
+                    self.points[close1]['lon'],
                     latitude,
                     longitude,
                 )
@@ -185,16 +185,20 @@ class Gps2Miles:
                 distance2 = geo.great_circle(
                     latitude,
                     longitude,
-                    self.points[j]['lat'],
-                    self.points[j]['lon'],
+                    self.points[close2]['lat'],
+                    self.points[close2]['lon'],
                 )
                 # Distance between known points
                 distance3 = geo.great_circle(
-                    self.points[i]['lat'],
-                    self.points[i]['lon'],
-                    self.points[j]['lat'],
-                    self.points[j]['lon'],
+                    self.points[close1]['lat'],
+                    self.points[close1]['lon'],
+                    self.points[close2]['lat'],
+                    self.points[close2]['lon'],
                 )
+                mileage = self.points[close1]['mileage'] + \
+                    distance1 * (self.points[close2]['mileage'] -
+                                 self.points[close1]['mileage']) / \
+                    (distance1 + distance2)
                 break
 
         a = [ distance1, distance2, distance3 ]
