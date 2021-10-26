@@ -118,6 +118,14 @@ def read(filename, handlers=None, classes=None, args=None):
             else:
                 yield (count, obj)
 
+def write(filename, data, handlers=None, classes=None, args=None):
+    my_open = open
+    if filename.endswith(".gz"):
+        my_open = gzip.open
+    with my_open(filename, "wt") as f:
+        for obj in data:
+            f.write(json.dumps(obj)+"\n")
+
 def parse_time(time_string):
     """
     Parse GPS time string to datetime
