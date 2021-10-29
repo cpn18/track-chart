@@ -14,6 +14,9 @@ from socketserver import ThreadingMixIn
 
 ERROR_DELAY = 5
 STREAM_DELAY = 1
+DONE = False
+VERSION = 9
+LPCM_DATA = {}
 
 def read_config():
     """ Read Configuration """
@@ -136,23 +139,24 @@ def lpcm_logger_wrapper(output_directory):
     DONE = True
 
 # MAIN START
-DONE = False
-VERSION = 9
-LPCM_DATA = {}
 
-# Output Directory
-try:
-    HOST_NAME = ''
-    PORT_NUMBER = int(sys.argv[1])
-    OUTPUT = sys.argv[2]
-except IndexError:
-    PORT_NUMBER = 8083
-    OUTPUT = "/root/gps-data"
+if __name__ == "__main__":
+    # Output Directory
+    try:
+        HOST_NAME = ''
+        PORT_NUMBER = int(sys.argv[1])
+        OUTPUT = sys.argv[2]
+    except IndexError:
+        PORT_NUMBER = 8083
+        OUTPUT = "/root/gps-data"
 
+    # Web Server
+    Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME,PORT_NUMBER))
+    Twww.start()
 
-Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME,PORT_NUMBER))
-Twww.start()
+    try:
+        lpcm_logger_wrapper(OUTPUT)
+    except KeyboardInterrupt:
+        DONE = True
 
-lpcm_logger_wrapper(OUTPUT)
-
-Twww.join()
+    Twww.join()

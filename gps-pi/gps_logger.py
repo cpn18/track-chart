@@ -20,6 +20,17 @@ ALWAYS_LOG = True
 
 STREAM_DELAY = 1
 
+INLOCSYNC = False
+DONE = False
+VERSION = 9
+TPV = SKY = {}
+HOLD = -1
+MEMO = ""
+
+GPS_STATUS = 0
+GPS_NUM_SAT = 0
+GPS_NUM_USED = 0
+
 def read_config():
     """ Read Configuration """
     try:
@@ -237,33 +248,24 @@ def gps_logger_wrapper(output_directory):
     print("GPS done")
 
 # MAIN START
-INLOCSYNC = False
-DONE = False
-VERSION = 9
-TPV = SKY = {}
-HOLD = -1
-MEMO = ""
 
-GPS_STATUS = 0
-GPS_NUM_SAT = 0
-GPS_NUM_USED = 0
+if __name__ == "__main__":
+    # Command Line Configuration
+    try:
+        HOST_NAME = ''
+        PORT_NUMBER = int(sys.argv[1])
+        OUTPUT = sys.argv[2]
+    except IndexError:
+        PORT_NUMBER = 8080
+        OUTPUT = "/root/gps-data"
 
-# Command Line Configuration
-try:
-    HOST_NAME = ''
-    PORT_NUMBER = int(sys.argv[1])
-    OUTPUT = sys.argv[2]
-except IndexError:
-    PORT_NUMBER = 8080
-    OUTPUT = "/root/gps-data"
+    # Web Server
+    Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
+    Twww.start()
 
-# Web Server
-Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
-Twww.start()
+    try:
+        gps_logger_wrapper(OUTPUT)
+    except KeyboardInterrupt:
+        DONE = True
 
-try:
-    gps_logger_wrapper(OUTPUT)
-except KeyboardInterrupt:
-    DONE = True
-
-Twww.join()
+    Twww.join()

@@ -17,6 +17,28 @@ import berryimu_shim as accel
 
 STREAM_DELAY = 1
 
+AA = 0.98
+
+MAX_MAG_X = -7
+MIN_MAG_X = -1525
+MAX_MAG_Y = 1392
+MIN_MAG_Y = 277
+MAX_MAG_Z = -1045
+MIN_MAG_Z = -1534
+
+# Loop delay
+LOOP_DELAY = 0.02
+SLEEP_TIME = 0.00001
+
+# Version
+VERSION = 9
+
+# Set to True to exit
+DONE = False
+
+# ATT Dictionary
+ATT = {}
+
 def read_config():
     """ Read Configuration """
     # Configure Axis
@@ -92,27 +114,6 @@ def web_server(host_name, port_number):
     httpd.shutdown()
     httpd.server_close()
 
-AA = 0.98
-
-MAX_MAG_X = -7
-MIN_MAG_X = -1525
-MAX_MAG_Y = 1392
-MIN_MAG_Y = 277
-MAX_MAG_Z = -1045
-MIN_MAG_Z = -1534
-
-# Loop delay
-LOOP_DELAY = 0.02
-SLEEP_TIME - 0.00001
-
-# Version
-VERSION = 9
-
-# Set to True to exit
-DONE = False
-
-# ATT Dictionary
-ATT = {}
 
 def _get_temp():
     """ Get Device Temperature """
@@ -205,22 +206,23 @@ def imu_logger_wrapper(output_directory):
 
 # MAIN START
 
-# Command Line Configuration
-try:
-    HOST_NAME = ''
-    PORT_NUMBER = int(sys.argv[1])
-    OUTPUT = sys.argv[2]
-except IndexError:
-    PORT_NUMBER = 8081
-    OUTPUT = "/root/gps-data"
+if __name__ == "__main__":
+    # Command Line Configuration
+    try:
+        HOST_NAME = ''
+        PORT_NUMBER = int(sys.argv[1])
+        OUTPUT = sys.argv[2]
+    except IndexError:
+        PORT_NUMBER = 8081
+        OUTPUT = "/root/gps-data"
 
-# Web Server
-Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
-Twww.start()
+    # Web Server
+    Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
+    Twww.start()
 
-try:
-    imu_logger_wrapper(OUTPUT)
-except KeyboardInterrupt:
-    DONE = True
+    try:
+        imu_logger_wrapper(OUTPUT)
+    except KeyboardInterrupt:
+        DONE = True
 
-Twww.join()
+    Twww.join()

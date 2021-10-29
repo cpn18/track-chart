@@ -14,16 +14,15 @@ from socketserver import ThreadingMixIn
 
 from rplidar import RPLidar
 
-HOST_NAME = ''
-PORT_NUMBER = 80
-
-ALWAYS_LOG = True
-
 ERROR_DELAY = 10
-SYNC_DELAY = 5
-IDLE_DELAY = 60
 
 STREAM_DELAY = 1
+
+DONE = False
+VERSION = 9
+
+LIDAR_STATUS = False
+LIDAR_DATA = {}
 
 def read_config():
     """ Read Configuration """
@@ -40,11 +39,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 class MyHandler(BaseHTTPRequestHandler):
     def do_GET(s):
         """Respond to a GET request."""
-        global CURRENT
         global DONE
-        global RESTART
-        global HOLD
-        global MEMO
 
         content_type = "text/html; charset=utf-8"
 
@@ -115,20 +110,19 @@ def lidar_logger(output_directory):
                 lidar_output.write("#v%d\n" % VERSION)
                 lidar_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
                 for i, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
-                    if INLOCSYNC or ALWAYS_LOG:
-                        lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                        data = []
-                        for (_, angle, distance) in scan:
-                            if distance > 0:
-                                data.append((int(angle)%360, int(distance)))
-                        lidar_data = {
-                            'class': 'LIDAR',
-                            'device': 'A1M8',
-                            'time': lidartime,
-                            'scan': data,
-                        }
-                        lidar_output.write("%s %s %s *\n" % (lidar_data['time'], lidar_data['class'], json.dumps(lidar_data)))
-                        LIDAR_DATA = lidar_data
+                    lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    data = []
+                    for (_, angle, distance) in scan:
+                        if distance > 0:
+                            data.append((int(angle)%360, int(distance)))
+                    lidar_data = {
+                        'class': 'LIDAR',
+                        'device': 'A1M8',
+                        'time': lidartime,
+                        'scan': data,
+                    }
+                    lidar_output.write("%s %s %s *\n" % (lidar_data['time'], lidar_data['class'], json.dumps(lidar_data)))
+                    LIDAR_DATA = lidar_data
                     LIDAR_STATUS = True
                     if DONE:
                         break
@@ -158,34 +152,23 @@ def lidar_logger_wrapper(output_directory):
     print("LIDAR Done")
 
 # MAIN START
-INLOCSYNC = False
-DONE = False
-RESTART = True
-VERSION = 9
-CURRENT = {}
-TEMP = 0
-HOLD = -1
-MEMO = ""
 
-GPS_STATUS = 0
-GPS_NUM_SAT = 0
-GPS_NUM_USED = 0
-ACC_STATUS = False
-LIDAR_STATUS = False
-LIDAR_DATA = {}
-AUDIO_STATUS = False
+if __name__ == "__main__":
+    # Output Directory
+    try:
+        HOST_NAME = ''
+        PORT_NUMBER = int(sys.argv[1])
+        OUTPUT = sys.argv[2]
+    except IndexError:
+        PORT_NUMBER = 8082
+        OUTPUT = "/root/gps-data"
 
-# Output Directory
-try:
-    PORT_NUMBER = int(sys.argv[1])
-    OUTPUT = sys.argv[2]
-except IndexError:
-    PORT_NUMBER = 8082
-    OUTPUT = "/root/gps-data"
+    Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
+    Twww.start()
 
-Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
-Twww.start()
+    try:
+        lidar_logger_wrapper(OUTPUT)
+    except KeyboardInterrupt:
+        DONE = True
 
-lidar_logger_wrapper(OUTPUT)
-
-Twww.join()
+    Twww.join()
