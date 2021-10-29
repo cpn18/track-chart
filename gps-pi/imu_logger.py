@@ -103,6 +103,7 @@ MIN_MAG_Z = -1534
 
 # Loop delay
 LOOP_DELAY = 0.02
+SLEEP_TIME - 0.00001
 
 # Version
 VERSION = 9
@@ -110,6 +111,7 @@ VERSION = 9
 # Set to True to exit
 DONE = False
 
+# ATT Dictionary
 ATT = {}
 
 def _get_temp():
@@ -159,11 +161,6 @@ def imu_logger(output_directory):
 
             DT = now - last_time
 
-            # Calculate Angle From Gyro
-            #gyroXangle += acc['GYRx'] * DT
-            #gyroYangle += acc['GYRy'] * DT
-            #gyroZangle += acc['GYRz'] * DT
-
             # Calculate Yaw, Pitch and Roll with data fusion
             AccXangle = math.degrees(math.atan2(obj['acc_y'], obj['acc_z']))
             AccYangle = math.degrees(math.atan2(obj['acc_z'], obj['acc_x']))
@@ -192,41 +189,21 @@ def imu_logger(output_directory):
             imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
             ATT = obj
 
-            #print(json.dumps(obj))
-            #print("AccLen %7.3f\tYaw %7.3f\tPitch %7.3f\tRoll %7.3f" % (obj['acc_len'],obj['yaw'], obj['pitch'], obj['roll']))
-            #print("MagLen %7.3f\tMagX %d\tMagY %d\tMagZ %d\tMagHeading %7.3f" % (obj['mag_len'], obj['mag_x'], obj['mag_y'], obj['mag_z'], obj['heading']))
-
             # Delay Loop
             while (time.time() - now) < LOOP_DELAY:
-                time.sleep(LOOP_DELAY/2)
+                time.sleep(SLEEP_TIME)
 
 def imu_logger_wrapper(output_directory):
     """ Wrapper Around IMU Logger Function """
-    global ACC_STATUS
 
     print("IMU starting")
     try:
-        ACC_STATUS = True
         imu_logger(output_directory)
     except Exception as ex:
         print("IMU Logger Exception: %s" % ex)
     print("IMU done")
-    ACC_STATUS = False
 
 # MAIN START
-INLOCSYNC = False
-DONE = False
-VERSION = 9
-ATT = {}
-TEMP = 0
-
-GPS_STATUS = 0
-GPS_NUM_SAT = 0
-GPS_NUM_USED = 0
-ACC_STATUS = False
-LIDAR_STATUS = False
-LIDAR_DATA = {}
-AUDIO_STATUS = False
 
 # Command Line Configuration
 try:
