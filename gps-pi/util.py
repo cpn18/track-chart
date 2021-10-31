@@ -2,6 +2,8 @@
 """
 Utilities
 """
+import json
+import datetime
 
 # Event-Stream Interval
 STREAM_DELAY = 1 # Seconds
@@ -15,12 +17,8 @@ ERROR_DELAY = 5 # Seconds
 # Configure Axis
 def read_config():
     """ Read Configuration """
-    if os.path.isfile("config.json"):
-        with open("config.json", "r") as config_file:
-            config = json.loads(config_file.read())
-    else:
-        with open("config.json.sample", "r") as config_file:
-            config = json.loads(config_file.read())
+    with open("config.json", "r") as config_file:
+        config = json.loads(config_file.read())
 
     with open("version.txt", "r") as version_file:
         config['sw_version'] = version_file.read()
