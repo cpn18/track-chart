@@ -52,7 +52,7 @@ class MyHandler(BaseHTTPRequestHandler):
             for field in ['gps', 'imu', 'lidar', 'lpcm']:
                 CONFIG[field].update(data[field])
             util.DONE = True
-            util.write_config()
+            util.write_config(CONFIG)
             content_type = "application/json"
             output = json.dumps({
                 "message": "Stored. Rebooting...",
