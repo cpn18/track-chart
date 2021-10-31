@@ -47,6 +47,8 @@ def read_config():
     """ Read Configuration """
     with open("config.json", "r") as config_file:
         config = json.loads(config_file.read())
+    with open("version.txt", "r") as version_file:
+        config['sw_version'] = version_file.read()
 
     config['class'] = "CONFIG"
     config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -299,6 +301,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
                 SYS = {
                     "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
+                    "sw_version": CONFIG['sw_version'],
                 }
                 try:
                     lines = [
