@@ -25,6 +25,7 @@ files="adxl345.py \
     wait_for_gps_fix.py \
     web_server.py \
     web_server.sh \
+    util.py \
     htdocs \
     js \
     os_setup"
