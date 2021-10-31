@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-LPCM Logger V9
+LPCM Logger
 """
 
 import os
@@ -12,20 +12,10 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 
-ERROR_DELAY = 5
-STREAM_DELAY = 1
+import util
+
 DONE = False
-VERSION = 9
 LPCM_DATA = {}
-
-def read_config():
-    """ Read Configuration """
-    with open("config.json", "r") as config_file:
-        config = json.loads(config_file.read())
-
-    config['class'] = "CONFIG"
-    config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return config
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
@@ -55,7 +45,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     ]
                     for line in lines:
                         self.wfile.write(line.encode('utf-8'))
-                    time.sleep(STREAM_DELAY)
+                    time.sleep(util.STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     break
             return
@@ -72,33 +62,16 @@ class MyHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(output.encode('utf-8'))
 
-def web_server(host_name, port_number):
-    """ Web Server """
-    global DONE
-    # Web Server
-    httpd = HTTPServer((host_name, port_number), MyHandler)
-    while not DONE:
-        try:
-            print(time.asctime(), "Server Starts - %s:%s" % (host_name, port_number))
-            httpd.serve_forever()
-            print(time.asctime(), "Server Stops - %s:%s" % (host_name, port_number))
-        except KeyboardInterrupt:
-            DONE = True
-        except Exception as ex:
-            print(ex)
-    httpd.shutdown()
-    httpd.server_close()
-
 def lpcm_logger(output_directory):
     """ LPCM Capture Wrapper """
     global DONE, LPCM_DATA
 
     # Configure
-    config = read_config()
+    config = util.read_config()
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
     with open(os.path.join(output_directory,timestamp+"_lpcm.csv"), "w") as lpcm_output:
-        lpcm_output.write("#v%d\n" % VERSION)
+        lpcm_output.write("#v%d\n" % util.DATA_API)
         lpcm_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
         while not DONE:
             try:
@@ -114,7 +87,7 @@ def lpcm_logger(output_directory):
                         LPCM_DATA[channel] = capture_file
 
                 if os.system("./lpcm_collect.sh %s %s \"%s\"" % (output_directory, filename, config['lpcm']['arecord'])) != 0:
-                    time.sleep(ERROR_DELAY)
+                    time.sleep(util.ERROR_DELAY)
                 else:
                     lpcm_output.write(
                         "%s %s %s *\n" % (
@@ -126,7 +99,7 @@ def lpcm_logger(output_directory):
                 DONE = True
             except Exception as ex:
                 print("LPCM Logger Exception: %s" % ex)
-                time.sleep(ERROR_DELAY)
+                time.sleep(util.ERROR_DELAY)
 
 def lpcm_logger_wrapper(output_directory):
     """ Wrapper Around LPCM Logger Function """
@@ -151,7 +124,7 @@ if __name__ == "__main__":
         OUTPUT = "/root/gps-data"
 
     # Web Server
-    Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME,PORT_NUMBER))
+    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME,PORT_NUMBER))
     Twww.start()
 
     try:

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-IMU Logger V9
+IMU Logger
 """
 
 import os
@@ -15,8 +15,6 @@ from socketserver import ThreadingMixIn
 
 import berryimu_shim as accel
 
-STREAM_DELAY = 1
-
 AA = 0.98
 
 MAX_MAG_X = -7
@@ -30,29 +28,11 @@ MIN_MAG_Z = -1534
 LOOP_DELAY = 0.02
 SLEEP_TIME = 0.00001
 
-# Version
-VERSION = 9
-
 # Set to True to exit
 DONE = False
 
 # ATT Dictionary
 ATT = {}
-
-def read_config():
-    """ Read Configuration """
-    # Configure Axis
-    try:
-        with open("config.json", "r") as config_file:
-            config = json.loads(config_file.read())
-    except:
-        config = {
-            "imu": {"log": True, "x": "x", "y": "y", "z": "z"},
-        }
-
-    config['class'] = "CONFIG"
-    config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return config
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
@@ -82,7 +62,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     ]
                     for line in lines:
                         self.wfile.write(line.encode('utf-8'))
-                    time.sleep(STREAM_DELAY)
+                    time.sleep(util.STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     break
             return
@@ -96,25 +76,6 @@ class MyHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(output.encode('utf-8'))
 
-def web_server(host_name, port_number):
-    """ Web Server """
-    global DONE
-
-    httpd = ThreadedHTTPServer((host_name, port_number), MyHandler)
-
-    while not DONE:
-        try:
-            print(time.asctime(), "Server Starts - %s:%s" % (host_name, port_number))
-            httpd.serve_forever()
-            print(time.asctime(), "Server Stops - %s:%s" % (host_name, port_number))
-        except KeyboardInterrupt:
-            DONE = True
-        except Exception as ex:
-            print(ex)
-    httpd.shutdown()
-    httpd.server_close()
-
-
 def _get_temp():
     """ Get Device Temperature """
     with open("/sys/class/thermal/thermal_zone0/temp", "r") as temp:
@@ -126,11 +87,11 @@ def imu_logger(output_directory):
     gyroXangle = gyroYangle = gyroZangle = 0
     CFangleX = CFangleY = CFangleZ = 0
 
-    config = read_config()
+    config = util.read_config()
 
     # Open the output file
     with open(os.path.join(output_directory,datetime.datetime.now().strftime("%Y%m%d%H%M")+"_imu.csv"), "w") as imu_output:
-        imu_output.write("#v%d\n" % VERSION)
+        imu_output.write("#v%d\n" % util.DATA_API)
         imu_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
 
         now = time.time()
@@ -217,7 +178,7 @@ if __name__ == "__main__":
         OUTPUT = "/root/gps-data"
 
     # Web Server
-    Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
+    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER))
     Twww.start()
 
     try:

@@ -14,24 +14,12 @@ from socketserver import ThreadingMixIn
 
 from rplidar import RPLidar
 
-ERROR_DELAY = 10
-
-STREAM_DELAY = 1
+import util
 
 DONE = False
-VERSION = 9
 
 LIDAR_STATUS = False
 LIDAR_DATA = {}
-
-def read_config():
-    """ Read Configuration """
-    with open("config.json", "r") as f:
-        config = json.loads(f.read())
-
-    config['class'] = "CONFIG"
-    config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return config
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
@@ -60,7 +48,7 @@ class MyHandler(BaseHTTPRequestHandler):
                             ]
                     for line in lines:
                         s.wfile.write(line.encode('utf-8'))
-                    time.sleep(STREAM_DELAY)
+                    time.sleep(util.STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     break
             return
@@ -74,22 +62,6 @@ class MyHandler(BaseHTTPRequestHandler):
         s.end_headers()
         s.wfile.write(output.encode('utf-8'))
 
-def web_server(host_name, port_number):
-    global DONE
-    # Web Server
-    httpd = ThreadedHTTPServer((host_name, port_number), MyHandler)
-    while not DONE:
-        try:
-            print(time.asctime(), "Server Starts - %s:%s" % (host_name, port_number))
-            httpd.serve_forever()
-            print(time.asctime(), "Server Stops - %s:%s" % (host_name, port_number))
-        except KeyboardInterrupt:
-            DONE = True
-        except Exception as ex:
-            print(ex)
-    httpd.shutdown()
-    httpd.server_close()
-
 def lidar_logger(output_directory):
     global DONE, LIDAR_STATUS, LIDAR_DATA
 
@@ -97,7 +69,7 @@ def lidar_logger(output_directory):
     lidar = None
 
     # Configure
-    config = read_config()
+    config = util.read_config()
 
     while not DONE:
         try:
@@ -107,7 +79,7 @@ def lidar_logger(output_directory):
             # Open the output file
             timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
             with open(os.path.join(output_directory,timestamp+"_lidar.csv"), "w") as lidar_output:
-                lidar_output.write("#v%d\n" % VERSION)
+                lidar_output.write("#v%d\n" % util.DATA_API)
                 lidar_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
                 for i, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
                     lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -130,15 +102,14 @@ def lidar_logger(output_directory):
             DONE = True
         except Exception as ex:
             print("LIDAR Logger Exception: %s" % ex)
-            time.sleep(ERROR_DELAY)
+            time.sleep(util.ERROR_DELAY)
 
         if lidar is not None:
             lidar.stop()
             lidar.stop_motor()
             lidar.disconnect()
         LIDAR_STATUS = False
-        time.sleep(ERROR_DELAY)
-
+        time.sleep(util.ERROR_DELAY)
 
 def lidar_logger_wrapper(output_directory):
     """ Wrapper Around LIDAR Logger Function """

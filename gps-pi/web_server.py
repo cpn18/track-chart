@@ -11,8 +11,7 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import requests
-
-STREAM_DELAY = 1
+import util
 
 DOCUMENT_MAP = {
     "/": "htdocs/index.html",
@@ -42,24 +41,6 @@ MIME_MAP = {
     "default": "application/octet-stream",
 }
 
-# Configure Axis
-def read_config():
-    """ Read Configuration """
-    with open("config.json", "r") as config_file:
-        config = json.loads(config_file.read())
-    with open("version.txt", "r") as version_file:
-        config['sw_version'] = version_file.read()
-
-    config['class'] = "CONFIG"
-    config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return config
-
-def write_config():
-    """ Write Configuration """
-    with open("config.json", "w") as config_file:
-        CONFIG['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        config_file.write(json.dumps(CONFIG, indent=4))
-
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
@@ -72,7 +53,7 @@ class MyHandler(BaseHTTPRequestHandler):
             for field in ['gps', 'imu', 'lidar', 'lpcm']:
                 CONFIG[field].update(data[field])
             DONE = True
-            write_config()
+            util.write_config()
             content_type = "application/json"
             output = json.dumps({
                 "message": "Stored. Rebooting...",
@@ -311,7 +292,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     ]
                     for line in lines:
                         self.wfile.write(line.encode('utf-8'))
-                    time.sleep(STREAM_DELAY)
+                    time.sleep(util.STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     break
             return
@@ -326,23 +307,6 @@ class MyHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(output.encode('utf-8'))
 
-def web_server(host_name, port_number):
-    """ Web Server """
-    global DONE
-
-    httpd = ThreadedHTTPServer((host_name, port_number), MyHandler)
-    while not DONE:
-        try:
-            print(time.asctime(), "Server Starts - %s:%s" % (host_name, port_number))
-            httpd.serve_forever()
-            print(time.asctime(), "Server Stops - %s:%s" % (host_name, port_number))
-        except KeyboardInterrupt:
-            DONE = True
-        except Exception as ex:
-            print(ex)
-    httpd.shutdown()
-    httpd.server_close()
-
 if __name__ == "__main__":
     # MAIN START
     DONE = False
@@ -356,7 +320,7 @@ if __name__ == "__main__":
         PORT_NUMBER = 80
         OUTPUT = "/root/gps-data"
 
-    CONFIG = read_config()
+    CONFIG = util.read_config()
 
     # Web Server
-    web_server(HOST_NAME, PORT_NUMBER)
+    util.web_server(HOST_NAME, PORT_NUMBER)
