@@ -131,7 +131,7 @@ if __name__ == "__main__":
         PORT_NUMBER = 8082
         OUTPUT = "/root/gps-data"
 
-    Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
+    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
     Twww.start()
 
     try:
