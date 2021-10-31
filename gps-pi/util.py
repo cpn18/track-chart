@@ -3,7 +3,6 @@
 Utilities
 """
 import json
-import time
 import datetime
 
 # Event-Stream Interval
@@ -18,6 +17,9 @@ ERROR_DELAY = 5 # Seconds
 # Done Flag
 DONE = False
 
+def timestamp():
+    return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
 # Configure Axis
 def read_config():
     """ Read Configuration """
@@ -28,14 +30,14 @@ def read_config():
         config['sw_version'] = version_file.read()
 
     config['class'] = "CONFIG"
-    config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    config['time'] = timestamp()
     return config
 
-def write_config():
+def write_config(config):
     """ Write Configuration """
     with open("config.json", "w") as config_file:
-        CONFIG['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        config_file.write(json.dumps(CONFIG, indent=4))
+        config['time'] = timestamp()
+        config_file.write(json.dumps(config, indent=4))
 
 def web_server(host_name, port_number, server, handler):
     """ Web Server """
@@ -44,9 +46,9 @@ def web_server(host_name, port_number, server, handler):
     httpd = server((host_name, port_number), handler)
     while not DONE:
         try:
-            print(time.asctime(), "Server Starts - %s:%s" % (host_name, port_number))
+            print("%s Server Starts - %s:%s" % (timestamp(), host_name, port_number))
             httpd.serve_forever()
-            print(time.asctime(), "Server Stops - %s:%s" % (host_name, port_number))
+            print("%s Server Stops - %s:%s" % (timestamp(), host_name, port_number))
         except KeyboardInterrupt:
             DONE = True
         except Exception as ex:
