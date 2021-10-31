@@ -47,12 +47,11 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 class MyHandler(BaseHTTPRequestHandler):
     """ Web Handler """
     def do_POST(self):
-        global DONE
         if self.path.startswith("/setup"):
             data = json.loads(self.rfile.read(int(self.headers['content-length'])))
             for field in ['gps', 'imu', 'lidar', 'lpcm']:
                 CONFIG[field].update(data[field])
-            DONE = True
+            util.DONE = True
             util.write_config()
             content_type = "application/json"
             output = json.dumps({
@@ -72,7 +71,6 @@ class MyHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         """Respond to a GET request."""
-        global DONE
 
         content_type = "text/html"
 
@@ -92,14 +90,14 @@ class MyHandler(BaseHTTPRequestHandler):
             content_type = "application/json"
             output = json.dumps(CONFIG)
         elif self.path == "/poweroff":
-            DONE = True
+            util.DONE = True
             content_type = "application/json"
             output = json.dumps({
                 "message": "Shutting down...",
             })
             os.system("shutdown --poweroff +1")
         elif self.path == "/reset":
-            DONE = True
+            util.DONE = True
             content_type = "application/json"
             output = json.dumps({
                 "message": "Rebooting...",
@@ -134,7 +132,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(response.status_code)
             self.send_header("Content-type", response.headers['content-type'])
             self.end_headers()
-            while not DONE:
+            while not util.DONE:
                 try:
                     for line in response.iter_lines():
                         line = (line.decode('utf-8') + "\n").encode('utf-8')
@@ -185,7 +183,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(response.status_code)
             self.send_header("Content-type", response.headers['content-type'])
             self.end_headers()
-            while not DONE:
+            while not util.DONE:
                 try:
                     for line in response.iter_lines():
                         line = (line.decode('utf-8') + "\n").encode('utf-8')
@@ -223,7 +221,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(response.status_code)
             self.send_header("Content-type", response.headers['content-type'])
             self.end_headers()
-            while not DONE:
+            while not util.DONE:
                 try:
                     for line in response.iter_lines():
                         line = (line.decode('utf-8') + "\n").encode('utf-8')
@@ -261,7 +259,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(response.status_code)
             self.send_header("Content-type", response.headers['content-type'])
             self.end_headers()
-            while not DONE:
+            while not util.DONE:
                 try:
                     for line in response.iter_lines():
                         line = (line.decode('utf-8') + "\n").encode('utf-8')
@@ -277,7 +275,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", content_type)
             self.end_headers()
-            while not DONE:
+            while not util.DONE:
                 stat = os.statvfs(OUTPUT)
 
                 SYS = {
@@ -309,7 +307,6 @@ class MyHandler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     # MAIN START
-    DONE = False
 
     # Command Line Arguments
     try:
@@ -323,4 +320,4 @@ if __name__ == "__main__":
     CONFIG = util.read_config()
 
     # Web Server
-    util.web_server(HOST_NAME, PORT_NUMBER)
+    util.web_server(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler)

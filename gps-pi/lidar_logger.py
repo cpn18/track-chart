@@ -16,8 +16,6 @@ from rplidar import RPLidar
 
 import util
 
-DONE = False
-
 LIDAR_STATUS = False
 LIDAR_DATA = {}
 
@@ -27,7 +25,6 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 class MyHandler(BaseHTTPRequestHandler):
     def do_GET(s):
         """Respond to a GET request."""
-        global DONE
 
         content_type = "text/html; charset=utf-8"
 
@@ -39,7 +36,7 @@ class MyHandler(BaseHTTPRequestHandler):
             s.send_response(200)
             s.send_header("content-type", content_type)
             s.end_headers()
-            while not DONE:
+            while not util.DONE:
                 try:
                     lines = [
                             "event: lidar\n",
@@ -63,7 +60,7 @@ class MyHandler(BaseHTTPRequestHandler):
         s.wfile.write(output.encode('utf-8'))
 
 def lidar_logger(output_directory):
-    global DONE, LIDAR_STATUS, LIDAR_DATA
+    global LIDAR_STATUS, LIDAR_DATA
 
     port_name = '/dev/lidar'
     lidar = None
@@ -71,7 +68,7 @@ def lidar_logger(output_directory):
     # Configure
     config = util.read_config()
 
-    while not DONE:
+    while not util.DONE:
         try:
             lidar = RPLidar(port_name)
             print(lidar.get_info())
@@ -96,10 +93,10 @@ def lidar_logger(output_directory):
                     lidar_output.write("%s %s %s *\n" % (lidar_data['time'], lidar_data['class'], json.dumps(lidar_data)))
                     LIDAR_DATA = lidar_data
                     LIDAR_STATUS = True
-                    if DONE:
+                    if util.DONE:
                         break
         except KeyboardInterrupt:
-            DONE = True
+            util.DONE = True
         except Exception as ex:
             print("LIDAR Logger Exception: %s" % ex)
             time.sleep(util.ERROR_DELAY)
@@ -134,12 +131,12 @@ if __name__ == "__main__":
         PORT_NUMBER = 8082
         OUTPUT = "/root/gps-data"
 
-    Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
+    Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
     Twww.start()
 
     try:
         lidar_logger_wrapper(OUTPUT)
     except KeyboardInterrupt:
-        DONE = True
+        util.DONE = True
 
     Twww.join()

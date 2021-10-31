@@ -28,9 +28,6 @@ MIN_MAG_Z = -1534
 LOOP_DELAY = 0.02
 SLEEP_TIME = 0.00001
 
-# Set to True to exit
-DONE = False
-
 # ATT Dictionary
 ATT = {}
 
@@ -41,7 +38,6 @@ class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
     def do_GET(self):
         """Respond to a GET request."""
-        global DONE
 
         content_type = "text/html; charset=utf-8"
 
@@ -53,7 +49,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("content-type", content_type)
             self.end_headers()
-            while not DONE:
+            while not util.DONE:
                 try:
                     lines = [
                         "event: att\n",
@@ -95,7 +91,7 @@ def imu_logger(output_directory):
         imu_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
 
         now = time.time()
-        while not DONE:
+        while not util.DONE:
             last_time = now
             now = time.time()
             acc = accel.get_axes()
@@ -178,12 +174,12 @@ if __name__ == "__main__":
         OUTPUT = "/root/gps-data"
 
     # Web Server
-    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER))
+    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
     Twww.start()
 
     try:
         imu_logger_wrapper(OUTPUT)
     except KeyboardInterrupt:
-        DONE = True
+        util.DONE = True
 
     Twww.join()

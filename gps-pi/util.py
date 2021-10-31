@@ -3,6 +3,7 @@
 Utilities
 """
 import json
+import time
 import datetime
 
 # Event-Stream Interval
@@ -13,6 +14,9 @@ DATA_API = 9
 
 # Error Delay
 ERROR_DELAY = 5 # Seconds
+
+# Done Flag
+DONE = False
 
 # Configure Axis
 def read_config():
@@ -33,11 +37,11 @@ def write_config():
         CONFIG['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         config_file.write(json.dumps(CONFIG, indent=4))
 
-def web_server(host_name, port_number):
+def web_server(host_name, port_number, server, handler):
     """ Web Server """
     global DONE
 
-    httpd = ThreadedHTTPServer((host_name, port_number), MyHandler)
+    httpd = server((host_name, port_number), handler)
     while not DONE:
         try:
             print(time.asctime(), "Server Starts - %s:%s" % (host_name, port_number))

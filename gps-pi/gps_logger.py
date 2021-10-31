@@ -20,7 +20,6 @@ import util
 ALWAYS_LOG = True
 
 INLOCSYNC = False
-DONE = False
 TPV = SKY = {}
 HOLD = -1
 MEMO = ""
@@ -36,7 +35,6 @@ class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
     def do_GET(self):
         """Respond to a GET request."""
-        global DONE
         global HOLD
         global MEMO
 
@@ -63,7 +61,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", content_type)
             self.end_headers()
-            while not DONE:
+            while not util.DONE:
                 try:
                     if TPV['time'] < SKY['time']:
                         lines = [
@@ -112,7 +110,6 @@ def gps_logger(output_directory):
     """ GPS Data Logger """
     global INLOCSYNC
     global SKY, TPV
-    global DONE
     global HOLD
     global GPS_STATUS, GPS_NUM_SAT, GPS_NUM_USED
 
@@ -136,7 +133,7 @@ def gps_logger(output_directory):
         gps_output.write("#v%d\n" % util.DATA_API)
         gps_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
 
-        while not DONE:
+        while not util.DONE:
             # GPS
             report = session.next()
             # To see all report data, uncomment the line below
@@ -203,14 +200,13 @@ def gps_logger(output_directory):
 def gps_logger_wrapper(output_directory):
     """ Wrapper Around GPS Logger Function """
     global GPS_STATUS
-    global DONE
 
     GPS_STATUS = 0
     try:
         gps_logger(output_directory)
     except StopIteration:
         print("GPSD has terminated")
-        DONE = True
+        util.DONE = True
     except Exception as ex:
         print("GPS Logger Exception: %s" % ex)
     GPS_STATUS = 0
@@ -229,12 +225,12 @@ if __name__ == "__main__":
         OUTPUT = "/root/gps-data"
 
     # Web Server
-    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER))
+    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
     Twww.start()
 
     try:
         gps_logger_wrapper(OUTPUT)
     except KeyboardInterrupt:
-        DONE = True
+        util.DONE = True
 
     Twww.join()
