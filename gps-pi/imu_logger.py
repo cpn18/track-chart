@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-IMU Logger V9
+IMU Logger
 """
 
 import os
@@ -15,22 +15,23 @@ from socketserver import ThreadingMixIn
 
 import berryimu_shim as accel
 
-STREAM_DELAY = 1
+import util
 
-def read_config():
-    """ Read Configuration """
-    # Configure Axis
-    try:
-        with open("config.json", "r") as config_file:
-            config = json.loads(config_file.read())
-    except:
-        config = {
-            "imu": {"log": True, "x": "x", "y": "y", "z": "z"},
-        }
+AA = 0.98
 
-    config['class'] = "CONFIG"
-    config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return config
+MAX_MAG_X = -7
+MIN_MAG_X = -1525
+MAX_MAG_Y = 1392
+MIN_MAG_Y = 277
+MAX_MAG_Z = -1045
+MIN_MAG_Z = -1534
+
+# Loop delay
+LOOP_DELAY = 0.02
+SLEEP_TIME = 0.00001
+
+# ATT Dictionary
+ATT = {}
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
@@ -39,7 +40,6 @@ class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
     def do_GET(self):
         """Respond to a GET request."""
-        global DONE
 
         content_type = "text/html; charset=utf-8"
 
@@ -51,7 +51,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("content-type", content_type)
             self.end_headers()
-            while not DONE:
+            while not util.DONE:
                 try:
                     lines = [
                         "event: att\n",
@@ -60,7 +60,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     ]
                     for line in lines:
                         self.wfile.write(line.encode('utf-8'))
-                    time.sleep(STREAM_DELAY)
+                    time.sleep(util.STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     break
             return
@@ -74,44 +74,6 @@ class MyHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(output.encode('utf-8'))
 
-def web_server(host_name, port_number):
-    """ Web Server """
-    global DONE
-
-    httpd = ThreadedHTTPServer((host_name, port_number), MyHandler)
-
-    while not DONE:
-        try:
-            print(time.asctime(), "Server Starts - %s:%s" % (host_name, port_number))
-            httpd.serve_forever()
-            print(time.asctime(), "Server Stops - %s:%s" % (host_name, port_number))
-        except KeyboardInterrupt:
-            DONE = True
-        except Exception as ex:
-            print(ex)
-    httpd.shutdown()
-    httpd.server_close()
-
-AA = 0.98
-
-MAX_MAG_X = -7
-MIN_MAG_X = -1525
-MAX_MAG_Y = 1392
-MIN_MAG_Y = 277
-MAX_MAG_Z = -1045
-MIN_MAG_Z = -1534
-
-# Loop delay
-LOOP_DELAY = 0.02
-
-# Version
-VERSION = 9
-
-# Set to True to exit
-DONE = False
-
-ATT = {}
-
 def _get_temp():
     """ Get Device Temperature """
     with open("/sys/class/thermal/thermal_zone0/temp", "r") as temp:
@@ -123,15 +85,15 @@ def imu_logger(output_directory):
     gyroXangle = gyroYangle = gyroZangle = 0
     CFangleX = CFangleY = CFangleZ = 0
 
-    config = read_config()
+    config = util.read_config()
 
     # Open the output file
     with open(os.path.join(output_directory,datetime.datetime.now().strftime("%Y%m%d%H%M")+"_imu.csv"), "w") as imu_output:
-        imu_output.write("#v%d\n" % VERSION)
+        imu_output.write("#v%d\n" % util.DATA_API)
         imu_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
 
         now = time.time()
-        while not DONE:
+        while not util.DONE:
             last_time = now
             now = time.time()
             acc = accel.get_axes()
@@ -158,11 +120,6 @@ def imu_logger(output_directory):
             }
 
             DT = now - last_time
-
-            # Calculate Angle From Gyro
-            #gyroXangle += acc['GYRx'] * DT
-            #gyroYangle += acc['GYRy'] * DT
-            #gyroZangle += acc['GYRz'] * DT
 
             # Calculate Yaw, Pitch and Roll with data fusion
             AccXangle = math.degrees(math.atan2(obj['acc_y'], obj['acc_z']))
@@ -192,58 +149,39 @@ def imu_logger(output_directory):
             imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
             ATT = obj
 
-            #print(json.dumps(obj))
-            #print("AccLen %7.3f\tYaw %7.3f\tPitch %7.3f\tRoll %7.3f" % (obj['acc_len'],obj['yaw'], obj['pitch'], obj['roll']))
-            #print("MagLen %7.3f\tMagX %d\tMagY %d\tMagZ %d\tMagHeading %7.3f" % (obj['mag_len'], obj['mag_x'], obj['mag_y'], obj['mag_z'], obj['heading']))
-
             # Delay Loop
             while (time.time() - now) < LOOP_DELAY:
-                time.sleep(LOOP_DELAY/2)
+                time.sleep(SLEEP_TIME)
 
 def imu_logger_wrapper(output_directory):
     """ Wrapper Around IMU Logger Function """
-    global ACC_STATUS
 
     print("IMU starting")
     try:
-        ACC_STATUS = True
         imu_logger(output_directory)
     except Exception as ex:
         print("IMU Logger Exception: %s" % ex)
     print("IMU done")
-    ACC_STATUS = False
 
 # MAIN START
-INLOCSYNC = False
-DONE = False
-VERSION = 9
-ATT = {}
-TEMP = 0
 
-GPS_STATUS = 0
-GPS_NUM_SAT = 0
-GPS_NUM_USED = 0
-ACC_STATUS = False
-LIDAR_STATUS = False
-LIDAR_DATA = {}
-AUDIO_STATUS = False
+if __name__ == "__main__":
+    # Command Line Configuration
+    try:
+        HOST_NAME = ''
+        PORT_NUMBER = int(sys.argv[1])
+        OUTPUT = sys.argv[2]
+    except IndexError:
+        PORT_NUMBER = 8081
+        OUTPUT = "/root/gps-data"
 
-# Command Line Configuration
-try:
-    HOST_NAME = ''
-    PORT_NUMBER = int(sys.argv[1])
-    OUTPUT = sys.argv[2]
-except IndexError:
-    PORT_NUMBER = 8081
-    OUTPUT = "/root/gps-data"
+    # Web Server
+    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
+    Twww.start()
 
-# Web Server
-Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
-Twww.start()
+    try:
+        imu_logger_wrapper(OUTPUT)
+    except KeyboardInterrupt:
+        util.DONE = True
 
-try:
-    imu_logger_wrapper(OUTPUT)
-except KeyboardInterrupt:
-    DONE = True
-
-Twww.join()
+    Twww.join()

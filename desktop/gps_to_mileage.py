@@ -52,6 +52,7 @@ class Gps2Miles:
                 except KeyError:
                     print(self.points[i])
                     pass
+        self.points = sorted(self.points, key=lambda k: k['mileage'], reverse=False)
         #print(self.points)
 
     def get_points(self, ktype=None, kclass=None):
@@ -166,6 +167,39 @@ class Gps2Miles:
         except ZeroDivisionError as ex:
             print(ex)
             pass
+
+        # Reestimate
+        for close1 in range(len(self.points)):
+            close2 = close1 + 1
+            while 'lat' not in self.points[close2]:
+                close2 += 1
+            if self.points[close1]['mileage'] <= mileage <= self.points[close2]['mileage']:
+                # First known point to here
+                distance1 = geo.great_circle(
+                    self.points[close1]['lat'],
+                    self.points[close1]['lon'],
+                    latitude,
+                    longitude,
+                )
+                # Here to second known point
+                distance2 = geo.great_circle(
+                    latitude,
+                    longitude,
+                    self.points[close2]['lat'],
+                    self.points[close2]['lon'],
+                )
+                # Distance between known points
+                distance3 = geo.great_circle(
+                    self.points[close1]['lat'],
+                    self.points[close1]['lon'],
+                    self.points[close2]['lat'],
+                    self.points[close2]['lon'],
+                )
+                mileage = self.points[close1]['mileage'] + \
+                    distance1 * (self.points[close2]['mileage'] -
+                                 self.points[close1]['mileage']) / \
+                    (distance1 + distance2)
+                break
 
         a = [ distance1, distance2, distance3 ]
         a.sort()

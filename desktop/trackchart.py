@@ -733,30 +733,26 @@ def curvature(tc):
 
     del draw
 
-def accel2(tc):
+def plot_value(tc, field="acc_z", scale=1):
     """
-    Draw Acceleration Data
+    Draw Random Data
     """
-    scale = 1
     im = tc['image']
     margin = tc['margin']
     (first, last, pixel_per_mile) = tc['mileposts']
     draw = ImageDraw.Draw(im)
 
     yz = int((im.size[1]-margin)*0.26)
-    ACCzp = [None] * im.size[0]
-    draw.text((margin, yz), "AZ", fill=COLORS['black'])
+    data = [None] * im.size[0]
+    draw.text((margin, yz), field.upper(), fill=COLORS['black'])
 
     # Read from file
-    z_sum = z_count = 0
-    for line_no, obj in pirail.read(tc['data_file'], classes=["ATT"], args={
-            'start-mileage': first,
-            'end-mileage': last,
-        }):
-        z_sum += obj['acc_z']
-        z_count += 1
+    data_sum = data_count = 0
+    for line_no, obj in pirail.read(tc['data_file'], classes=["ATT"]):
+        data_sum += obj[field]
+        data_count += 1
     # Normalize data by subtracting the average
-    z_avg = z_sum / z_count
+    data_avg = data_sum / data_count
 
     # Read from file again
     for line_no, obj in pirail.read(tc['data_file'], classes=["TPV", "ATT"], args={
@@ -772,27 +768,28 @@ def accel2(tc):
             if speed < eps:
                 pass
             else:
-                ACCz = obj['acc_z'] - z_avg
+                data_point = obj[field] - data_avg
                 # Look for maximum magnitude
-                if ACCzp[x] is None or abs(ACCz) > abs(ACCzp[x]):
-                    ACCzp[x] = ACCz
+                if data[x] is None or abs(data_point) > abs(data[x]):
+                    data[x] = data_point
 
     # Plot the data
     last_x = None
     for x in range(margin, im.size[0]-2*margin):
-        if ACCzp[x] is None:
+        draw.point((x,yz), fill=COLORS['black'])
+        if data[x] is None:
             continue
-        y = yz-scale*ACCzp[x]
+        y = yz-scale*data[x]
         if last_x is None:
-            draw.point((x,y), fill=COLORS['black'])
+            draw.point((x,y), fill=COLORS['red'])
         else:
-            draw.line((x,y,last_x,last_y), fill=COLORS['black'])
+            draw.line((x,y,last_x,last_y), fill=COLORS['red'])
         last_x = x
         last_y = y
 
     del draw
 
-def accel(tc):
+def accel(tc, scale=1):
     """
     Draw Acceleration Data
     """
@@ -815,8 +812,6 @@ def accel(tc):
     GYRxp = [0] * im.size[0]
     GYRyp = [0] * im.size[0]
     GYRzp = [0] * im.size[0]
-
-    scale = 1
 
     draw.text((margin, yx), "AX", fill=COLORS['red'])
     draw.text((margin, yy), "AY", fill=COLORS['blue'])

@@ -35,6 +35,8 @@ def main():
     #trackchart.curvature(mychart)
     print("accel")
     trackchart.accel(mychart)
+    print("plot value")
+    #trackchart.plot_value(mychart, field="roll", scale=-5)
     print("lidar-gage")
     #trackchart.gage(mychart)
     print("townlines")
@@ -48,7 +50,7 @@ def main():
     print("title")
     trackchart.draw_title(mychart)
     print("string chart")
-    trackchart.string_chart_by_time(mychart)
+    #trackchart.string_chart_by_time(mychart)
 
 
     filename = "images/whitemtn_%s_%s.png" % (sys.argv[-3], sys.argv[-2])

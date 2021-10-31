@@ -5,19 +5,7 @@ import datetime
 import json
 import os
 
-def read_config():
-    """ Read Configuration """
-    try:
-        with open("config.json", "r") as config_file:
-            config = json.loads(config_file.read())
-    except Exception as ex:
-        print(ex)
-        config = {
-            "gps": {"log": True},
-        }
-    config['class'] = "CONFIG"
-    config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return config
+import util
 
 def launch(task, output_directory):
     pid = os.fork()
@@ -38,7 +26,7 @@ def launch(task, output_directory):
         sys.exit(-1)
 
 def launcher(output_directory):
-    config = read_config()
+    config = util.read_config()
 
     for task in config:
         if 'cmd' in config[task]:

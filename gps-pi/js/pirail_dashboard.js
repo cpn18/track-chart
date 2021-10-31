@@ -151,6 +151,7 @@ function dashboard() {
 	var sys = JSON.parse(event.data);
 	// console.log(lpcm);
 	document.getElementById("used").innerText = sys.used_percent;
+	document.getElementById("sw_version").innerText = sys.sw_version;
     });
 
   document.getElementById("msg").innerHTML = "&nbsp;";

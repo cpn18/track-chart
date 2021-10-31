@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import json
 import sys
 import geo
@@ -11,7 +12,7 @@ if len(sys.argv) < 3:
     print("USAGE: %s [args] json_file known_file" % sys.argv[0])
     sys.exit(1)
 
-json_file = sys.argv[-2]
+json_file = os.path.abspath(sys.argv[-2])
 known_file = sys.argv[-1]
 
 GPS_MIN_MODE = 3
@@ -61,9 +62,14 @@ SORTBY='time'
 if SORTBY != 'time':
     data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
 
-with open(json_file.replace(".json", "_with_mileage_sort_by_%s.json" % SORTBY), "w") as f:
-    for obj in data:
-        f.write(json.dumps(obj)+"\n")
+output_filename, output_extension = json_file.split('.',1)
+output_file = "%s_with_mileage_sort_by_%s.%s" % (
+    output_filename,
+    SORTBY,
+    output_extension,
+)
+
+pirail.write(output_file, data)
 
 new_data = []
 accset = []

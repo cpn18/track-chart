@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-GPS Logger V9
+GPS Logger
 """
 
 import os
@@ -15,23 +15,18 @@ from socketserver import ThreadingMixIn
 
 import gps
 import nmea
+import util
 
 ALWAYS_LOG = True
 
-STREAM_DELAY = 1
+INLOCSYNC = False
+TPV = SKY = {}
+HOLD = -1
+MEMO = ""
 
-def read_config():
-    """ Read Configuration """
-    try:
-        with open("config.json", "r") as config_file:
-            config = json.loads(config_file.read())
-    except:
-        config = {
-            "gps": {"log": True},
-        }
-    config['class'] = "CONFIG"
-    config['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return config
+GPS_STATUS = 0
+GPS_NUM_SAT = 0
+GPS_NUM_USED = 0
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
@@ -40,7 +35,6 @@ class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
     def do_GET(self):
         """Respond to a GET request."""
-        global DONE
         global HOLD
         global MEMO
 
@@ -67,7 +61,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", content_type)
             self.end_headers()
-            while not DONE:
+            while not util.DONE:
                 try:
                     if TPV['time'] < SKY['time']:
                         lines = [
@@ -89,7 +83,7 @@ class MyHandler(BaseHTTPRequestHandler):
                         ]
                     for line in lines:
                         self.wfile.write(line.encode('utf-8'))
-                    time.sleep(STREAM_DELAY)
+                    time.sleep(util.STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     break
             return
@@ -112,27 +106,10 @@ class MyHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(output.encode('utf-8'))
 
-def web_server(host_name, port_number):
-    """ Web Server Wrapper """
-    global DONE
-    httpd = ThreadedHTTPServer((host_name, port_number), MyHandler)
-    while not DONE:
-        try:
-            print(time.asctime(), "Server Starts - %s:%s" % (host_name, port_number))
-            httpd.serve_forever()
-            print(time.asctime(), "Server Stops - %s:%s" % (host_name, port_number))
-        except KeyboardInterrupt:
-            DONE = True
-        except Exception as ex:
-            print("WARNING: %s" % ex)
-    httpd.shutdown()
-    httpd.server_close()
-
 def gps_logger(output_directory):
     """ GPS Data Logger """
     global INLOCSYNC
     global SKY, TPV
-    global DONE
     global HOLD
     global GPS_STATUS, GPS_NUM_SAT, GPS_NUM_USED
 
@@ -140,7 +117,7 @@ def gps_logger(output_directory):
     hold_lon = []
     hold_alt = []
 
-    config = read_config()
+    config = util.read_config()
 
     # Create the output directory
     if not os.path.isdir(output_directory):
@@ -153,10 +130,10 @@ def gps_logger(output_directory):
     # Open the output file
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
     with open(os.path.join(output_directory,timestamp+"_gps.csv"), "w") as gps_output:
-        gps_output.write("#v%d\n" % VERSION)
+        gps_output.write("#v%d\n" % util.DATA_API)
         gps_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
 
-        while not DONE:
+        while not util.DONE:
             # GPS
             report = session.next()
             # To see all report data, uncomment the line below
@@ -223,47 +200,37 @@ def gps_logger(output_directory):
 def gps_logger_wrapper(output_directory):
     """ Wrapper Around GPS Logger Function """
     global GPS_STATUS
-    global DONE
 
     GPS_STATUS = 0
     try:
         gps_logger(output_directory)
     except StopIteration:
         print("GPSD has terminated")
-        DONE = True
+        util.DONE = True
     except Exception as ex:
         print("GPS Logger Exception: %s" % ex)
     GPS_STATUS = 0
     print("GPS done")
 
 # MAIN START
-INLOCSYNC = False
-DONE = False
-VERSION = 9
-TPV = SKY = {}
-HOLD = -1
-MEMO = ""
 
-GPS_STATUS = 0
-GPS_NUM_SAT = 0
-GPS_NUM_USED = 0
+if __name__ == "__main__":
+    # Command Line Configuration
+    try:
+        HOST_NAME = ''
+        PORT_NUMBER = int(sys.argv[1])
+        OUTPUT = sys.argv[2]
+    except IndexError:
+        PORT_NUMBER = 8080
+        OUTPUT = "/root/gps-data"
 
-# Command Line Configuration
-try:
-    HOST_NAME = ''
-    PORT_NUMBER = int(sys.argv[1])
-    OUTPUT = sys.argv[2]
-except IndexError:
-    PORT_NUMBER = 8080
-    OUTPUT = "/root/gps-data"
+    # Web Server
+    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
+    Twww.start()
 
-# Web Server
-Twww = threading.Thread(name="W", target=web_server, args=(HOST_NAME, PORT_NUMBER))
-Twww.start()
+    try:
+        gps_logger_wrapper(OUTPUT)
+    except KeyboardInterrupt:
+        util.DONE = True
 
-try:
-    gps_logger_wrapper(OUTPUT)
-except KeyboardInterrupt:
-    DONE = True
-
-Twww.join()
+    Twww.join()
