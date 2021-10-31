@@ -15,6 +15,8 @@ from socketserver import ThreadingMixIn
 
 import berryimu_shim as accel
 
+import util
+
 AA = 0.98
 
 MAX_MAG_X = -7
