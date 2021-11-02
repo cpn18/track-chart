@@ -16,6 +16,8 @@ import util
 WEBROOT = "webroot"
 DATAROOT = "data"
 
+SORTBY = "mileage"
+
 MIME_MAP = {
     ".html": "text/html",
     ".txt": "text/plain",
@@ -52,7 +54,20 @@ class MyHandler(BaseHTTPRequestHandler):
                 data = []
                 with open(pathname) as j:
                     for line in j:
-                        data.append(json.loads(line))
+                        obj = json.loads(line)
+                        # Sample method to thin the data set
+                        if obj['class'] == "ATT":
+                            data.append({
+                                'class': obj['class'],
+                                'time': obj['time'],
+                                'mileage': obj['mileage'],
+                                'acc_z': obj['acc_z'],
+                            })
+
+                # Sort the data
+                if SORTBY is not None:
+                    data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
+
                 content_type = MIME_MAP[".json"]
                 output = json.dumps(data, indent=4) + "\n"
         else:
