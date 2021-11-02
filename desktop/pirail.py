@@ -5,6 +5,7 @@ import gzip
 import json
 import datetime
 import sys
+import math
 
 # Number of Satellites
 GPS_THRESHOLD = 10
@@ -62,7 +63,7 @@ def read(filename, handlers=None, classes=None, args=None):
 
     if args is None:
         args = parse_cmd_line_args()
-   
+
     start_time = args.get("start-time", None)
     end_time = args.get("end-time", None)
     start_mileage = args.get("start-mileage", None)
@@ -72,9 +73,9 @@ def read(filename, handlers=None, classes=None, args=None):
     start_longitude = args.get("start-longitude", None)
     end_longitude = args.get("end-longitude", None)
 
-    with my_open(filename) as f:
+    with my_open(filename) as input_file:
         count = 0
-        for line in f:
+        for line in input_file:
             count += 1
 
             # Parse the Line
@@ -82,7 +83,7 @@ def read(filename, handlers=None, classes=None, args=None):
                 obj = json.loads(line)
             except Exception as ex:
                 print("ERROR: line=%d, %s" % (count, ex))
-                raise Exception
+                raise Exception from ex
 
             # Check Class
             if classes is not None:
@@ -118,13 +119,16 @@ def read(filename, handlers=None, classes=None, args=None):
             else:
                 yield (count, obj)
 
-def write(filename, data, handlers=None, classes=None, args=None):
+def write(filename, data):
+    """
+    Write JSON to a file
+    """
     my_open = open
     if filename.endswith(".gz"):
         my_open = gzip.open
-    with my_open(filename, "wt") as f:
+    with my_open(filename, "wt") as output_file:
         for obj in data:
-            f.write(json.dumps(obj)+"\n")
+            output_file.write(json.dumps(obj)+"\n")
 
 def parse_time(time_string):
     """
@@ -136,9 +140,9 @@ def vector_to_coordinates(angle, distance):
     """
     Convert vector to 2D coordinates
     """
-    x = distance * math.sin(math.radians(angle))
-    y = distance * math.cos(math.radians(angle))
-    return (x, y)
+    x_coord = distance * math.sin(math.radians(angle))
+    y_coord = distance * math.cos(math.radians(angle))
+    return (x_coord, y_coord)
 
 if __name__ == "__main__":
     # Unit Tests
