@@ -5,12 +5,12 @@ Web Server
 
 import os
 import sys
-import time
-import datetime
 import json
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
-import requests
+
 import util
 
 WEBROOT = "webroot"
@@ -39,51 +39,56 @@ class MyHandler(BaseHTTPRequestHandler):
         content_type = "text/html"
         output = ""
 
-        # Hardcoded rewrite
-        if self.path == "/":
-            self.path = "index.html"
+        url = urlparse(self.path)
+        qsdict = parse_qs(url.query)
 
-        if self.path.startswith("/data/"):
+        path = url.path
+
+        # Hardcoded rewrite
+        if path.endswith("/"):
+            path += "index.html"
+
+        if path.startswith("/data/"):
             # Data Fetching API
             # GET /data/[filename]
-            pathname = os.path.join(DATAROOT, self.path.split("/")[2])
+            pathname = DATAROOT + "/" + path.split("/")[2]
             if not os.path.exists(pathname):
                 self.send_error(404, "File Not Found")
                 return
-            else:
-                data = []
-                with open(pathname) as j:
-                    for line in j:
-                        obj = json.loads(line)
-                        # Sample method to thin the data set
-                        if obj['class'] == "ATT":
-                            data.append({
-                                'class': obj['class'],
-                                'time': obj['time'],
-                                'mileage': obj['mileage'],
-                                'acc_z': obj['acc_z'],
-                            })
 
-                # Sort the data
-                if SORTBY is not None:
-                    data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
+            data = []
+            with open(pathname) as j:
+                for line in j:
+                    obj = json.loads(line)
+                    # Sample method to thin the data set
+                    if obj['class'] == "ATT":
+                        data.append({
+                            'class': obj['class'],
+                            'time': obj['time'],
+                            'mileage': obj['mileage'],
+                            'acc_z': obj['acc_z'],
+                        })
 
-                content_type = MIME_MAP[".json"]
-                output = json.dumps(data, indent=4) + "\n"
+            # Sort the data
+            if SORTBY is not None:
+                data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
+
+            content_type = MIME_MAP[".json"]
+            output = json.dumps(data, indent=4) + "\n"
         else:
             # Generic File Handler API
             # GET /[path]
-            pathname = os.path.join(WEBROOT, self.path)
+            pathname = WEBROOT + path
             _, extension = os.path.splitext(pathname)
             if not os.path.exists(pathname):
                 self.send_error(404, "File Not Found")
                 return
-            else:
-                if not extension in MIME_MAP:
-                    extension = 'default'
-                content_type = MIME_MAP[extension]
-                with open(pathname) as j:
-                    output = j.read()
+
+            if not extension in MIME_MAP:
+                extension = 'default'
+            content_type = MIME_MAP[extension]
+            with open(pathname) as j:
+                output = j.read()
 
         # If we made it this far, then send output to the browser
         self.send_response(200)
