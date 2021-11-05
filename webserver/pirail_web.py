@@ -67,9 +67,13 @@ def get_file(self, groups, qsdict):
         return
 
     # Parse the query string
-    stream = qsdict.get("stream",["False"])[0].lower() == "true"
-    start_mileage = float(qsdict.get("start_mileage",["0"])[0])
-    end_mileage = float(qsdict.get("end_mileage",["99999"])[0])
+    try:
+        stream = qsdict.get("stream",["False"])[0].lower() == "true"
+        start_mileage = float(qsdict.get("start_mileage",["0"])[0])
+        end_mileage = float(qsdict.get("end_mileage",["99999"])[0])
+    except ValueError as ex:
+        self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
+        return
 
     data = []
     with open(pathname) as j:
