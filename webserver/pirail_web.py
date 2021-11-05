@@ -27,14 +27,17 @@ MIME_MAP = {
     "default": "application/octet-stream",
 }
 
-def thin_data(obj):
+def thin_data(obj, trim=True):
     """ Sample Data Thinning """
-    return {
-        'class': obj['class'],
-        'time': obj['time'],
-        'mileage': obj['mileage'],
-        'acc_z': obj['acc_z'],
-    }
+    if not trim:
+        return obj
+    else:
+        return {
+            'class': obj['class'],
+            'time': obj['time'],
+            'mileage': obj['mileage'],
+            'acc_z': obj['acc_z'],
+        }
 
 def get_file_listing(self, groups, _qsdict):
     """
@@ -69,6 +72,7 @@ def get_file(self, groups, qsdict):
     # Parse the query string
     try:
         stream = qsdict.get("stream",["False"])[0].lower() == "true"
+        trim = qsdict.get("trim",["False"])[0].lower() == "true"
         start_mileage = float(qsdict.get("start_mileage",["0"])[0])
         end_mileage = float(qsdict.get("end_mileage",["99999"])[0])
     except ValueError as ex:
@@ -94,10 +98,10 @@ def get_file(self, groups, qsdict):
                 continue
 
             if stream:
-                output = "event: pirail\ndata: %s\n\n" % json.dumps(thin_data(obj))
+                output = "event: pirail\ndata: %s\n\n" % json.dumps(thin_data(obj, trim=trim))
                 self.wfile.write(output.encode('utf-8'))
             else:
-                data.append(thin_data(obj))
+                data.append(thin_data(obj, trim=trim))
 
     if not stream:
         # Sort the data
