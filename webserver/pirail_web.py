@@ -144,12 +144,12 @@ def get_any(self, groups, _qsdict):
 MATCHES = [
     # Most specific matches go first
     {
-         "pattern": re.compile(r"GET /data/(?P<filename>[a-zA-Z0-9\.]+)"),
+         "pattern": re.compile(r"GET /data/(?P<filename>[a-zA-Z0-9_\.]+)"),
          "handler": get_file,
     },
     # Least specifc matches go last
     {
-         "pattern": re.compile(r"GET /data/"),
+         "pattern": re.compile(r"GET /data/*"),
          "handler": get_file_listing,
     },
     # This one must be last
