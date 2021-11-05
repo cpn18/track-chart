@@ -754,6 +754,7 @@ def plot_value(tc, field="acc_z", scale=1):
     # Normalize data by subtracting the average
     data_avg = data_sum / data_count
 
+    speed = eps = 0
     # Read from file again
     for line_no, obj in pirail.read(tc['data_file'], classes=["TPV", "ATT"], args={
             'start-mileage': first,
