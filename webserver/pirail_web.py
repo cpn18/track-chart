@@ -93,9 +93,6 @@ def get_file(self, groups, qsdict):
             # Filter by mileage
             if not start_mileage < obj['mileage'] < end_mileage:
                 continue
-            # Filter by class
-            if not obj['class'] == "ATT":
-                continue
 
             if stream:
                 output = "event: pirail\ndata: %s\n\n" % json.dumps(thin_data(obj, trim=trim))
