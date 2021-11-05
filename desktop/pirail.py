@@ -5,6 +5,7 @@ import gzip
 import json
 import datetime
 import sys
+import requests
 
 # Number of Satellites
 GPS_THRESHOLD = 10
@@ -72,51 +73,72 @@ def read(filename, handlers=None, classes=None, args=None):
     start_longitude = args.get("start-longitude", None)
     end_longitude = args.get("end-longitude", None)
 
-    with my_open(filename) as f:
-        count = 0
-        for line in f:
-            count += 1
+    if filename.startswith("http://"):
+        r = requests.get(filename, stream=True)
+        f = r.iter_lines()
+        needs_closed=False
+    else:
+        f = my_open(filename)
+        needs_closed=True
 
-            # Parse the Line
-            try:
-                obj = json.loads(line)
-            except Exception as ex:
-                print("ERROR: line=%d, %s" % (count, ex))
-                raise Exception
+    count = 0
+    for line in f:
+        count += 1
 
-            # Check Class
-            if classes is not None:
-                if obj['class'] not in classes:
-                    continue
+        # Handle event-stream
+        if line.startswith(b'event: pirail'):
+            continue
+        if line.startswith(b'data: '):
+            line = line.split(b' ', 1)[1]
 
-            # Check Bounds
-            if 'time' in obj:
-                if start_time is not None and obj['time'] < start_time:
-                    continue
-                if end_time is not None and obj['time'] > end_time:
-                    continue
-            if 'mileage' in obj:
-                if start_mileage is not None and obj['mileage'] < start_mileage:
-                    continue
-                if end_mileage is not None and obj['mileage'] > end_mileage:
-                    continue
-            if 'lat' in obj:
-                if start_latitude is not None and obj['lat'] < start_latitude:
-                    continue
-                if end_latitude is not None and obj['lat'] > end_latitude:
-                    continue
-            if 'lon' in obj:
-                if start_longitude is not None and obj['lon'] < start_longitude:
-                    continue
-                if end_longitude is not None and obj['lon'] > end_longitude:
-                    continue
+        # Skip Blank Lines
+        if len(line) == 0:
+            continue
 
-            # Call the handler, or yield the result
-            if handlers is not None:
-                if obj['class'] in handlers:
-                    handlers[obj['class']](count, obj)
-            else:
-                yield (count, obj)
+        # Parse the Line
+        try:
+            obj = json.loads(line)
+        except Exception as ex:
+            print("Line: %s" % line)
+            print("ERROR: line=%d, %s" % (count, ex))
+            raise Exception
+
+        # Check Class
+        if classes is not None:
+            if obj['class'] not in classes:
+                continue
+
+        # Check Bounds
+        if 'time' in obj:
+            if start_time is not None and obj['time'] < start_time:
+                continue
+            if end_time is not None and obj['time'] > end_time:
+                continue
+        if 'mileage' in obj:
+            if start_mileage is not None and obj['mileage'] < start_mileage:
+                continue
+            if end_mileage is not None and obj['mileage'] > end_mileage:
+                continue
+        if 'lat' in obj:
+            if start_latitude is not None and obj['lat'] < start_latitude:
+                continue
+            if end_latitude is not None and obj['lat'] > end_latitude:
+                continue
+        if 'lon' in obj:
+            if start_longitude is not None and obj['lon'] < start_longitude:
+                continue
+            if end_longitude is not None and obj['lon'] > end_longitude:
+                continue
+
+        # Call the handler, or yield the result
+        if handlers is not None:
+            if obj['class'] in handlers:
+                handlers[obj['class']](count, obj)
+        else:
+            yield (count, obj)
+
+    if needs_closed:
+        close(f)
 
 def write(filename, data, handlers=None, classes=None, args=None):
     my_open = open
