@@ -27,6 +27,15 @@ MIME_MAP = {
     "default": "application/octet-stream",
 }
 
+def thin_data(obj):
+    """ Sample Data Thinning """
+    return {
+        'class': obj['class'],
+        'time': obj['time'],
+        'mileage': obj['mileage'],
+        'acc_z': obj['acc_z'],
+    }
+
 def get_file_listing(self, groups, _qsdict):
     """
     Data Listing API
@@ -46,7 +55,7 @@ def get_file_listing(self, groups, _qsdict):
     self.end_headers()
     self.wfile.write(output.encode('utf-8'))
 
-def get_file(self, groups, _qsdict):
+def get_file(self, groups, qsdict):
     """
     Data Fetching API
     GET /data/[filename]
@@ -57,31 +66,45 @@ def get_file(self, groups, _qsdict):
         self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
         return
 
+    # Parse the query string
+    stream = qsdict.get("stream",["False"])[0].lower() == "true"
+    start_mileage = float(qsdict.get("start_mileage",["0"])[0])
+    end_mileage = float(qsdict.get("end_mileage",["99999"])[0])
+
     data = []
     with open(pathname) as j:
+        self.send_response(HTTPStatus.OK)
+        if stream:
+            self.send_header("Content-type", "text/event-stream")
+            self.end_headers()
+        else:
+            self.send_header("Content-type", "application/json")
+
         for line in j:
             obj = json.loads(line)
-            # Sample method to thin the data set
-            if obj['class'] == "ATT":
-                data.append({
-                    'class': obj['class'],
-                    'time': obj['time'],
-                    'mileage': obj['mileage'],
-                    'acc_z': obj['acc_z'],
-                })
+            # Filter by mileage
+            if not start_mileage < obj['mileage'] < end_mileage:
+                continue
+            # Filter by class
+            if not obj['class'] == "ATT":
+                continue
 
-    # Sort the data
-    if SORTBY is not None:
-        data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
+            if stream:
+                output = "event: pirail\ndata: %s\n\n" % json.dumps(thin_data(obj))
+                self.wfile.write(output.encode('utf-8'))
+            else:
+                data.append(thin_data(obj))
 
-    content_type = MIME_MAP[".json"]
-    output = json.dumps(data, indent=4) + "\n"
+    if not stream:
+        # Sort the data
+        if SORTBY is not None:
+            data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
 
-    self.send_response(HTTPStatus.OK)
-    self.send_header("Content-type", content_type)
-    self.send_header("Content-length", str(len(output)))
-    self.end_headers()
-    self.wfile.write(output.encode('utf-8'))
+        output = json.dumps(data, indent=4) + "\n"
+
+        self.send_header("Content-length", str(len(output)))
+        self.end_headers()
+        self.wfile.write(output.encode('utf-8'))
 
 def get_any(self, groups, _qsdict):
     """
