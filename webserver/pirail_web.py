@@ -1,17 +1,24 @@
-#!/usr/bin/python3
 """
-Web Server
+PiRail Web Service Modules
 """
 
 import os
 import json
 import re
 
+from http import HTTPStatus
+
+# Directory for web content (html, css, js, etc.)
 WEBROOT = "webroot"
+
+# Directory for data (json)
 DATAROOT = "data"
 
+# Default sort method (set to None for no sorting)
 SORTBY = "mileage"
 
+# Replace with the Python mimetypes module?
+# https://docs.python.org/3/library/mimetypes.html
 MIME_MAP = {
     ".html": "text/html",
     ".txt": "text/plain",
@@ -33,7 +40,7 @@ def get_file_listing(self, groups, _qsdict):
             output += "<li><a href=\"/data/" + \
                       filename + "\">" + filename + "</a>\n"
     output += "</ul></body></html>\n"
-    self.send_response(200)
+    self.send_response(HTTPStatus.OK)
     self.send_header("Content-type", content_type)
     self.send_header("Content-length", str(len(output)))
     self.end_headers()
@@ -47,7 +54,7 @@ def get_file(self, groups, _qsdict):
     pathname = os.path.normpath(DATAROOT + "/" + groups.group('filename'))
 
     if not os.path.isfile(pathname):
-        self.send_error(404, "File Not Found")
+        self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
         return
 
     data = []
@@ -70,7 +77,7 @@ def get_file(self, groups, _qsdict):
     content_type = MIME_MAP[".json"]
     output = json.dumps(data, indent=4) + "\n"
 
-    self.send_response(200)
+    self.send_response(HTTPStatus.OK)
     self.send_header("Content-type", content_type)
     self.send_header("Content-length", str(len(output)))
     self.end_headers()
@@ -88,7 +95,7 @@ def get_any(self, groups, _qsdict):
         pathname += "/index.html"
 
     if not os.path.isfile(pathname):
-        self.send_error(404, "File Not Found")
+        self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
         return
 
     _, extension = os.path.splitext(pathname)
@@ -100,7 +107,7 @@ def get_any(self, groups, _qsdict):
         output = j.read()
 
     # If we made it this far, then send output to the browser
-    self.send_response(200)
+    self.send_response(HTTPStatus.OK)
     self.send_header("Content-type", content_type)
     self.send_header("Content-length", str(len(output)))
     self.end_headers()

@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
+from http import HTTPStatus
 
 import util
 import pirail_web as application
@@ -32,7 +33,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 match['handler'](self, groups, qsdict)
                 break
         else:
-            self.send_error(404, "File Not Found")
+            self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
 
 if __name__ == "__main__":
     # MAIN START
