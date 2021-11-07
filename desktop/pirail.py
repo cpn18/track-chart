@@ -41,7 +41,7 @@ def parse_cmd_line_args():
 def read(filename, handlers=None, classes=None, args=None):
     """
     Read File
-        filename = name of JSON files
+        filename = name of JSON files, or URL
         (optional)
         handlers = dictionary of handler functions, indexed by class
         classes = array of classes to return
@@ -85,11 +85,15 @@ def read(filename, handlers=None, classes=None, args=None):
     for line in f:
         count += 1
 
+        # Convert from bytes to str
+        if not isinstance(line, str):
+            line = str(line.decode('utf-8'))
+
         # Handle event-stream
-        if line.startswith(b'event: pirail'):
+        if line.startswith('event: pirail'):
             continue
-        if line.startswith(b'data: '):
-            line = line.split(b' ', 1)[1]
+        elif line.startswith('data: '):
+            line = line.split(' ', 1)[1]
 
         # Skip Blank Lines
         if len(line) == 0:
@@ -138,7 +142,7 @@ def read(filename, handlers=None, classes=None, args=None):
             yield (count, obj)
 
     if needs_closed:
-        close(f)
+        f.close()
 
 def write(filename, data, handlers=None, classes=None, args=None):
     my_open = open

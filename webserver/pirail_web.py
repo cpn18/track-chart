@@ -5,6 +5,15 @@ PiRail Web Service Modules
 import os
 import json
 import re
+import sys
+
+# This is sort of a hack, but it's better than
+# copying the PiRail module here.  It's expected that
+# as this evolves, more of the analysis tools become
+# web-enabled.
+sys.path.append("../desktop")
+import pirail
+
 
 from http import HTTPStatus
 
@@ -27,9 +36,9 @@ MIME_MAP = {
     "default": "application/octet-stream",
 }
 
-def thin_data(obj, trim=True):
+def thin_data(obj, thin=True):
     """ Sample Data Thinning """
-    if not trim:
+    if not thin:
         return obj
     else:
         return {
@@ -69,36 +78,58 @@ def get_file(self, groups, qsdict):
         self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
         return
 
-    # Parse the query string
+    # Parse the query string and
+    # Build the Args Dictionary
+    args = {}
     try:
-        stream = qsdict.get("stream",["False"])[0].lower() == "true"
-        trim = qsdict.get("trim",["False"])[0].lower() == "true"
-        start_mileage = float(qsdict.get("start_mileage",["0"])[0])
-        end_mileage = float(qsdict.get("end_mileage",["99999"])[0])
+        stream = qsdict.get("stream",["true"])[0].lower() == "true"
+        thin = qsdict.get("thin",["False"])[0].lower() == "true"
+        value = qsdict.get("start-mileage",[None])[0]
+        if value is not None:
+            args['start-mileage'] = float(value)
+        value = qsdict.get("end-mileage",[None])[0]
+        if value is not None:
+            args['end-mileage'] = float(value)
+        value = qsdict.get("start-time",[None])[0]
+        if value is not None:
+            args['start-time'] = value
+        value = qsdict.get("end-time",[None])[0]
+        if value is not None:
+            args['end-time'] = float(value)
+        value = qsdict.get("start-latitude",[None])[0]
+        if value is not None:
+            args['start-latitude'] = float(value)
+        value = qsdict.get("end-latitude",[None])[0]
+        if value is not None:
+            args['end-latitude'] = float(value)
+        value = qsdict.get("start-longitude",[None])[0]
+        if value is not None:
+            args['start-longitude'] = float(value)
+        value = qsdict.get("end-longitude",[None])[0]
+        if value is not None:
+            args['end-longitude'] = float(value)
+        classes = qsdict.get("classes", None)
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
         return
 
+    print("args", args)
+    print("classes", classes)
+
     data = []
-    with open(pathname) as j:
-        self.send_response(HTTPStatus.OK)
+    self.send_response(HTTPStatus.OK)
+    if stream:
+        self.send_header("Content-type", "text/event-stream")
+        self.end_headers()
+    else:
+        self.send_header("Content-type", "application/json")
+
+    for line_no, obj in pirail.read(pathname, classes=classes, args=args):
         if stream:
-            self.send_header("Content-type", "text/event-stream")
-            self.end_headers()
+            output = "event: pirail\ndata: %s\n\n" % json.dumps(thin_data(obj, thin=thin))
+            self.wfile.write(output.encode('utf-8'))
         else:
-            self.send_header("Content-type", "application/json")
-
-        for line in j:
-            obj = json.loads(line)
-            # Filter by mileage
-            if not start_mileage < obj['mileage'] < end_mileage:
-                continue
-
-            if stream:
-                output = "event: pirail\ndata: %s\n\n" % json.dumps(thin_data(obj, trim=trim))
-                self.wfile.write(output.encode('utf-8'))
-            else:
-                data.append(thin_data(obj, trim=trim))
+            data.append(thin_data(obj, thin=thin))
 
     if not stream:
         # Sort the data
