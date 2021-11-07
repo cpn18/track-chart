@@ -36,17 +36,27 @@ MIME_MAP = {
     "default": "application/octet-stream",
 }
 
-def thin_data(obj, thin=True):
+def default(obj, _qsdict):
+    """ Do not modify data """
+    return obj
+
+def thin(obj, _qsdict):
     """ Sample Data Thinning """
-    if not thin:
-        return obj
-    else:
+    if obj['class'] == "ATT":
         return {
             'class': obj['class'],
             'time': obj['time'],
             'mileage': obj['mileage'],
             'acc_z': obj['acc_z'],
         }
+    else:
+        return obj
+
+# Dictionary of Data Transformations
+DATA_XFORM = {
+    'thin': thin,
+    'default': default,
+}
 
 def get_file_listing(self, groups, _qsdict):
     """
@@ -83,38 +93,49 @@ def get_file(self, groups, qsdict):
     args = {}
     try:
         stream = qsdict.get("stream",["true"])[0].lower() == "true"
-        thin = qsdict.get("thin",["False"])[0].lower() == "true"
+
+        xform = qsdict.get("xform",["default"])[0].lower()
+        if xform in DATA_XFORM:
+            xform_function = DATA_XFORM[xform]
+        else:
+            xform_function = DATA_XFORM['default']
+
         value = qsdict.get("start-mileage",[None])[0]
         if value is not None:
             args['start-mileage'] = float(value)
+
         value = qsdict.get("end-mileage",[None])[0]
         if value is not None:
             args['end-mileage'] = float(value)
+
         value = qsdict.get("start-time",[None])[0]
         if value is not None:
             args['start-time'] = value
+
         value = qsdict.get("end-time",[None])[0]
         if value is not None:
             args['end-time'] = float(value)
+
         value = qsdict.get("start-latitude",[None])[0]
         if value is not None:
             args['start-latitude'] = float(value)
+
         value = qsdict.get("end-latitude",[None])[0]
         if value is not None:
             args['end-latitude'] = float(value)
+
         value = qsdict.get("start-longitude",[None])[0]
         if value is not None:
             args['start-longitude'] = float(value)
+
         value = qsdict.get("end-longitude",[None])[0]
         if value is not None:
             args['end-longitude'] = float(value)
+
         classes = qsdict.get("classes", None)
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
         return
-
-    print("args", args)
-    print("classes", classes)
 
     data = []
     self.send_response(HTTPStatus.OK)
@@ -126,10 +147,10 @@ def get_file(self, groups, qsdict):
 
     for line_no, obj in pirail.read(pathname, classes=classes, args=args):
         if stream:
-            output = "event: pirail\ndata: %s\n\n" % json.dumps(thin_data(obj, thin=thin))
+            output = "event: pirail\ndata: %s\n\n" % json.dumps(xform_function(obj, qsdict))
             self.wfile.write(output.encode('utf-8'))
         else:
-            data.append(thin_data(obj, thin=thin))
+            data.append(xform_function(obj, qsdict))
 
     if not stream:
         # Sort the data
