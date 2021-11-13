@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 import geo
 import util
 import csv
@@ -226,8 +227,16 @@ class Gps2Miles:
         return retval
 
 if __name__ == "__main__":
-    G = Gps2Miles("../known/berlin.csv")
-    G = Gps2Miles("../known/negs.csv")
+    try:
+        filename = sys.argv[1]
+        lat = float(sys.argv[2])
+        lon = float(sys.argv[3])
+    except (IndexError, ValueError) as ex:
+        print("ERROR: %s" % ex)
+        print("\nUSAGE: %s known.csv latitude longitude" % sys.argv[0])
+        sys.exit(1)
+
+    G = Gps2Miles(filename)
     #print(G.sanity_check(update=True))
     G.export()
-    #print(G.find_mileage(43+29/60.0+16.7597/3600.0, -(71+30/60.0+26.8901/3600.0), ignore=True))
+    print(G.find_mileage(lat, lon, ignore=True))
