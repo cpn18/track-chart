@@ -43,6 +43,9 @@ class Gps2Miles:
                 except:
                     pass
 
+                if 'survey' in obj['metadata']:
+                    obj['survey'] = util.survey_to_ft(obj['metadata']['survey'])
+
                 data.append(obj)
 
         self.points = sorted(data, key=lambda k: k['mileage'], reverse=False)
@@ -99,12 +102,16 @@ class Gps2Miles:
 
             print("%0.2f,%s,%s,%s,\"%s\"" % (i['mileage'], lat, lon, i['class'], description))
 
-    def find_mileage(self, latitude, longitude, ignore=False):
-        mileage = close1 = close2 = -1
+    def find_measurement(self, latitude, longitude, ignore=False, field='mileage'):
+        measurement = close1 = close2 = -1
         distance1 = distance2 = 99999
         # Find the two closest points
         for i in range(0, len(self.points)):
-            if 'lat' not in self.points[i] or 'lon' not in self.points[i] or self.points[i]['mileage'] == -1:
+            # No Geo Data
+            if 'lat' not in self.points[i] or 'lon' not in self.points[i]:
+                continue
+            # No Field Data
+            if not field in self.points[i] or self.points[i][field] < 0:
                 continue
 
             if ignore and \
@@ -131,8 +138,8 @@ class Gps2Miles:
                                      self.points[close2]['lat'],
                                      self.points[close2]['lon'])
 
-        # swap points so point 1 has lower mileage
-        if self.points[close2]['mileage'] < self.points[close1]['mileage']:
+        # swap points so point 1 has lower measurement
+        if self.points[close2][field] < self.points[close1][field]:
             (close1, close2) = util.swap(close1, close2)
             (distance1, distance2) = util.swap(distance1, distance2)
 
@@ -145,23 +152,23 @@ class Gps2Miles:
         try:
             if distance1 == 0:
                 #print("point1")
-                mileage = self.points[close1]['mileage']
+                measurement = self.points[close1][field]
             elif distance2 == 0:
                 #print("point2")
-                mileage = self.points[close2]['mileage']
+                measurement = self.points[close2][field]
             elif distance3 < distance1 and distance2 < distance1:
                 #print("after")
-                mileage = (self.points[close2]['mileage'] + distance2 +
-                           self.points[close1]['mileage'] + distance1) / 2.0
+                measurement = (self.points[close2][field] + distance2 +
+                           self.points[close1][field] + distance1) / 2.0
             elif distance3 < distance2 and distance1 < distance2:
                 #print("before")
-                mileage = (self.points[close1]['mileage'] - distance1 +
-                           self.points[close2]['mileage'] - distance2) / 2.0
+                measurement = (self.points[close1][field] - distance1 +
+                           self.points[close2][field] - distance2) / 2.0
             elif distance1 < distance3 and distance2 < distance3:
                 #print("between")
-                mileage = self.points[close1]['mileage'] + \
-                    distance1 * (self.points[close2]['mileage'] -
-                                 self.points[close1]['mileage']) / \
+                measurement = self.points[close1][field] + \
+                    distance1 * (self.points[close2][field] -
+                                 self.points[close1][field]) / \
                     (distance1 + distance2)
             else:
                 pass
@@ -171,10 +178,12 @@ class Gps2Miles:
 
         # Reestimate
         for close1 in range(len(self.points)):
+            if not field in self.points[close1]:
+                continue
             close2 = close1 + 1
-            while 'lat' not in self.points[close2]:
+            while 'lat' not in self.points[close2] or not field in self.points[close2]:
                 close2 += 1
-            if self.points[close1]['mileage'] <= mileage <= self.points[close2]['mileage']:
+            if self.points[close1][field] <= measurement <= self.points[close2][field]:
                 # First known point to here
                 distance1 = geo.great_circle(
                     self.points[close1]['lat'],
@@ -196,9 +205,9 @@ class Gps2Miles:
                     self.points[close2]['lat'],
                     self.points[close2]['lon'],
                 )
-                mileage = self.points[close1]['mileage'] + \
-                    distance1 * (self.points[close2]['mileage'] -
-                                 self.points[close1]['mileage']) / \
+                measurement = self.points[close1][field] + \
+                    distance1 * (self.points[close2][field] -
+                                 self.points[close1][field]) / \
                     (distance1 + distance2)
                 break
 
@@ -206,8 +215,14 @@ class Gps2Miles:
         a.sort()
         certainty = a[2]/(a[0]+a[1])
 
-        #print(mileage, certainty)
-        return (mileage, certainty)
+        return (measurement, certainty)
+
+    def find_mileage(self, latitude, longitude, ignore=False):
+        return self.find_measurement(latitude, longitude, ignore, field='mileage')
+
+    def find_survey(self, latitude, longitude, ignore=False):
+        survey, certainty = self.find_measurement(latitude, longitude, ignore, field='survey')
+        return (util.ft_to_survey(survey), certainty)
 
     def sanity_check(self, update=False):
         retval = True
@@ -240,3 +255,4 @@ if __name__ == "__main__":
     #print(G.sanity_check(update=True))
     G.export()
     print(G.find_mileage(lat, lon, ignore=True))
+    print(G.find_survey(lat, lon, ignore=True))
