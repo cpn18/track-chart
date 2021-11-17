@@ -1,3 +1,7 @@
+"""
+Utilities
+"""
+
 def swap(obj1, obj2):
     """
       Swap two objects
@@ -17,5 +21,11 @@ def ft_to_survey(feet):
     """
     whole = int(feet / 100)
     feet = float(feet - whole*100)
-    return "%d+%.1f" % (whole, feet)
-    
+    return ("%d+%.1f" % (whole, feet)).replace(".0","")
+
+if __name__ == "__main__":
+    assert swap(1,2) == (2,1)
+    assert survey_to_ft("1234+56") == 123456
+    assert survey_to_ft("1234+56.7") == 123456.7
+    assert ft_to_survey(123456) == "1234+56"
+    assert ft_to_survey(123456.7) == "1234+56.7"
