@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
+"""
+GPS to Mileage and Survey Estimation
+"""
 import sys
-import geo
-import util
 import csv
 import json
+import geo
+import util
 
 class Gps2Miles:
+    """ GPS to Mileage and Survey """
 
     def __init__(self, known_points):
         data = []
-        with open(known_points, "r") as f:
-            for line in csv.reader(f, delimiter=' ', quotechar="'"):
+        with open(known_points, "r") as known_file:
+            for line in csv.reader(known_file, delimiter=' ', quotechar="'"):
                 #print("LINE", line)
                 if line[0][0] == "#" or line[-1] != '*' or line[1] != "K":
                     continue
@@ -23,16 +27,14 @@ class Gps2Miles:
                     obj.update({
                         'mileage': float(line[4]),
                     })
-                except ValueError as ex:
-                    obj.update({
-                        'mileage': -1,
-                    })
+                except ValueError:
+                    pass
 
                 try:
                     obj.update({
                         'metadata': json.loads(line[6]),
                     })
-                except ValueError as ex:
+                except ValueError:
                     obj.update({'metadata': {}})
 
                 try:
@@ -40,7 +42,7 @@ class Gps2Miles:
                         'lat': float(line[2]),
                         'lon': float(line[3]),
                     })
-                except:
+                except ValueError:
                     pass
 
                 if 'survey' in obj['metadata']:
@@ -48,18 +50,25 @@ class Gps2Miles:
 
                 data.append(obj)
 
+        # Sort the list
         self.points = sorted(data, key=lambda k: k['mileage'], reverse=False)
+
+        # Fill in missing mileage
         for i in range(len(self.points)):
-            if self.points[i]['mileage'] == -1:
-                try:
-                    self.points[i]['mileage'], self.points[i]['certainty'] = self.find_mileage(self.points[i]['lat'], self.points[i]['lon'], ignore=True)
-                except KeyError:
-                    print(self.points[i])
-                    pass
+            if not 'mileage' in self.points[i]:
+                if 'lat' in self.points[i] and 'lon' in self.points[i]:
+                    self.points[i]['mileage'], self.points[i]['certainty'] = \
+                            self.find_mileage(
+                                self.points[i]['lat'],
+                                self.points[i]['lon'],
+                                ignore=True,
+                            )
+
+        # Resort the list
         self.points = sorted(self.points, key=lambda k: k['mileage'], reverse=False)
-        #print(self.points)
 
     def get_points(self, ktype=None, kclass=None):
+        """ Return Subset of Points """
         if ktype is None and kclass is None:
             return self.points
 
@@ -79,10 +88,12 @@ class Gps2Miles:
         return ret
 
     def dump(self):
+        """ Dump All Points """
         for i in self.points:
             print(i)
 
     def export(self):
+        """ Export Dataset """
         print("Mileage,Latitude,Longitude,Class,Description")
         for i in sorted(self.points, key=lambda k: k['mileage'], reverse=False):
             if i['class'] == "ST":
@@ -95,14 +106,21 @@ class Gps2Miles:
                 description = ""
 
             if 'lat' in i and 'lon' in i:
-                lat = i['lat']
-                lon = i['lon']
+                latitude = i['lat']
+                longitude = i['lon']
             else:
-                lat = lon = ""
+                latitude = longitude = ""
 
-            print("%0.2f,%s,%s,%s,\"%s\"" % (i['mileage'], lat, lon, i['class'], description))
+            print("%0.2f,%s,%s,%s,\"%s\"" % (
+                i['mileage'],
+                latitude,
+                longitude,
+                i['class'],
+                description
+            ))
 
     def find_measurement(self, latitude, longitude, ignore=False, field='mileage'):
+        """ Find Measurement from GPS Coordinates """
         measurement = close1 = close2 = -1
         distance1 = distance2 = 99999
         # Find the two closest points
@@ -172,9 +190,8 @@ class Gps2Miles:
                     (distance1 + distance2)
             else:
                 pass
-        except ZeroDivisionError as ex:
-            print(ex)
-            pass
+        except ZeroDivisionError:
+            print("Division by Zero!")
 
         # Reestimate
         for close1 in range(len(self.points)):
@@ -211,31 +228,34 @@ class Gps2Miles:
                     (distance1 + distance2)
                 break
 
-        a = [ distance1, distance2, distance3 ]
-        a.sort()
-        certainty = a[2]/(a[0]+a[1])
+        distances = [ distance1, distance2, distance3 ]
+        distances.sort()
+        certainty = distances[2]/(distances[0]+distances[1])
 
         return (measurement, certainty)
 
     def find_mileage(self, latitude, longitude, ignore=False):
+        """ Find Mileage based on GPS coordinates """
         return self.find_measurement(latitude, longitude, ignore, field='mileage')
 
     def find_survey(self, latitude, longitude, ignore=False):
+        """ Find Survey based on GPS coordinates """
         survey, certainty = self.find_measurement(latitude, longitude, ignore, field='survey')
         return (util.ft_to_survey(survey), certainty)
 
     def sanity_check(self, update=False):
+        """  Perform a sanity check over the data set """
         retval = True
         for i in range(0, len(self.points)):
             point = self.points[i]
             if 'lat' in point and 'lon' in point and 'mileage' in point:
-                m = self.find_mileage(point['lat'],
+                mileage = self.find_mileage(point['lat'],
                                       point['lon'],
                                       ignore=True)
-                if abs(m - point['mileage']) > 0.01:
+                if abs(mileage - point['mileage']) > 0.01:
                     retval = False
                     if update:
-                        self.points[i]['mileage'] = round(m, 2)
+                        self.points[i]['mileage'] = round(mileage, 2)
             else:
                 print(point)
 
