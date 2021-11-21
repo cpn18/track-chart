@@ -59,7 +59,7 @@ def draw_title(tc, title="PiRail"):
     (x_size, y_size) = draw.textsize(title)
     x = margin
     y = im.size[1] - y_size - 1
-    draw.text((x, y), title)
+    draw.text((x, y), title, fill=COLORS['black'])
     del draw
 
 def mile_to_pixel(tc, m):
