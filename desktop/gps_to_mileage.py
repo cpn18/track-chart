@@ -12,7 +12,7 @@ class Gps2Miles:
     """ GPS to Mileage and Survey """
 
     def __init__(self, known_points):
-        data = []
+        self.points = []
         with open(known_points, "r") as known_file:
             for line in csv.reader(known_file, delimiter=' ', quotechar="'"):
                 #print("LINE", line)
@@ -48,10 +48,7 @@ class Gps2Miles:
                 if 'survey' in obj['metadata']:
                     obj['survey'] = util.survey_to_ft(obj['metadata']['survey'])
 
-                data.append(obj)
-
-        # Sort the list
-        self.points = sorted(data, key=lambda k: k['mileage'], reverse=False)
+                self.points.append(obj)
 
         # Fill in missing mileage
         for i in range(len(self.points)):
