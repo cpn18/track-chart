@@ -91,29 +91,22 @@ class Gps2Miles:
 
     def export(self):
         """ Export Dataset """
-        print("Mileage,Latitude,Longitude,Class,Description")
         for i in sorted(self.points, key=lambda k: k['mileage'], reverse=False):
-            if i['class'] == "ST":
-                continue
 
             metadata = i['metadata']
-            if 'name' in metadata:
-                description = metadata['name']
-            else:
-                description = ""
 
             if 'lat' in i and 'lon' in i:
                 latitude = i['lat']
                 longitude = i['lon']
             else:
-                latitude = longitude = ""
+                latitude = longitude = "-"
 
-            print("%0.2f,%s,%s,%s,\"%s\"" % (
-                i['mileage'],
+            print("- K %s %s %0.2f %s '%s' *" % (
                 latitude,
                 longitude,
+                i['mileage'],
                 i['class'],
-                description
+                json.dumps(metadata),
             ))
 
     def find_measurement(self, latitude, longitude, ignore=False, field='mileage'):
