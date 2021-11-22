@@ -92,7 +92,12 @@ def get_file(self, groups, qsdict):
     # Build the Args Dictionary
     args = {}
     try:
-        stream = qsdict.get("stream",["true"])[0].lower() == "true"
+        if self.headers['accept'] == "application/json":
+            stream = False
+        elif self.headers['accept'] == "text/event-stream":
+            stream = True
+        else:
+            stream = qsdict.get("stream",["true"])[0].lower() == "true"
 
         xform = qsdict.get("xform",["default"])[0].lower()
         if xform in DATA_XFORM:
