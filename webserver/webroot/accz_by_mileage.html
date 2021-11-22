@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>PiRail Chart Example</title>
+<script src="js/chart-3.6.0.js"></script>
+<script src="js/jquery-3.6.0.js"></script>
+</head>
+<body>
+<canvas id="myChart" width="400" height="400"></canvas>
+<script>
+$.ajax({
+  type: "GET",
+  dataType: "json",
+  headers: {"Accept": "application/json"},
+  url: "/data/sample.json?xform=thin",
+  success: function( result ) {
+
+    // convert the JSON to arrays for JChart
+    values = [];
+    labels = [];
+    for (let i =0; i < result.length; i++) {
+      values.push(result[i].acc_z);
+      labels.push(result[i].mileage);
+    }
+
+    // Setup JChart Data
+    const data = {
+      labels: labels,
+      datasets: [{
+        label: "ACC_Z",
+        data: values,
+      }]
+    };
+
+    // Plot the chart
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+      type: 'line',
+      data: data,
+    })
+}});
+</script>
+</body>
+</html>
