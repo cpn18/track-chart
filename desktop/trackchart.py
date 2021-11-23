@@ -246,6 +246,13 @@ def bridges_and_crossings(tc, xing_type=None):
             description = ("%s %s" % (mileage_to_string(mileage), text)).strip()
             (w, x_size, y_size) = rotated_text(draw, description, 90)
             im.paste(w, (int(x-y_size/2), int(y-1.5*margin-x_size)))
+
+        # Survey Station
+        if 'survey' in metadata: 
+            survey_station = metadata['survey']
+            (w, x_size, y_size) = rotated_text(draw, survey_station, 90)
+            im.paste(w, ((int(x-y_size/2), im.size[1]-margin-x_size)))
+
     del draw
 
 def townlines(tc):
