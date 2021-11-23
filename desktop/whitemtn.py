@@ -19,6 +19,8 @@ def main():
         print("Usage: %s start_mile end_mile file.json" % sys.argv[0])
         sys.exit()
 
+    data_file = sys.argv[-1] != "-"
+
     #print("border")
     #trackchart.border(mychart)
     print("mainline")
@@ -33,8 +35,9 @@ def main():
     #trackchart.elevation(mychart)
     print("curvature")
     #trackchart.curvature(mychart)
-    print("accel")
-    trackchart.accel(mychart)
+    if data_file:
+        print("accel")
+        trackchart.accel(mychart)
     print("plot value")
     #trackchart.plot_value(mychart, field="roll", scale=-5)
     print("lidar-gage")

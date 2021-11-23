@@ -183,44 +183,51 @@ class Gps2Miles:
         except ZeroDivisionError:
             print("Division by Zero!")
 
-        # Reestimate
-        for close1 in range(len(self.points)):
-            if not field in self.points[close1]:
-                continue
-            close2 = close1 + 1
-            while 'lat' not in self.points[close2] or not field in self.points[close2]:
-                close2 += 1
-            if self.points[close1][field] <= measurement <= self.points[close2][field]:
-                # First known point to here
-                distance1 = geo.great_circle(
-                    self.points[close1]['lat'],
-                    self.points[close1]['lon'],
-                    latitude,
-                    longitude,
-                )
-                # Here to second known point
-                distance2 = geo.great_circle(
-                    latitude,
-                    longitude,
-                    self.points[close2]['lat'],
-                    self.points[close2]['lon'],
-                )
-                # Distance between known points
-                distance3 = geo.great_circle(
-                    self.points[close1]['lat'],
-                    self.points[close1]['lon'],
-                    self.points[close2]['lat'],
-                    self.points[close2]['lon'],
-                )
-                measurement = self.points[close1][field] + \
-                    distance1 * (self.points[close2][field] -
-                                 self.points[close1][field]) / \
-                    (distance1 + distance2)
-                break
-
         distances = [ distance1, distance2, distance3 ]
         distances.sort()
         certainty = distances[2]/(distances[0]+distances[1])
+
+        try:
+            # Reestimate
+            for close1 in range(len(self.points)):
+                if not field in self.points[close1]:
+                    continue
+                close2 = close1 + 1
+                while 'lat' not in self.points[close2] or not field in self.points[close2]:
+                    close2 += 1
+                if self.points[close1][field] <= measurement <= self.points[close2][field]:
+                    # First known point to here
+                    distance1 = geo.great_circle(
+                        self.points[close1]['lat'],
+                        self.points[close1]['lon'],
+                        latitude,
+                        longitude,
+                    )
+                    # Here to second known point
+                    distance2 = geo.great_circle(
+                        latitude,
+                        longitude,
+                        self.points[close2]['lat'],
+                        self.points[close2]['lon'],
+                    )
+                    # Distance between known points
+                    distance3 = geo.great_circle(
+                        self.points[close1]['lat'],
+                        self.points[close1]['lon'],
+                        self.points[close2]['lat'],
+                        self.points[close2]['lon'],
+                    )
+                    measurement = self.points[close1][field] + \
+                        distance1 * (self.points[close2][field] -
+                                     self.points[close1][field]) / \
+                        (distance1 + distance2)
+                    break
+
+            distances = [ distance1, distance2, distance3 ]
+            distances.sort()
+            certainty = distances[2]/(distances[0]+distances[1])
+        except IndexError:
+            pass
 
         return (measurement, certainty)
 
