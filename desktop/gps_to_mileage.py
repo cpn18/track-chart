@@ -116,7 +116,7 @@ class Gps2Miles:
         # Find the two closest points
         for i in range(0, len(self.points)):
             # No Geo Data
-            if 'lat' not in self.points[i] or 'lon' not in self.points[i]:
+            if not ('lat' in self.points[i] and 'lon' in self.points[i]):
                 continue
             # No Field Data
             if not field in self.points[i] or self.points[i][field] < 0:
@@ -139,6 +139,10 @@ class Gps2Miles:
             elif distance < distance2:
                 close2 = i
                 distance2 = distance
+
+        if close1 == -1 or close2 == -1:
+            # Something is very wrong if we exit here
+            return (0, 0)
 
         # Distance between the two closest points
         distance3 = geo.great_circle(self.points[close1]['lat'],
