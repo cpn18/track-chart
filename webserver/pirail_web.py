@@ -33,6 +33,7 @@ MIME_MAP = {
     ".txt": "text/plain",
     ".js": "text/javascript",
     ".json": "application/json",
+    ".ico": "image/x-icon",
     "default": "application/octet-stream",
 }
 
