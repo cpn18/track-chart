@@ -189,7 +189,7 @@ def get_any(self, groups, _qsdict):
         extension = 'default'
 
     content_type = MIME_MAP[extension]
-    with open(pathname) as j:
+    with open(pathname, "rb") as j:
         output = j.read()
 
     # If we made it this far, then send output to the browser
@@ -197,7 +197,7 @@ def get_any(self, groups, _qsdict):
     self.send_header("Content-type", content_type)
     self.send_header("Content-length", str(len(output)))
     self.end_headers()
-    self.wfile.write(output.encode('utf-8'))
+    self.wfile.write(output)
 
 MATCHES = [
     # Most specific matches go first
