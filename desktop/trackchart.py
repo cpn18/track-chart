@@ -933,7 +933,7 @@ def gage(tc):
     ghost = [0] * 360
     total_slope = total_slope_count = 0
     # Read from file
-    for line_no, obj in pirail(tc['data_file']):
+    for line_no, obj in pirail.read(tc['data_file']):
         if obj['class'] not in ["LIDAR", "L"]:
             continue
         mileage = obj['mileage']
