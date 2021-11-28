@@ -136,7 +136,7 @@ def milepost_symbol(draw, x, y_size, margin, name, alt_name):
     if alt_name is not None:
         draw.text((x-0.5*margin-draw.textsize(alt_name)[0], margin), alt_name,fill=COLORS['black'])
 
-def mileposts(tc, from_file=False):
+def mileposts(tc, from_file=False, mod=1):
     """
     Draw mileposts
     """
@@ -145,30 +145,45 @@ def mileposts(tc, from_file=False):
     (first, last, pixel_per_mile) = tc['mileposts']
 
     draw = ImageDraw.Draw(im)
-    if not from_file:
-        #print(first)
-        #print(last)
-        for mileage in range(int(first), int(last+1)):
-            x = mile_to_pixel(tc, mileage-first)
-            milepost_symbol(draw, x, (im.size[1]-margin), margin, "MP%d" % mileage, None)
-    else:
+
+    mp_list = []
+    if from_file:
+        # Read Mileposts from file
         for obj in tc['G'].get_points(ktype='K', kclass='MP'):
-            #print (obj)
+            mp_list.append(obj)
+    else:
+        # Create Milepost Listing
+        for mileage in range(int(first), int(last+1)):
+            mp_list.append({
+                'mileage': mileage,
+                'metadata': {
+                    'name': "MP%d" % mileage,
+                    'alt_name': None,
+                }
+            })
 
-            mileage = obj['mileage']
-            if not (first <= mileage <= last):
-                continue
+    # Filter and draw the mileposts
+    for obj in mp_list:
+        mileage = obj['mileage']
+        if not (first <= mileage <= last):
+            continue
 
-            metadata = obj['metadata']
-            if 'alt_name' not in metadata:
-                metadata['alt_name'] = None
+        if mileage % mod != 0:
+            continue
 
-            x = mile_to_pixel(tc, mileage-first)
-            milepost_symbol(draw, x, (im.size[1]-margin),
-                            margin, metadata['name'], metadata['alt_name'])
+        x = mile_to_pixel(tc, mileage-first)
 
-            # Survey Station
-            survey_station(im, draw, x, margin, metadata)
+        milepost_symbol(
+            draw,
+            x,
+            (im.size[1]-margin),
+            margin,
+            obj['metadata']['name'],
+            obj['metadata'].get('alt_name', None)
+        )
+
+        # Survey Station
+        survey_station(im, draw, x, margin, obj['metadata'])
 
     del draw
 
@@ -225,6 +240,8 @@ def bridges_and_crossings(tc, xing_type=None):
 
         # Angled crossings
         offset = margin * math.tan(math.radians(90 - metadata.get('angle', 90)))
+        if (last - first) > 1:
+            offset /= last - first
 
         # Get X based on mileage
         x = mile_to_pixel(tc, mileage-first)
