@@ -97,6 +97,15 @@ def rotated_text(draw, t, degrees):
     d.text((1, 1), t, fill="white")
     return (ImageOps.invert(txt.rotate(degrees, expand=True)), x_size, y_size)
 
+def survey_station(im, draw, x, margin, metadata):
+    """
+    Draw Survey Station Text
+    """
+    if 'survey' in metadata:
+        survey_station = metadata['survey']
+        (w, x_size, y_size) = rotated_text(draw, survey_station, 90)
+        im.paste(w, ((int(x-y_size/2), im.size[1]-margin-x_size)))
+
 def border(tc):
     """
     Draw a page border
@@ -159,10 +168,8 @@ def mileposts(tc, from_file=False):
                             margin, metadata['name'], metadata['alt_name'])
 
             # Survey Station
-            if 'survey' in metadata: 
-                survey_station = metadata['survey']
-                (w, x_size, y_size) = rotated_text(draw, survey_station, 90)
-                im.paste(w, ((x-y_size-3, im.size[1]-margin-x_size)))
+            survey_station(im, draw, x, margin, metadata)
+
     del draw
 
 def mainline(tc):
@@ -216,18 +223,23 @@ def bridges_and_crossings(tc, xing_type=None):
         if xing_type is not None and xtype != xing_type:
             continue
 
+        # Angled crossings
+        offset = margin * math.tan(math.radians(90 - metadata.get('angle', 90)))
+
+        # Get X based on mileage
         x = mile_to_pixel(tc, mileage-first)
+
         if xtype == 'U':
             # Draw underpass
             draw.line((x-5, y, x+5, y), fill=COLORS['white'])
-            draw.line((x, y-margin, x, y+margin), fill=COLORS['black'])
+            draw.line((x-offset, y-margin, x+offset, y+margin), fill=COLORS['black'])
         elif xtype == 'O':
             # Draw overpass
-            draw.line((x, y-margin, x, y-5), fill=COLORS['black'])
-            draw.line((x, y+5, x, y+margin), fill=COLORS['black'])
+            draw.line((x-offset, y-margin, x, y-5), fill=COLORS['black'])
+            draw.line((x, y+5, x+offset, y+margin), fill=COLORS['black'])
         elif xtype == 'X':
             # Draw road
-            draw.line((x, y-margin, x, y+margin), fill=COLORS['black'])
+            draw.line((x-offset, y-margin, x+offset, y+margin), fill=COLORS['black'])
 
         # Draw description
         if 'name' in metadata:
@@ -248,10 +260,7 @@ def bridges_and_crossings(tc, xing_type=None):
             im.paste(w, (int(x-y_size/2), int(y-1.5*margin-x_size)))
 
         # Survey Station
-        if 'survey' in metadata: 
-            survey_station = metadata['survey']
-            (w, x_size, y_size) = rotated_text(draw, survey_station, 90)
-            im.paste(w, ((int(x-y_size/2), im.size[1]-margin-x_size)))
+        survey_station(im, draw, x, margin, metadata)
 
     del draw
 
@@ -353,10 +362,7 @@ def stations(tc):
         draw.text((int(x-x_size/2), int(y1)), m_str, fill=COLORS['black'])
 
         # Survey Station
-        if 'survey' in metadata: 
-            survey_station = metadata['survey']
-            (w, x_size, y_size) = rotated_text(draw, survey_station, 90)
-            im.paste(w, ((x-y_size-3, im.size[1]-margin-x_size)))
+        survey_station(im, draw, x, margin, metadata)
 
     del draw
 
@@ -422,7 +428,7 @@ def controlpoints(tc):
         metadata = obj['metadata']
 
         #print(obj)
-        
+
         if not(first <= mileage <= last):
             continue
 
@@ -438,7 +444,7 @@ def controlpoints(tc):
         elif start_offset < 0:
             # below the mainline
             y_start = y - start_offset*y_size
-    
+
         if label[2] == 'F':
             if label[1] == 'R':
                 y_end = y_start - end_offset*y_size
@@ -577,7 +583,7 @@ def string_chart_by_time(tc):
             'start-mileage': first,
             'end-mileage': last,
         }):
- 
+
         if obj['num_used'] < pirail.GPS_THRESHOLD:
             continue
         #if obj['speed'] < obj['eps']:
@@ -812,7 +818,7 @@ def accel(tc, scale=1):
     ygy = int((im.size[1]-margin)*0.42)
     ygz = int((im.size[1]-margin)*0.50)
     ys = int((im.size[1]-margin)*0.58)
-    
+
     ACCxp = [0] * im.size[0]
     ACCyp = [0] * im.size[0]
     ACCzp = [0] * im.size[0]
