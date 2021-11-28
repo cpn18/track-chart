@@ -230,7 +230,7 @@ class Gps2Miles:
             distances = [ distance1, distance2, distance3 ]
             distances.sort()
             certainty = distances[2]/(distances[0]+distances[1])
-        except IndexError:
+        except (IndexError, KeyError):
             pass
 
         return (measurement, certainty)
