@@ -56,7 +56,7 @@ def main():
         #trackchart.string_chart_by_time(mychart)
 
 
-    filename = "images/northern%s_%s.png" % (sys.argv[-3], sys.argv[-2])
+    filename = "images/northern_%s_%s.png" % (sys.argv[-3], sys.argv[-2])
     mychart['image'].save(filename)
     os.system("eog %s" % filename)
 
