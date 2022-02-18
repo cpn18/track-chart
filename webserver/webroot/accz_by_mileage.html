@@ -5,36 +5,51 @@
 <script src="js/jquery-3.6.0.js"></script>
 </head>
 <body>
-<input type=text id="file" value="sample.json"><br>
-<input type=text id="startmileage" value="6.862"><br>
-<input type=text id="endmileage" value="6.864"><br>
+<input type=text id="file" value="wrr_20211016_with_mileage_sort_by_time.json"><br>
+<input type=text id="startmileage" value="1"><br>
+<input type=text id="endmileage" value="4.5"><br>
+<input type=text id="percentile" value="0.999"><br>
 <canvas id="myChart" width="400" height="400"></canvas>
 <script>
 
-	// 6.84 - 6.88
-
 function plot_data(result) {
-  // convert the JSON to arrays for JChart
-  values = [];
-  labels = [];
-  
-  // calculate the average
-  accsum = 0.0;
+  // Find an average reading to normallize the data
+  accsum = 0;
   acccnt = 0;
-  accavg = 0;
   for (let i = 0; i < result.length; i++) {
     if (result[i].class == "ATT") {
-      accsum = accsum + result[i].acc_z;
+      accsum += result[i].acc_z;
       acccnt += 1;
     }
   }
   accavg = accsum / acccnt;
+  console.log("average =", accavg);
 
-  // normalize by measuring difference from average
-  for (let i =0; i < result.length; i++) {
+  // calculate the noisefloor
+  bins = [];
+  for (let i = 0; i < result.length; i++) {
     if (result[i].class == "ATT") {
-      values.push(Math.abs(result[i].acc_z - accavg));
-      labels.push(result[i].mileage);
+      bins.push(result[i].acc_z - accavg);
+    }
+  }
+
+  bins.sort(function(a,b){return a-b;});
+  index = Math.floor(
+    parseFloat(document.getElementById('percentile').value) * bins.length);
+  noisefloor = bins[index];
+  console.log("noisefloor =", index, "of", bins.length);
+
+  // convert the JSON to arrays for JChart
+  values = [];
+  labels = [];
+
+  // only plot above the noise floor
+  for (let i = 0; i < result.length; i++) {
+    if (result[i].class == "ATT") {
+      if (result[i].acc_z > noisefloor) {
+        values.push(result[i].acc_z);
+        labels.push(result[i].mileage);
+      }
     }
   }
 
