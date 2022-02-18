@@ -6,21 +6,21 @@
 </head>
 <body>
 <input type=text id="file" value="wrr_20211016_with_mileage_sort_by_time.json"><br>
-<input type=text id="startmileage" value="1"><br>
-<input type=text id="endmileage" value="4.5"><br>
+<input type=text id="startmileage" value="0"><br>
+<input type=text id="endmileage" value="12"><br>
 <input type=text id="percentile" value="0.999"><br>
-<canvas id="myChart" width="400" height="400"></canvas>
+<canvas id="myChart" width="400" height="200"></canvas>
 <script>
 
 function plot_data(result) {
+  let windowsize = 0.5; // miles
+
   // Find an average reading to normallize the data
   accsum = 0;
   acccnt = 0;
   for (let i = 0; i < result.length; i++) {
-    if (result[i].class == "ATT") {
-      accsum += result[i].acc_z;
-      acccnt += 1;
-    }
+    accsum += result[i].acc_z;
+    acccnt += 1;
   }
   accavg = accsum / acccnt;
   console.log("average =", accavg);
@@ -28,9 +28,7 @@ function plot_data(result) {
   // calculate the noisefloor
   bins = [];
   for (let i = 0; i < result.length; i++) {
-    if (result[i].class == "ATT") {
-      bins.push(result[i].acc_z - accavg);
-    }
+    bins.push(result[i].acc_z - accavg);
   }
 
   bins.sort(function(a,b){return a-b;});
@@ -45,13 +43,34 @@ function plot_data(result) {
 
   // only plot above the noise floor
   for (let i = 0; i < result.length; i++) {
-    if (result[i].class == "ATT") {
-      if (result[i].acc_z > noisefloor) {
-        values.push(result[i].acc_z);
-        labels.push(result[i].mileage);
-      }
+    if (result[i].acc_z > noisefloor) {
+      values.push(result[i].acc_z);
+      labels.push(result[i].mileage);
     }
   }
+
+  // Calculate the average acc_z using a sliding window
+  avalues = [];
+  for (let i = 0; i < values.length; i++) {
+    mlow = labels[i] - windowsize/2;
+    mhigh = labels[i] + windowsize/2;
+    msum = 0;
+    mcnt = 0;
+    j = i;
+    while ( j >= 0 && labels[j] >= mlow ) {
+      msum += values[j];
+      mcnt += 1;
+      j -= 1;
+    }
+    j = i + 1;
+    while ( j < values.length && labels[j] <= mhigh) {
+      msum += values[j];
+      mcnt += 1;
+      j += 1;
+    }
+    avalues.push(msum/mcnt);
+  }
+
 
   // Setup JChart Data
   const data = {
@@ -59,6 +78,10 @@ function plot_data(result) {
     datasets: [{
       label: "ACC_Z",
       data: values,
+    }, {
+      label: "AVG_Z",
+      backgroundColor: "rgba(220,0,0)",
+      data: avalues,
     }]
   };
 
@@ -76,7 +99,7 @@ $.ajax({
   headers: {"Accept": "application/json"},
   url: "/data/" +
     document.getElementById('file').value +
-    "?xform=thin&start-mileage=" +
+    "?classes=ATT&xform=thin&start-mileage=" +
     document.getElementById('startmileage').value +
     "&end-mileage=" +
     document.getElementById('endmileage').value,
