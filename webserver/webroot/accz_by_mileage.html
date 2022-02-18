@@ -6,18 +6,36 @@
 </head>
 <body>
 <input type=text id="file" value="sample.json"><br>
-<input type=text id="startmileage" value="6.84"><br>
-<input type=text id="endmileage" value="6.88"><br>
+<input type=text id="startmileage" value="6.862"><br>
+<input type=text id="endmileage" value="6.864"><br>
 <canvas id="myChart" width="400" height="400"></canvas>
 <script>
+
+	// 6.84 - 6.88
 
 function plot_data(result) {
   // convert the JSON to arrays for JChart
   values = [];
   labels = [];
+  
+  // calculate the average
+  accsum = 0.0;
+  acccnt = 0;
+  accavg = 0;
+  for (let i = 0; i < result.length; i++) {
+    if (result[i].class == "ATT") {
+      accsum = accsum + result[i].acc_z;
+      acccnt += 1;
+    }
+  }
+  accavg = accsum / acccnt;
+
+  // normalize by measuring difference from average
   for (let i =0; i < result.length; i++) {
-    values.push(result[i].acc_z);
-    labels.push(result[i].mileage);
+    if (result[i].class == "ATT") {
+      values.push(Math.abs(result[i].acc_z - accavg));
+      labels.push(result[i].mileage);
+    }
   }
 
   // Setup JChart Data
