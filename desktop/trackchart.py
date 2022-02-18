@@ -901,7 +901,7 @@ def accel(tc, scale=1):
                 GYRz = (obj['gyro_z'])
                 if abs(GYRz) > GYRzp[x]:
                     GYRzp[x] = GYRz
-                accel_file.write("%f %f %f %f %f %f %f\n" %( obj['mileage'], obj['acc_x'], obj['acc_y'], obj['acc_z'], obj['gyro_x'], obj['gyro_y'], obj['gyro_z']))
+                accel_file.write("%f %f %f %f %f %f %f %f %f\n" %( obj['mileage'], obj['lat'], obj['lon'], obj['acc_x'], obj['acc_y'], obj['acc_z'], obj['gyro_x'], obj['gyro_y'], obj['gyro_z']))
 
     for x in range(margin, len(ACCxp)-2*margin):
         draw.line((x,yx-scale*ACCxp[x],x-1,yx-scale*ACCxp[x-1]),fill=COLORS['red'])
