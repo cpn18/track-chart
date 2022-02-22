@@ -41,7 +41,7 @@ def default(obj, _qsdict):
     """ Do not modify data """
     return obj
 
-def thin(obj, _qsdict):
+def thin_acc_z(obj, _qsdict):
     """ Sample Data Thinning """
     if obj['class'] == "ATT":
         return {
@@ -53,9 +53,23 @@ def thin(obj, _qsdict):
     else:
         return obj
 
+def thin_pitch_roll(obj, _qsdict):
+    """ Sample Data Thinning """
+    if obj['class'] == "ATT":
+        return {
+            'class': obj['class'],
+            'time': obj['time'],
+            'mileage': obj['mileage'],
+            'pitch': obj['pitch'],
+            'roll': obj['roll'],
+        }
+    else:
+        return obj
+
 # Dictionary of Data Transformations
 DATA_XFORM = {
-    'thin': thin,
+    'thin': thin_acc_z,
+    'attitude': thin_pitch_roll,
     'default': default,
 }
 
