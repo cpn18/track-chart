@@ -10,7 +10,6 @@ import math
 import pirail
 
 AA = 0.03 # Complementary filter constant
-M_PI = 3.14159265358979323846
 
 if len(sys.argv) < 2:
     print("USAGE: %s [args] data_file" % sys.argv[0])
@@ -84,9 +83,9 @@ for obj in data:
     gyroYangle = gyroYangle % 360
     gyroZangle = gyroZangle % 360
     # Complementary Filter
-    AccXangle = math.degrees(math.atan2(obj['acc_y'], obj['acc_z']) + M_PI)
-    AccYangle = math.degrees(math.atan2(obj['acc_z'], obj['acc_x']) + M_PI)
-    AccZangle = math.degrees(math.atan2(obj['acc_y'], obj['acc_x']) + M_PI)
+    AccXangle = math.degrees(math.atan2(obj['acc_y'], obj['acc_z']) + math.pi)
+    AccYangle = math.degrees(math.atan2(obj['acc_z'], obj['acc_x']) + math.pi)
+    AccZangle = math.degrees(math.atan2(obj['acc_y'], obj['acc_x']) + math.pi)
     CFangleX = AA * (CFangleX + obj['gyro_x'] * DT) + (1 - AA) * AccXangle
     CFangleY = AA * (CFangleY + obj['gyro_y'] * DT) + (1 - AA) * AccYangle
     CFangleZ = AA * (CFangleZ + obj['gyro_z'] * DT) + (1 - AA) * AccZangle

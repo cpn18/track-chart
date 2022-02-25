@@ -17,8 +17,6 @@ import class_i as aar
 import pirail
 
 GPS_THRESHOLD = 9
-RAD_TO_DEG = 57.29578
-M_PI = 3.14159265358979323846
 AA = 0.40 # Complementary filter constant
 
 def new(args):
@@ -199,9 +197,9 @@ def read_data(tc):
         gyroXangle+=obj['gyro_x']*DT;
         gyroYangle+=obj['gyro_y']*DT;
         gyroZangle+=obj['gyro_z']*DT;
-        AccXangle = (float) (math.atan2(obj['acc_y'],obj['acc_z'])+M_PI)*RAD_TO_DEG;
-        AccYangle = (float) (math.atan2(obj['acc_z'],obj['acc_x'])+M_PI)*RAD_TO_DEG;
-        AccZangle = (float) (math.atan2(obj['acc_y'],obj['acc_x'])+M_PI)*RAD_TO_DEG;
+        AccXangle = math.degrees((float) (math.atan2(obj['acc_y'],obj['acc_z'])+math.pi));
+        AccYangle = math.degrees((float) (math.atan2(obj['acc_z'],obj['acc_x'])+math.pi));
+        AccZangle = math.degrees((float) (math.atan2(obj['acc_y'],obj['acc_x'])+math.pi));
         # Complementary Filter
         CFangleX=AA*(CFangleX+obj['gyro_x']*DT) +(1 - AA) * AccXangle;
         CFangleY=AA*(CFangleY+obj['gyro_y']*DT) +(1 - AA) * AccYangle;
