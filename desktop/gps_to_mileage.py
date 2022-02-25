@@ -13,6 +13,9 @@ class Gps2Miles:
 
     def __init__(self, known_points):
         self.points = []
+        if known_points == "-":
+            return
+
         with open(known_points, "r") as known_file:
             for line in csv.reader(known_file, delimiter=' ', quotechar="'"):
                 #print("LINE", line)
@@ -111,6 +114,11 @@ class Gps2Miles:
 
     def find_measurement(self, latitude, longitude, ignore=False, field='mileage'):
         """ Find Measurement from GPS Coordinates """
+
+        # Handles the case where there is no known file
+        if len(self.points) == 0:
+            return (0,1)
+
         measurement = close1 = close2 = -1
         distance1 = distance2 = 99999
         # Find the two closest points
