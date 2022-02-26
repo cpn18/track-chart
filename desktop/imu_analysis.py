@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Useful when debugging GPS issues
+Useful when debugging IMU issues
 """
 import sys
 import math
@@ -9,6 +9,7 @@ import json
 
 import pirail
 
+# Error Compensation
 aax = -0.76994928407068
 aay = -0.12089123215864023
 aaz = 9.789026816711136
