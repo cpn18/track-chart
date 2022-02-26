@@ -10,8 +10,6 @@ from PIL import Image, ImageDraw, ImageOps
 
 import geo
 
-NORMALIZE = True
-
 TIME_THRESHOLD = 5.0 # seconds
 
 #FILL=(255,255,255)
@@ -97,19 +95,22 @@ max_lat = -90
 min_lon = 180
 max_lon = -180
 
-x_sum = 0
-y_sum = 0
-z_sum = 0
+# Average Errors
+aax = -0.76994928407068
+aay = -0.12089123215864023
+agz = -0.5585602094240765
+
 data=[]
 bad_data=[]
 acc_count = 0
 
 for line_no, obj in pirail.read(filename, classes=['ATT', 'TPV']):
     if obj['class'] == 'ATT':
+        # Error compensation
+        obj['acc_x'] -= aax
+        obj['acc_y'] -= aay
+        obj['gyro_z'] -= agz
         data.append(obj)
-        x_sum += obj['acc_x']
-        y_sum += obj['acc_y']
-        z_sum += obj['gyro_z']
         acc_count += 1
     elif obj['class'] == 'TPV':
         if obj['num_used'] >= pirail.GPS_THRESHOLD:
@@ -139,17 +140,6 @@ scale = min(
     height/geo.latitude_to_meters(max_lat - min_lat)
 )
 print("Scale: %f" % scale)
-
-# Normallize Data by reseting to zero average
-if NORMALIZE:
-    x_avg = x_sum / acc_count
-    y_avg = y_sum / acc_count
-    z_avg = z_sum / acc_count
-    for obj in data:
-        if obj['class'] == "ATT":
-            obj['acc_x'] -= x_avg
-            obj['acc_y'] -= y_avg
-            obj['gyro_z'] -= z_avg
 
 # Try to seed the initial values
 
