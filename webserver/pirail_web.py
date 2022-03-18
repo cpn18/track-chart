@@ -182,6 +182,9 @@ def get_file(self, groups, qsdict):
         self.send_header("Content-length", str(len(output)))
         self.end_headers()
         self.wfile.write(output.encode('utf-8'))
+    else:
+        output = "event: pirail\ndata: %s\n\n" % json.dumps({"done": True})
+        self.wfile.write(output.encode('utf-8'))
 
 def get_any(self, groups, _qsdict):
     """
