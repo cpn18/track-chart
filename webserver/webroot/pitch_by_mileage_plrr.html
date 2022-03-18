@@ -7,7 +7,7 @@
 <body>
 <input type=text id="file" value="wrr_20211016_with_mileage_sort_by_time.json"><br>
 <input type=text id="startmileage" value="4"><br>
-<input type=text id="endmileage" value="5"><br>
+<input type=text id="endmileage" value="7"><br>
 <input type=text id="percentile" value="0.8"><br>
 <canvas id="myChart" width="400" height="200"></canvas>
 <script>
@@ -15,6 +15,7 @@
 function plot_data(result) {
   let windowsize = 0.5; // miles
 
+  console.log(result);
   // Find an average reading over the window to normallize the data
   avgresult = []
   for (let i = 0; i < result.length; i++) {
@@ -24,13 +25,13 @@ function plot_data(result) {
     mcnt = 0;
     j = i;
     while ( j >= 0 && result[j].mileage >= mlow ) {
-      msum += result[j].roll;
+      msum += result[j].pitch;
       mcnt += 1;
       j -= 1;
     }
     j = i + 1;
     while ( j < result.length && result[j].mileage <= mhigh) {
-      msum += result[j].roll;
+      msum += result[j].pitch;
       mcnt += 1;
       j += 1;
     }
@@ -40,7 +41,7 @@ function plot_data(result) {
   // calculate the noisefloor
   bins = [];
   for (let i = 0; i < result.length; i++) {
-    thispoint = Math.abs(result[i].roll - avgresult[i])
+    thispoint = Math.abs(result[i].pitch - avgresult[i])
     bins.push(thispoint);
   }
 
@@ -56,14 +57,14 @@ function plot_data(result) {
 
   // only plot above the noise floor
   for (let i = 0; i < result.length; i++) {
-    thispoint = Math.abs(result[i].roll - avgresult[i])
+    thispoint = Math.abs(result[i].pitch - avgresult[i])
     if (thispoint > noisefloor) {
-      values.push(result[i].roll - avgresult[i]);
+      values.push(result[i].pitch - avgresult[i]);
       labels.push(result[i].mileage);
     }
   }
 
-  // Calculate the average roll using a sliding window
+  // Calculate the average pitch using a sliding window
   avalues = [];
   for (let i = 0; i < values.length; i++) {
     mlow = labels[i] - windowsize/2;
@@ -90,10 +91,10 @@ function plot_data(result) {
   const data = {
     labels: labels,
     datasets: [{
-      label: "Roll",
+      label: "Pitch",
       data: values,
     }, {
-      label: "Avg Roll",
+      label: "Avg Pitch",
       backgroundColor: "rgba(220,0,0)",
       data: avalues,
     }]
@@ -111,12 +112,7 @@ $.ajax({
   type: "GET",
   dataType: "json",
   headers: {"Accept": "application/json"},
-  url: "/data/" +
-    document.getElementById('file').value +
-    "?classes=ATT&xform=attitude&start-mileage=" +
-    document.getElementById('startmileage').value +
-    "&end-mileage=" +
-    document.getElementById('endmileage').value,
+  url: "http://www.newenglandsouthernrailroad.com/pirail/file.php",
   success: plot_data,
 });
 </script>
