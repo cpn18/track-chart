@@ -25,10 +25,8 @@ class MyHandler(BaseHTTPRequestHandler):
         url = urlparse(self.path)
         qsdict = parse_qs(url.query)
 
-        path = url.path
-
         for match in application.MATCHES:
-            groups = match['pattern'].match(self.command + " " + path)
+            groups = match['pattern'].match(self.command + " " + url.path)
             if groups is not None:
                 match['handler'](self, groups, qsdict)
                 break

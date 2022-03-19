@@ -6,8 +6,8 @@
 </head>
 <body>
 <input type=text id="file" value="wrr_20211016_with_mileage_sort_by_time.json"><br>
-<input type=text id="startmileage" value="4"><br>
-<input type=text id="endmileage" value="5"><br>
+<input type=text id="startmileage" value="0"><br>
+<input type=text id="endmileage" value="12"><br>
 <input type=text id="percentile" value="0.999"><br>
 <canvas id="myChart" width="400" height="200"></canvas>
 <script>
@@ -107,14 +107,16 @@ function plot_data(result) {
   })
 }
 
+url = "pirail_fetch_data.php" +
+    "?classes=ATT&xform=thin" +
+    "&start-mileage=" + document.getElementById('startmileage').value +
+    "&end-mileage=" + document.getElementById('endmileage').value +
+    "&file=" + document.getElementById('file').value;
+console.log(url);
+
 streamdata = [];
 
-const dataStream = new EventSource("/data/" +
-    document.getElementById('file').value +
-    "?classes=ATT&xform=thin&start-mileage=" +
-    document.getElementById('startmileage').value +
-    "&end-mileage=" +
-    document.getElementById('endmileage').value);
+const dataStream = new EventSource(url);
 
 dataStream.onopen = function() {
     console.log("connection opened");

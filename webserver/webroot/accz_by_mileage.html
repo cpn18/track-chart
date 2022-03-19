@@ -107,16 +107,18 @@ function plot_data(result) {
   })
 }
 
+url = "pirail_fetch_data.php" +
+    "?classes=ATT&xform=thin" +
+    "&start-mileage=" + document.getElementById('startmileage').value +
+    "&end-mileage=" + document.getElementById('endmileage').value +
+    "&file=" + document.getElementById('file').value;
+console.log(url);
+
 $.ajax({
   type: "GET",
   dataType: "json",
   headers: {"Accept": "application/json"},
-  url: "/data/" +
-    document.getElementById('file').value +
-    "?classes=ATT&xform=thin&start-mileage=" +
-    document.getElementById('startmileage').value +
-    "&end-mileage=" +
-    document.getElementById('endmileage').value,
+  url: url,
   success: plot_data,
 });
 </script>

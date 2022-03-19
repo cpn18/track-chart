@@ -95,13 +95,8 @@ def get_file_listing(self, groups, _qsdict):
 def get_file(self, groups, qsdict):
     """
     Data Fetching API
-    GET /data/[filename]
+    GET pirail_data_fetch.php
     """
-    pathname = os.path.normpath(DATAROOT + "/" + groups.group('filename'))
-
-    if not os.path.isfile(pathname):
-        self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
-        return
 
     # Parse the query string and
     # Build the Args Dictionary
@@ -113,6 +108,16 @@ def get_file(self, groups, qsdict):
             stream = True
         else:
             stream = qsdict.get("stream",["true"])[0].lower() == "true"
+
+        filename = qsdict.get("file", [None])[0]
+        if filename is None:
+            self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
+            return
+        else:
+            pathname = os.path.normpath(DATAROOT + "/" + filename)
+            if not os.path.isfile(pathname):
+                self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
+                return
 
         xform = qsdict.get("xform",["default"])[0].lower()
         if xform in DATA_XFORM:
@@ -218,9 +223,10 @@ def get_any(self, groups, _qsdict):
 
 MATCHES = [
     # Most specific matches go first
+    # Fakeout PHP handler
     {
-         "pattern": re.compile(r"GET /data/(?P<filename>[a-zA-Z0-9_\.]+)"),
-         "handler": get_file,
+        "pattern": re.compile(r"GET /pirail_fetch_data.php"),
+        "handler": get_file,
     },
     # Least specifc matches go last
     {
