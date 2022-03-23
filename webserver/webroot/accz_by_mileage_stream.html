@@ -2,111 +2,15 @@
 <head>
 <title>PiRail Chart Example</title>
 <script src="js/chart-3.7.1.js"></script>
-<script src="js/jquery-3.6.0.js"></script>
+<script src="js/pirail.js"></script>
 </head>
 <body>
 <input type=text id="file" value="wrr_20211016_westbound.json"><br>
 <input type=text id="startmileage" value="0"><br>
 <input type=text id="endmileage" value="12"><br>
-<input type=text id="percentile" value="0.999"><br>
+<input type=text id="percentile" value="0.99"><br>
 <canvas id="myChart" width="400" height="200"></canvas>
 <script>
-
-function plot_data(result) {
-  let windowsize = 0.5; // miles
-
-  // Find an average reading over the window to normallize the data
-  avgresult = []
-  for (let i = 0; i < result.length; i++) {
-    mlow = result[i].mileage - windowsize/2;
-    mhigh = result[i].mileage + windowsize/2;
-    msum = 0;
-    mcnt = 0;
-    j = i;
-    while ( j >= 0 && result[j].mileage >= mlow ) {
-      msum += result[j].acc_z;
-      mcnt += 1;
-      j -= 1;
-    }
-    j = i + 1;
-    while ( j < result.length && result[j].mileage <= mhigh) {
-      msum += result[j].acc_z;
-      mcnt += 1;
-      j += 1;
-    }
-    avgresult.push(msum/mcnt);
-  }
-
-  // calculate the noisefloor
-  bins = [];
-  for (let i = 0; i < result.length; i++) {
-    thispoint = Math.abs(result[i].acc_z - avgresult[i])
-    bins.push(thispoint);
-  }
-
-  bins.sort(function(a,b){return a-b;});
-  index = Math.floor(
-    parseFloat(document.getElementById('percentile').value) * bins.length);
-  noisefloor = bins[index];
-  console.log("noisefloor =", index, "of", bins.length);
-
-  // convert the JSON to arrays for JChart
-  values = [];
-  labels = [];
-
-  // only plot above the noise floor
-  for (let i = 0; i < result.length; i++) {
-    thispoint = Math.abs(result[i].acc_z - avgresult[i])
-    if (thispoint > noisefloor) {
-      values.push(result[i].acc_z);
-      labels.push(result[i].mileage);
-    }
-  }
-
-  // Calculate the average acc_z using a sliding window
-  avalues = [];
-  for (let i = 0; i < values.length; i++) {
-    mlow = labels[i] - windowsize/2;
-    mhigh = labels[i] + windowsize/2;
-    msum = 0;
-    mcnt = 0;
-    j = i;
-    while ( j >= 0 && labels[j] >= mlow ) {
-      msum += values[j];
-      mcnt += 1;
-      j -= 1;
-    }
-    j = i + 1;
-    while ( j < values.length && labels[j] <= mhigh) {
-      msum += values[j];
-      mcnt += 1;
-      j += 1;
-    }
-    avalues.push(msum/mcnt);
-  }
-
-
-  // Setup JChart Data
-  const data = {
-    labels: labels,
-    datasets: [{
-      label: "ACC_Z",
-      data: values,
-    }, {
-      label: "AVG_Z",
-      backgroundColor: "rgba(220,0,0)",
-      data: avalues,
-    }]
-  };
-
-  // Plot the chart
-  const ctx = document.getElementById('myChart').getContext('2d');
-  const myChart = new Chart(ctx, {
-    type: 'scatter',
-    data: data,
-  })
-}
-
 url = "pirail_fetch_data.php" +
     "?classes=ATT&xform=thin" +
     "&start-mileage=" + document.getElementById('startmileage').value +
