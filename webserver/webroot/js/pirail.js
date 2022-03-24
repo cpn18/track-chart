@@ -1,4 +1,4 @@
-function plot_data(result) {
+function plot_data(chartname, result) {
   let windowsize = 0.5; // miles
 
   // Find an average reading over the window to normallize the data
@@ -85,7 +85,7 @@ function plot_data(result) {
   };
 
   // Plot the chart
-  const ctx = document.getElementById('myChart').getContext('2d');
+  const ctx = document.getElementById(chartname).getContext('2d');
   const myChart = new Chart(ctx, {
     type: 'scatter',
     data: data,

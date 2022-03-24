@@ -24,7 +24,9 @@ $.ajax({
   dataType: "json",
   headers: {"Accept": "application/json"},
   url: url,
-  success: plot_data,
+  success: function(data, textStatus, jqXHR) {
+    plot_data('myChart', data);
+  },
 });
 </script>
 </body>

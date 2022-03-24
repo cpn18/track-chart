@@ -34,7 +34,7 @@ dataStream.addEventListener("pirail", function(event) {
     obj = JSON.parse(event.data);
     //console.log(obj);
     if (obj.done) {
-        plot_data(streamdata);
+        plot_data('myChart', streamdata);
         dataStream.close();
     } else {
         streamdata.push(obj);
