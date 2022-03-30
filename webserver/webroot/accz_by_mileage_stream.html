@@ -11,7 +11,7 @@
 <input type=text id="percentile" value="0.99"><br>
 <canvas id="myChart" width="400" height="200"></canvas>
 <script>
-url = "pirail_fetch_data.php" +
+url = "pirail_data_fetch.php" +
     "?classes=ATT&xform=thin" +
     "&start-mileage=" + document.getElementById('startmileage').value +
     "&end-mileage=" + document.getElementById('endmileage').value +
@@ -28,6 +28,7 @@ dataStream.onopen = function() {
 
 dataStream.onerror = function() {
     console.log("connection error");
+    dataStream.close();
 };
 
 dataStream.addEventListener("pirail", function(event) {

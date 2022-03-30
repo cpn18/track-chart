@@ -225,7 +225,7 @@ MATCHES = [
     # Most specific matches go first
     # Fakeout PHP handler
     {
-        "pattern": re.compile(r"GET /pirail_fetch_data.php"),
+        "pattern": re.compile(r"GET /pirail_data_fetch.php"),
         "handler": get_file,
     },
     # Least specifc matches go last
