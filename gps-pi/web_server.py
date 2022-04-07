@@ -10,6 +10,7 @@ import datetime
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
+import http.client
 import requests
 import util
 
@@ -59,15 +60,16 @@ class MyHandler(BaseHTTPRequestHandler):
             })
             os.system("shutdown --reboot +1")
         else:
-            self.send_error(404, self.path)
+            self.send_error(http.client.NOT_FOUND, self.path)
             return
 
         # If we made it this far, then send output to the browser
-        self.send_response(200)
+        output = output.encode('utf-8')
+        self.send_response(http.client.OK)
         self.send_header("Content-type", content_type)
         self.send_header("Content-length", str(len(output)))
         self.end_headers()
-        self.wfile.write(output.encode('utf-8'))
+        self.wfile.write(output)
 
     def do_GET(self):
         """Respond to a GET request."""
@@ -78,7 +80,7 @@ class MyHandler(BaseHTTPRequestHandler):
             pathname = DOCUMENT_MAP[self.path]
             _, extension = os.path.splitext(pathname)
             if not os.path.exists(pathname):
-                self.send_error(404, "File Not Found")
+                self.send_error(http.client.NOT_FOUND, "File Not Found")
                 return
             else:
                 if not extension in MIME_MAP:
@@ -113,7 +115,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 return
         elif self.path == "/gps-stream":
             if CONFIG['gps']['enable'] is False:
-                self.send_error(404, "Not Enabled")
+                self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
             content_type = "text/event-stream"
@@ -125,7 +127,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 headers=headers,
                 stream=True,
             )
-            if response.status_code != 200:
+            if response.status_code != http.client.OK:
                 self.send_error(response.status_code, response.reason)
                 return
 
@@ -149,7 +151,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 "http://localhost:%d" % CONFIG['gps']['port'] + self.path,
                 headers=headers,
             )
-            if response.status_code != 200:
+            if response.status_code != http.client.OK:
                 self.send_error(response.status_code, response.reason)
                 return
             output = json.dumps(response.json())
@@ -164,7 +166,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 return
         elif self.path == "/imu-stream":
             if CONFIG['imu']['enable'] is False:
-                self.send_error(404, "Not Enabled")
+                self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
             content_type = "text/event-stream"
@@ -176,7 +178,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 headers=headers,
                 stream=True,
             )
-            if response.status_code != 200:
+            if response.status_code != http.client.OK:
                 self.send_error(response.status_code, response.reason)
                 return
 
@@ -202,7 +204,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 return
         elif self.path == "/lidar-stream":
             if CONFIG['lidar']['enable'] is False:
-                self.send_error(404, "Not Enabled")
+                self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
             content_type = "text/event-stream"
@@ -214,7 +216,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 headers=headers,
                 stream=True,
             )
-            if response.status_code != 200:
+            if response.status_code != http.client.OK:
                 self.send_error(response.status_code, response.reason)
                 return
 
@@ -240,7 +242,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 return
         elif self.path == "/lpcm-stream":
             if CONFIG['lpcm']['enable'] is False:
-                self.send_error(404, "Not Enabled")
+                self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
             content_type = "text/event-stream"
@@ -252,7 +254,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 headers=headers,
                 stream=True,
             )
-            if response.status_code != 200:
+            if response.status_code != http.client.OK:
                 self.send_error(response.status_code, response.reason)
                 return
 
@@ -272,7 +274,7 @@ class MyHandler(BaseHTTPRequestHandler):
             headers = {
                 "accept": content_type,
             }
-            self.send_response(200)
+            self.send_response(http.client.OK)
             self.send_header("Content-type", content_type)
             self.end_headers()
             while not util.DONE:
@@ -295,15 +297,16 @@ class MyHandler(BaseHTTPRequestHandler):
                     break
             return
         else:
-            self.send_error(404, self.path)
+            self.send_error(http.client.NOT_FOUND, self.path)
             return
 
         # If we made it this far, then send output to the browser
-        self.send_response(200)
+        output = output.encode('utf-8')
+        self.send_response(http.client.OK)
         self.send_header("Content-type", content_type)
         self.send_header("Content-length", str(len(output)))
         self.end_headers()
-        self.wfile.write(output.encode('utf-8'))
+        self.wfile.write(output)
 
 if __name__ == "__main__":
     # MAIN START

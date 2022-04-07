@@ -8,6 +8,7 @@ import gps
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
+import http.client
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
@@ -15,14 +16,15 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 class MyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/favicon.ico":
-            self.send_error(404)
+            self.send_error(http.client.NOT_FOUND)
         else:
-            self.send_response(200)
             output="<html><head><meta http-equiv=\"refresh\" content=\"1;URL='/'\" /></head><body><h1 align=center>Waiting for GPS Sync... Check Antenna!</h1></body></html>"
+            output = output.encode('utf-8')
+            self.send_response(http.client.OK)
             self.send_header("Content-type", "text/html")
             self.send_header("Content-length", str(len(output)))
             self.end_headers()
-            self.wfile.write(output.encode('utf-8'))
+            self.wfile.write(output)
 
 def set_date(gps_date):
     """ Set the system clock """

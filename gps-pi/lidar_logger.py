@@ -11,6 +11,7 @@ import datetime
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
+import http.client
 
 from rplidar import RPLidar
 
@@ -23,19 +24,19 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
 class MyHandler(BaseHTTPRequestHandler):
-    def do_GET(s):
+    def do_GET(self):
         """Respond to a GET request."""
 
         content_type = "text/html; charset=utf-8"
 
-        if s.path == "/lidar":
+        if self.path == "/lidar":
             content_type = "application/json"
             output = json.dumps(LIDAR_DATA)
-        elif s.path == "/lidar-stream":
+        elif self.path == "/lidar-stream":
             content_type = "text/event-stream"
-            s.send_response(200)
-            s.send_header("content-type", content_type)
-            s.end_headers()
+            self.send_response(http.client.OK)
+            self.send_header("content-type", content_type)
+            self.end_headers()
             while not util.DONE:
                 try:
                     lines = [
@@ -44,20 +45,21 @@ class MyHandler(BaseHTTPRequestHandler):
                             "\n",
                             ]
                     for line in lines:
-                        s.wfile.write(line.encode('utf-8'))
+                        self.wfile.write(line.encode('utf-8'))
                     time.sleep(util.STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     break
             return
         else:
-            s.send_error(404, s.path)
+            self.send_error(http.client.NOT_FOUND, s.path)
             return
 
-        s.send_response(200)
-        s.send_header("Content-type", content_type)
-        s.send_header("Content-length", str(len(output)))
-        s.end_headers()
-        s.wfile.write(output.encode('utf-8'))
+        output = output.encode('utf-8')
+        self.send_response(http.client.OK)
+        self.send_header("Content-type", content_type)
+        self.send_header("Content-length", str(len(output)))
+        self.end_headers()
+        self.wfile.write(output)
 
 def lidar_logger(output_directory):
     global LIDAR_STATUS, LIDAR_DATA

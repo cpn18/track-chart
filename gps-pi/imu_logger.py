@@ -12,6 +12,7 @@ import json
 import math
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
+import http.client
 
 import berryimu_shim as accel
 
@@ -48,7 +49,7 @@ class MyHandler(BaseHTTPRequestHandler):
             output = json.dumps(ATT) + "\n"
         elif self.path == "/imu-stream":
             content_type = "text/event-stream"
-            self.send_response(200)
+            self.send_response(http.client.OK)
             self.send_header("content-type", content_type)
             self.end_headers()
             while not util.DONE:
@@ -65,14 +66,15 @@ class MyHandler(BaseHTTPRequestHandler):
                     break
             return
         else:
-            self.send_error(404, self.path)
+            self.send_error(http.client.NOT_FOUND, self.path)
             return
 
-        self.send_response(200)
+        output = output.encode('utf-8')
+        self.send_response(http.client.OK)
         self.send_header("Content-type", content_type)
         self.send_header("Content-length", str(len(output)))
         self.end_headers()
-        self.wfile.write(output.encode('utf-8'))
+        self.wfile.write(output)
 
 def _get_temp():
     """ Get Device Temperature """
