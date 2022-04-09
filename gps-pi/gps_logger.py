@@ -29,84 +29,128 @@ GPS_STATUS = 0
 GPS_NUM_SAT = 0
 GPS_NUM_USED = 0
 
+def do_json_output(self, output_dict):
+    """ send back json text """
+    output = json.dumps(output_dict).encode('utf-8')
+    self.send_response(http.client.OK)
+    self.send_header("Content-type", "application/json;charset=utf-8")
+    self.send_header("Content-length", str(len(output)))
+    self.end_headers()
+    self.wfile.write(output)
+
+def handle_mark(self, groups, qsdict):
+    """ mark a location """
+    HOLD = 1
+    MEMO = qsdict['memo']
+    do_json_output({"message": "Marked..."})
+
+def handle_hold(self, groups, qsdict):
+    """ hold a location """
+    HOLD = 15
+    MEMO = gsdict['memo']
+    do_json_output({"message": "Holding..."})
+
+def handle_tpv(self, groups, qsdict):
+    """ get a TPV report """
+    do_json_output(TPV)
+
+def handle_sky(self, groups, qsdict):
+    """ get a SKY report """
+    do_json_output(SKY)
+
+def handle_gps_stream(self, groups, qsdict):
+    """ Stream GPS Response """
+    self.send_response(http.client.OK)
+    self.send_header("Content-type", "text/event-stream")
+    self.end_headers()
+    while not util.DONE:
+        try:
+            if TPV['time'] < SKY['time']:
+                lines = [
+                    "event: tpv\n",
+                    "data: "+json.dumps(TPV) + "\n",
+                    "\n",
+                    "event: sky\n",
+                    "data: "+json.dumps(SKY) + "\n",
+                    "\n",
+                ]
+            else:
+                lines = [
+                    "event: sky\n",
+                    "data: "+json.dumps(SKY) + "\n",
+                    "\n",
+                    "event: tpv\n",
+                    "data: "+json.dumps(TPV) + "\n",
+                    "\n",
+                ]
+            for line in lines:
+                self.wfile.write(line.encode('utf-8'))
+            time.sleep(util.STREAM_DELAY)
+        except (BrokenPipeError, ConnectionResetError):
+            break
+
+def handle_gps(self, groups, qsdict):
+    """ Single GPS """
+    if TPV['time'] < SKY['time']:
+        do_json_output([TPV, SKY])
+    else:
+        do_json_output([SKY, TPV])
+
+def handle_html(self, groups, qsdict):
+    """ Read HTML File """
+    with open(groups.group('pathname')+".html", "r") as j:
+        output = j.read().encode('utf-8')
+        self.send_response(http.client.OK)
+        self.send_header("Content-type", "text/html;charset=utf-8")
+        self.send_header("Content-length", str(len(output)))
+        self.end_headers()
+        self.wfile.write(output)
+
+MATCHES = [
+    {
+        "pattern": re.compile(r"GET /mark$"),
+        "handler": handle_mark,
+    },
+    {
+        "pattern": re.compile(r"GET /hold$"),
+        "handler": handle_hold,
+    },
+    {
+        "pattern": re.compile(r"GET /tpv$"),
+        "handler": handle_tpv,
+    },
+    {
+        "pattern": re.compile(r"GET /sky$"),
+        "handler": handle_sky,
+    },
+    {
+        "pattern": re.compile(r"GET /gps-stream$"),
+        "handler": handle_gps_stream,
+    },
+    {
+        "pattern": re.compile(r"GET (?P<pathname>.+).html$")
+        "handler": handle_html,
+    },
+]
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
 class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
+
     def do_GET(self):
         """Respond to a GET request."""
-        global HOLD
-        global MEMO
+        url = urlparse(self.path)
+        qsdict = parse_qs(url.query)
 
-        content_type = "text/html; charset=utf-8"
+        for match in MATCHES:
+            groups = match['pattern'].match(self.command + " " + url.path)
+            if groups is not None:
+                match['handler'](self, groups, qsdict)
+                return
 
-        if self.path.startswith("/mark?memo="):
-            HOLD = 1
-            MEMO = self.path.replace("/mark?memo=", "")
-            content_type = "application/json"
-            output = "{\"message\": \"Marked...\"}"
-        elif self.path.startswith("/hold?memo="):
-            HOLD = 15
-            MEMO = self.path.replace("/hold?memo=", "")
-            content_type = "application/json"
-            output = "{\"message\": \"Holding...\"}"
-        elif self.path == "/tpv":
-            content_type = "application/json"
-            output = json.dumps(TPV) + "\n"
-        elif self.path == "/sky":
-            content_type = "application/json"
-            output = json.dumps(SKY) + "\n"
-        elif self.path == "/gps-stream":
-            content_type = "text/event-stream"
-            self.send_response(http.client.OK)
-            self.send_header("Content-type", content_type)
-            self.end_headers()
-            while not util.DONE:
-                try:
-                    if TPV['time'] < SKY['time']:
-                        lines = [
-                            "event: tpv\n",
-                            "data: "+json.dumps(TPV) + "\n",
-                            "\n",
-                            "event: sky\n",
-                            "data: "+json.dumps(SKY) + "\n",
-                            "\n",
-                        ]
-                    else:
-                        lines = [
-                            "event: sky\n",
-                            "data: "+json.dumps(SKY) + "\n",
-                            "\n",
-                            "event: tpv\n",
-                            "data: "+json.dumps(TPV) + "\n",
-                            "\n",
-                        ]
-                    for line in lines:
-                        self.wfile.write(line.encode('utf-8'))
-                    time.sleep(util.STREAM_DELAY)
-                except (BrokenPipeError, ConnectionResetError):
-                    break
-            return
-        elif self.path == "/gps":
-            content_type = "application/json"
-            if TPV['time'] < SKY['time']:
-                output = json.dumps([TPV, SKY]) + "\n"
-            else:
-                output = json.dumps([SKY, TPV]) + "\n"
-        elif self.path == "/gps.html":
-            with open("gps.html", "r") as j:
-                output = j.read()
-        else:
-            self.send_error(http.client.NOT_FOUND, self.path)
-            return
-
-        output = output.encode('utf-8')
-        self.send_response(http.client.OK)
-        self.send_header("Content-type", content_type)
-        self.send_header("Content-length", str(len(output)))
-        self.end_headers()
-        self.wfile.write(output)
+        self.send_error(http.client.NOT_FOUND, self.path)
 
 def gps_logger(output_directory):
     """ GPS Data Logger """
