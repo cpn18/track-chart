@@ -17,6 +17,46 @@ import util
 
 LPCM_DATA = {}
 
+def do_json_output(self, output_dict):
+    """ send back json text """
+    output = json.dumps(output_dict).encode('utf-8')
+    self.send_response(http.client.OK)
+    self.send_header("Content-type", "application/json;charset=utf-8")
+    self.send_header("Content-length", str(len(output)))
+    self.end_headers()
+    self.wfile.write(output)
+
+def handle_lpcm_stream(self, groups, qsdict):
+    self.send_response(http.client.OK)
+    self.send_header("content-type", "text/event-stream")
+    self.end_headers()
+    while not util.DONE:
+        try:
+            lines = [
+                "event: lpcm\n",
+                "data: " + json.dumps(LPCM_DATA) + "\n",
+                "\n",
+            ]
+            for line in lines:
+                self.wfile.write(line.encode('utf-8'))
+            time.sleep(util.STREAM_DELAY)
+        except (BrokenPipeError, ConnectionResetError):
+            break
+
+def handle_lpcm(self, groups, qsdict):
+    do_json_output(LPCM_DATA)
+
+MATCHES = [
+    {
+        "pattern": re.compile(r"GET /lpcm-stream$"),
+        "handler": handle_lpcm_stream,
+    },
+    {
+        "pattern": re.compile(r"GET /lpcm$"),
+        "handler": handle_lpcm,
+    },
+]
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
@@ -24,43 +64,16 @@ class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
     def do_GET(self):
         """Respond to a GET request."""
+        url = urlparse(self.path)
+        qsdict = parse_qs(url.query)
 
-        content_type = "text/html; charset=utf-8"
+        for match in MATCHES:
+            groups = match['pattern'].match(self.command + " " + url.path)
+            if groups is not None:
+                match['handler'](self, groups, qsdict)
+                return
 
-        if self.path == "/lpcm":
-            content_type = "application/json"
-            output = json.dumps(LPCM_DATA)
-        elif self.path == "/lpcm-stream":
-            content_type = "text/event-stream"
-            self.send_response(http.client.OK)
-            self.send_header("content-type", content_type)
-            self.end_headers()
-            while not util.DONE:
-                try:
-                    lines = [
-                        "event: lpcm\n",
-                        "data: " + json.dumps(LPCM_DATA) + "\n",
-                        "\n",
-                    ]
-                    for line in lines:
-                        self.wfile.write(line.encode('utf-8'))
-                    time.sleep(util.STREAM_DELAY)
-                except (BrokenPipeError, ConnectionResetError):
-                    break
-            return
-        elif self.path == "/lpcm.html":
-            with open("lpcm.html", "r") as j:
-                output = j.read()
-        else:
-            self.send_error(http.client.NOT_FOUND, self.path)
-            return
-
-        output = output.encode('utf-8')
-        self.send_response(http.client.OK)
-        self.send_header("Content-type", content_type)
-        self.send_header("Content-length", str(len(output)))
-        self.end_headers()
-        self.wfile.write(output)
+        self.send_error(http.client.NOT_FOUND, self.path)
 
 def lpcm_logger(output_directory):
     """ LPCM Capture Wrapper """

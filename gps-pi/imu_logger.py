@@ -34,6 +34,48 @@ SLEEP_TIME = 0.00001
 # ATT Dictionary
 ATT = {}
 
+def do_json_output(self, output_dict):
+    """ send back json text """
+    output = json.dumps(output_dict).encode('utf-8')
+    self.send_response(http.client.OK)
+    self.send_header("Content-type", "application/json;charset=utf-8")
+    self.send_header("Content-length", str(len(output)))
+    self.end_headers()
+    self.wfile.write(output)
+
+def handle_imu_stream(self, groups, qsdict):
+    """ Stream IMU Data """
+    self.send_response(http.client.OK)
+    self.send_header("content-type", "text/event-stream")
+    self.end_headers()
+    while not util.DONE:
+        try:
+            lines = [
+                "event: att\n",
+                "data: " + json.dumps(ATT) + "\n",
+                "\n",
+            ]
+            for line in lines:
+                self.wfile.write(line.encode('utf-8'))
+            time.sleep(util.STREAM_DELAY)
+        except (BrokenPipeError, ConnectionResetError):
+            break
+
+def handle_imu(self, groups, qsdict):
+    """ IMU Data """
+    do_json_output(ATT)
+
+MATCHES = [
+    {
+        "pattern": re.compile(r"GET /imu-stream$"),
+        "handler": handle_imu_stream,
+    },
+    {
+        "pattern": re.compile(r"GET /imu$"),
+        "handler": handle_imu,
+    },
+]
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
@@ -41,40 +83,16 @@ class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
     def do_GET(self):
         """Respond to a GET request."""
+        url = urlparse(self.path)
+        qsdict = parse_qs(url.query)
 
-        content_type = "text/html; charset=utf-8"
+        for match in MATCHES:
+            groups = match['pattern'].match(self.command + " " + url.path)
+            if groups is not None:
+                match['handler'](self, groups, qsdict)
+                return
 
-        if self.path == "/imu":
-            content_type = "application/json"
-            output = json.dumps(ATT) + "\n"
-        elif self.path == "/imu-stream":
-            content_type = "text/event-stream"
-            self.send_response(http.client.OK)
-            self.send_header("content-type", content_type)
-            self.end_headers()
-            while not util.DONE:
-                try:
-                    lines = [
-                        "event: att\n",
-                        "data: " + json.dumps(ATT) + "\n",
-                        "\n",
-                    ]
-                    for line in lines:
-                        self.wfile.write(line.encode('utf-8'))
-                    time.sleep(util.STREAM_DELAY)
-                except (BrokenPipeError, ConnectionResetError):
-                    break
-            return
-        else:
-            self.send_error(http.client.NOT_FOUND, self.path)
-            return
-
-        output = output.encode('utf-8')
-        self.send_response(http.client.OK)
-        self.send_header("Content-type", content_type)
-        self.send_header("Content-length", str(len(output)))
-        self.end_headers()
-        self.wfile.write(output)
+        self.send_error(http.client.NOT_FOUND, self.path)
 
 def _get_temp():
     """ Get Device Temperature """

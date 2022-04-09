@@ -96,16 +96,6 @@ def handle_gps(self, groups, qsdict):
     else:
         do_json_output([SKY, TPV])
 
-def handle_html(self, groups, qsdict):
-    """ Read HTML File """
-    with open(groups.group('pathname')+".html", "r") as j:
-        output = j.read().encode('utf-8')
-        self.send_response(http.client.OK)
-        self.send_header("Content-type", "text/html;charset=utf-8")
-        self.send_header("Content-length", str(len(output)))
-        self.end_headers()
-        self.wfile.write(output)
-
 MATCHES = [
     {
         "pattern": re.compile(r"GET /mark$"),
@@ -128,8 +118,8 @@ MATCHES = [
         "handler": handle_gps_stream,
     },
     {
-        "pattern": re.compile(r"GET (?P<pathname>.+).html$")
-        "handler": handle_html,
+        "pattern": re.compile(r"GET /gps$"),
+        "handler": handle_gps,
     },
 ]
 
