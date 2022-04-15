@@ -6,7 +6,6 @@ Web Server
 import os
 import sys
 import time
-import datetime
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
@@ -48,6 +47,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 class MyHandler(BaseHTTPRequestHandler):
     """ Web Handler """
     def do_POST(self):
+        """ POST Handler """
         if self.path.startswith("/setup"):
             data = json.loads(self.rfile.read(int(self.headers['content-length'])))
             for field in ['gps', 'imu', 'lidar', 'lpcm']:
@@ -82,12 +82,12 @@ class MyHandler(BaseHTTPRequestHandler):
             if not os.path.exists(pathname):
                 self.send_error(http.client.NOT_FOUND, "File Not Found")
                 return
-            else:
-                if not extension in MIME_MAP:
-                    extension = 'default'
-                content_type = MIME_MAP[extension]
-                with open(pathname) as j:
-                    output = j.read()
+
+            if not extension in MIME_MAP:
+                extension = 'default'
+            content_type = MIME_MAP[extension]
+            with open(pathname) as j:
+                output = j.read()
         elif self.path == "/setup":
             content_type = "application/json"
             output = json.dumps(CONFIG)
