@@ -280,14 +280,14 @@ class MyHandler(BaseHTTPRequestHandler):
             while not util.DONE:
                 stat = os.statvfs(OUTPUT)
 
-                SYS = {
+                sys_data = {
                     "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
                     "sw_version": CONFIG['sw_version'],
                 }
                 try:
                     lines = [
                         "event: sys\n",
-                        "data: " + json.dumps(SYS) + "\n",
+                        "data: " + json.dumps(sys_data) + "\n",
                         "\n",
                     ]
                     for line in lines:
