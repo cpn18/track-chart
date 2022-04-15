@@ -9,6 +9,8 @@ import threading
 import time
 import datetime
 import json
+import re
+from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
@@ -29,7 +31,7 @@ def do_json_output(self, output_dict):
     self.end_headers()
     self.wfile.write(output)
 
-def handle_lidar_stream(self, groups, qsdict):
+def handle_lidar_stream(self, _groups, _qsdict):
     """ Stream LIDAR Data """
     self.send_response(http.client.OK)
     self.send_header("content-type", "text/event-stream")
@@ -47,9 +49,9 @@ def handle_lidar_stream(self, groups, qsdict):
         except (BrokenPipeError, ConnectionResetError):
             break
 
-def handle_lidar(self, groups, qsdict):
+def handle_lidar(self, _groups, _qsdict):
     """ LIDAR Data """
-    do_json_output(LIDAR_DATA)
+    do_json_output(self, LIDAR_DATA)
 
 MATCHES = [
     {
@@ -66,6 +68,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
 class MyHandler(BaseHTTPRequestHandler):
+    """ Web Handler """
     def do_GET(self):
         """Respond to a GET request."""
         url = urlparse(self.path)
@@ -80,6 +83,7 @@ class MyHandler(BaseHTTPRequestHandler):
         self.send_error(http.client.NOT_FOUND, self.path)
 
 def lidar_logger(output_directory):
+    """ LIDAR Logger """
     global LIDAR_STATUS, LIDAR_DATA
 
     port_name = '/dev/lidar'
@@ -98,7 +102,7 @@ def lidar_logger(output_directory):
             with open(os.path.join(output_directory,timestamp+"_lidar.csv"), "w") as lidar_output:
                 lidar_output.write("#v%d\n" % util.DATA_API)
                 lidar_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
-                for i, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
+                for _, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
                     lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                     data = []
                     for (_, angle, distance) in scan:

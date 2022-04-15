@@ -9,6 +9,8 @@ import threading
 import time
 import datetime
 import json
+import re
+from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
@@ -26,7 +28,8 @@ def do_json_output(self, output_dict):
     self.end_headers()
     self.wfile.write(output)
 
-def handle_lpcm_stream(self, groups, qsdict):
+def handle_lpcm_stream(self, _groups, _qsdict):
+    """ Stream LPCM """
     self.send_response(http.client.OK)
     self.send_header("content-type", "text/event-stream")
     self.end_headers()
@@ -43,8 +46,9 @@ def handle_lpcm_stream(self, groups, qsdict):
         except (BrokenPipeError, ConnectionResetError):
             break
 
-def handle_lpcm(self, groups, qsdict):
-    do_json_output(LPCM_DATA)
+def handle_lpcm(self, _groups, _qsdict):
+    """ Single LPCM """
+    do_json_output(self, LPCM_DATA)
 
 MATCHES = [
     {

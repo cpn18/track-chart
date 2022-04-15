@@ -10,6 +10,8 @@ import time
 import datetime
 import json
 import math
+import re
+from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
@@ -43,7 +45,7 @@ def do_json_output(self, output_dict):
     self.end_headers()
     self.wfile.write(output)
 
-def handle_imu_stream(self, groups, qsdict):
+def handle_imu_stream(self, _groups, _qsdict):
     """ Stream IMU Data """
     self.send_response(http.client.OK)
     self.send_header("content-type", "text/event-stream")
@@ -61,9 +63,9 @@ def handle_imu_stream(self, groups, qsdict):
         except (BrokenPipeError, ConnectionResetError):
             break
 
-def handle_imu(self, groups, qsdict):
+def handle_imu(self, _groups, _qsdict):
     """ IMU Data """
-    do_json_output(ATT)
+    do_json_output(self, ATT)
 
 MATCHES = [
     {
@@ -102,8 +104,7 @@ def _get_temp():
 def imu_logger(output_directory):
     """ IMU Logger """
     global ATT
-    gyroXangle = gyroYangle = gyroZangle = 0
-    CFangleX = CFangleY = CFangleZ = 0
+    cf_angle_x = cf_angle_y = cf_angle_z = 0
 
     config = util.read_config()
 
@@ -139,22 +140,22 @@ def imu_logger(output_directory):
                 "temp": _get_temp(),
             }
 
-            DT = now - last_time
+            delta_time = now - last_time
 
             # Calculate Yaw, Pitch and Roll with data fusion
-            AccXangle = math.degrees(math.atan2(obj['acc_y'], obj['acc_z']))
-            AccYangle = math.degrees(math.atan2(obj['acc_z'], obj['acc_x']))
-            AccZangle = math.degrees(math.atan2(obj['acc_x'], obj['acc_y']))
+            acc_x_angle = math.degrees(math.atan2(obj['acc_y'], obj['acc_z']))
+            acc_y_angle = math.degrees(math.atan2(obj['acc_z'], obj['acc_x']))
+            acc_z_angle = math.degrees(math.atan2(obj['acc_x'], obj['acc_y']))
 
-            CFangleX = AA*(CFangleX+obj['gyro_x']*DT) + (1-AA)*AccXangle
-            CFangleY = AA*(CFangleY+obj['gyro_y']*DT) + (1-AA)*AccYangle
-            CFangleZ = AA*(CFangleZ+obj['gyro_z']*DT) + (1-AA)*AccZangle
+            cf_angle_x = AA*(cf_angle_x+obj['gyro_x']*delta_time) + (1-AA)*acc_x_angle
+            cf_angle_y = AA*(cf_angle_y+obj['gyro_y']*delta_time) + (1-AA)*acc_y_angle
+            cf_angle_z = AA*(cf_angle_z+obj['gyro_z']*delta_time) + (1-AA)*acc_z_angle
 
-            obj['pitch'] = CFangleX
+            obj['pitch'] = cf_angle_x
             obj['pitch_st'] = "N"
-            obj['roll'] = CFangleY - 90
+            obj['roll'] = cf_angle_y - 90
             obj['roll_st'] = "N"
-            obj['yaw'] = CFangleZ
+            obj['yaw'] = cf_angle_z
             obj['yaw_st'] = "N"
 
             # Calculate Heading

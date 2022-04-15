@@ -10,6 +10,8 @@ import time
 import datetime
 import json
 import statistics
+import re
+from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
@@ -38,27 +40,29 @@ def do_json_output(self, output_dict):
     self.end_headers()
     self.wfile.write(output)
 
-def handle_mark(self, groups, qsdict):
+def handle_mark(self, _groups, qsdict):
     """ mark a location """
+    global HOLD, MEMO
     HOLD = 1
     MEMO = qsdict['memo']
-    do_json_output({"message": "Marked..."})
+    do_json_output(self, {"message": "Marked..."})
 
-def handle_hold(self, groups, qsdict):
+def handle_hold(self, _groups, qsdict):
     """ hold a location """
+    global HOLD, MEMO
     HOLD = 15
-    MEMO = gsdict['memo']
-    do_json_output({"message": "Holding..."})
+    MEMO = qsdict['memo']
+    do_json_output(self, {"message": "Holding..."})
 
-def handle_tpv(self, groups, qsdict):
+def handle_tpv(self, _groups, _qsdict):
     """ get a TPV report """
-    do_json_output(TPV)
+    do_json_output(self, TPV)
 
-def handle_sky(self, groups, qsdict):
+def handle_sky(self, _groups, _qsdict):
     """ get a SKY report """
-    do_json_output(SKY)
+    do_json_output(self, SKY)
 
-def handle_gps_stream(self, groups, qsdict):
+def handle_gps_stream(self, _groups, _qsdict):
     """ Stream GPS Response """
     self.send_response(http.client.OK)
     self.send_header("Content-type", "text/event-stream")
@@ -89,12 +93,12 @@ def handle_gps_stream(self, groups, qsdict):
         except (BrokenPipeError, ConnectionResetError):
             break
 
-def handle_gps(self, groups, qsdict):
+def handle_gps(self, _groups, _qsdict):
     """ Single GPS """
     if TPV['time'] < SKY['time']:
-        do_json_output([TPV, SKY])
+        do_json_output(self, [TPV, SKY])
     else:
-        do_json_output([SKY, TPV])
+        do_json_output(self, [SKY, TPV])
 
 MATCHES = [
     {
