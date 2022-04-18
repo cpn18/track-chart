@@ -1,12 +1,18 @@
 #!/bin/bash
 
-apt-get install python
+apt-get install update
+apt-get install upgrade
+
 apt-get install vim
-apt-get install gpsd gpsd-clients python-gps
-apt-get install python-smbus i2c-tools git-core
+apt-get install gpsd gpsd-clients python3-gps
+apt-get install python3-smbus i2c-tools git-core
+apt-get install hostapd dnsmasq iptables-persistent
 
 systemctl disable serial-getty@ttyAMA0
 systemctl stop serial-getty@ttyAMA0
+
+systemctl enable gpsd.socket
+systemctl start gpsd.socket
 
 cmd="/bin/cp"
 
