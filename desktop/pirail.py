@@ -159,8 +159,8 @@ def parse_time(time_string):
     return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 def vector_to_coordinates(angle, distance):
-    x = d * math.sin(math.radians(angle))
-    y = d * math.cos(math.radians(angle))
+    x = distance * math.sin(math.radians(angle))
+    y = distance * math.cos(math.radians(angle))
     return (x, y)
 
 if __name__ == "__main__":
