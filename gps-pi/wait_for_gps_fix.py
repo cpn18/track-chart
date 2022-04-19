@@ -42,8 +42,7 @@ def wait_for_timesync():
     """ Wait for Time Sync """
 
     # Listen on port 2947 (gpsd) of localhost
-    session = gps.gps("localhost", "2947")
-    session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
+    session = gps.gps(mode=gps.WATCH_ENABLE)
 
     done = False
     while not done:

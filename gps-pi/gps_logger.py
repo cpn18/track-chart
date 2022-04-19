@@ -164,8 +164,7 @@ def gps_logger(output_directory):
         os.mkdir(output_directory)
 
     # Listen on port 2947 (gpsd) of localhost
-    session = gps.gps("localhost", "2947")
-    session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
+    session = gps.gps(mode=gps.WATCH_ENABLE)
 
     # Open the output file
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
