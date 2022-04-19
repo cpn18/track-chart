@@ -1,6 +1,7 @@
 from statistics import mean
-from flask import Flask, render_template, request, abort, jsonify, redirect
+from flask import Flask, render_template, request, abort, jsonify, redirect, send_file
 import os
+import io
 import json
 import data_to_range
 import track_data_stats
@@ -44,6 +45,7 @@ def main_page():
     if request.method == 'POST':
         minRange = request.form['minRange']
         maxRange = request.form['maxRange']
+        print(minRange, maxRange)
 
         data = my_db.get_data(minRange, maxRange)
         acc_z_list = []
@@ -91,6 +93,16 @@ def main_page():
         return render_template('index.html')
 
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+
+@app.route('/info')
+def info():
+    return render_template('info.html')
+
+
 @app.route('/stats')
 def display_stats():
     # TODO get location passed as argument
@@ -135,6 +147,9 @@ def display_chart_from_location_range():
 def chart_data(location):
     path = get_json_file(location)
 
+@app.route('/slideShow/<imagefile>', methods=['GET'])
+def read_image(imagefile):
+    return send_file("slideShow/"+imagefile, mimetype='image/jpeg')
 
 def get_json_file(location, minRange=None, maxRange=None):
     path = None
