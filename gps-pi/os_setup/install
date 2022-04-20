@@ -5,7 +5,7 @@ apt-get install update
 apt-get install upgrade
 
 apt-get install vim
-apt-get install python3-smbus i2c-tools git-core
+apt-get install python3-smbus i2c-tools git
 
 # WiFi Hotspot
 apt-get install hostapd dnsmasq iptables-persistent
@@ -23,10 +23,9 @@ systemctl enable gpsd.socket
 systemctl start gpsd.socket
 
 
-#${cmd} 01-lidar.rules
+#${cmd} 01-lidar.rules /etc/udev/rules.d
 ${cmd} dhcpcd.conf /etc
 ${cmd} dnsmasq.conf /etc
 ${cmd} iptables.ipv4.nat /etc
-#${cmd} ntp.conf 
 ${cmd} rc.local /etc
 ${cmd} sysctl.conf /etc
