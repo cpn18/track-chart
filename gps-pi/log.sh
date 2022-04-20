@@ -7,11 +7,13 @@ pirail_data=${mount_point}/PIRAIL
 
 cd `dirname $0`
 
-if [ ! -d ${mount_point} ]; then
-  mkdir -p ${mount_point}
-fi
+if [ -b ${usb_drive} ]; then
+  if [ ! -d ${mount_point} ]; then
+    mkdir -p ${mount_point}
+  fi
 
-mount ${usb_drive} ${mount_point}
+  mount ${usb_drive} ${mount_point}
+fi
 
 ./wait_for_gps_fix.py
 
