@@ -30,14 +30,14 @@ def init_db():
 
 
 def get_data(mini, maxi):
-    query = 'SELECT acc_z, mileage FROM track WHERE (? < mileage < ?)'
+    query = 'SELECT acc_z, mileage FROM track WHERE mileage between ? and ?'
     rows = query_db(query, (mini, maxi,))
     return rows
 
 
 def get_stats(mini, maxi):
     query = '''SELECT acc_x, acc_y, acc_z, roll, pitch, yaw
-                FROM track WHERE (? < mileage < ?)'''
+                FROM track WHERE mileage between ? and ?'''
     rows = query_db(query, (mini, maxi,))
     return rows
 
