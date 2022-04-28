@@ -11,9 +11,9 @@
 - K 43.616032 -71.129243 7 MP '{"name": "S7", "alt_name": "W5", "survey": "369+42.0"}' *
 - K 43.617841 -71.14875 8 MP '{"name": "S8", "alt_name": "W4", "survey": "422+05.1"}' *
 - K 43.615957 -71.168217 9 MP '{"name": "S9", "alt_name": "W3", "survey": "474+71"}' *
-- K - - 10 MP '{"name": "S10", "alt_name": "W2", "survey": "527+37"}' *
-- K - - 11 MP '{"name": "S11", "alt_name": "W1", "survey": "580+04"}' *
-- K 43.583773 -71.212857 12 MP '{"name": "S12", "alt_name": "W0", "survey": "632+75.3"}' *
+- K 43.60621 -71.18307 10 MP '{"name": "S10", "alt_name": "W2", "survey": "527+37"}' *
+- K 43.59612 -71.19723 11 MP '{"name": "S11", "alt_name": "W1", "survey": "580+04"}' *
+- K 43.58687 -71.21219 12 MP '{"name": "S12", "alt_name": "W0", "survey": "632+75.3"}' *
 - K - - 0 S '{"name": "Sanbornville", "offset": 0}' *
 - K - - 0.97 S '{"name": "Wakefield", "offset": 0}' *
 - K 43.563042 -71.041276 0.98 X '{"name": "White Mountain (845297T)"}' *
