@@ -45,10 +45,10 @@
 - K 43.613834 -71.171381 9.19 O '{"name": "Fernald Brook (106.89)"}' *
 - K 43.61148 -71.174727 9.42 X '{"name": "Kenney Shore Rd (845302M)"}' *
 - K 43.608381 -71.179363 9.72 X '{"name": "S Hodge Shore Rd (845303U)"}' *
-- K 43.606077 -71.183311 10.01 O '{"name": "Hersey Brook (107.71)"}' *
+- K 43.606077 -71.183311 10.01 O '{"name": "Hersey Brook (107.71)": "survey": "529+76", "val": "V4_6_11"}' *
 - K 43.606625 -71.182394 10.09 X '{"name": "Hersey Point Rd (845304B)"}' *
 - K 43.605429 -71.184325 10.18 X '{"name": "Albee Beach Rd (845305H)"}' *
-- K 43.603556 -71.187206 10.27 O '{"name": "Harvey Brook (107.97)"}' *
+- K 43.603556 -71.187206 10.27 O '{"name": "Harvey Brook (107.97)": "survey": "542+38", "val": "V4_6_11"}' *
 - K 43.603933 -71.186632 10.30 X '{"name": "Moose Point Rd (845306P)"}' *
 - K 43.602675 -71.188424 10.42 X '{"name": "Sandbox Dr (845307W)"}' *
 - K - - 10.66 S '{"name": "Lake Wentworth", "offset": 0}' *
