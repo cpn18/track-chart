@@ -1,13 +1,17 @@
+#!/usr/bin/env python
 import os
 import sys
 import json
 import datetime
 import gps_to_mileage
 
-
 def export_to_kml(input_filename):
     output_filename = os.path.basename(sys.argv[1]).replace(".csv", ".kml")
     G = gps_to_mileage.Gps2Miles(input_filename)
+
+    if os.path.exists(output_filename):
+        print("Output file exists")
+        sys.exit(1)
 
     with open(output_filename, "w") as out:
         out.write("<?xml version=\"1.0\" encoding=\"UTF-8i\"?>\n")
