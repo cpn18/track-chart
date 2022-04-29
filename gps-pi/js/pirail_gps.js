@@ -61,27 +61,45 @@ function gps_stream(viewport, imagedata) {
 	var tpv = JSON.parse(event.data);
         // console.log(tpv);
 
-	document.getElementById("gpstime").innerHTML = tpv.time.replace('T', '<br>');
-	document.getElementById("ept").innerHTML = "&plusmn;"+tpv.ept+"s";
-
-	document.getElementById("lat").innerHTML = tpv.lat.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;";
-	document.getElementById("epy").innerHTML = "&plusmn;"+Math.round(tpv.epy*m_to_ft)+"ft";
-
-	document.getElementById("lon").innerHTML = tpv.lon.toLocaleString(undefined,{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;";
-	document.getElementById("epx").innerHTML = "&plusmn;"+Math.round(tpv.epx*m_to_ft)+"ft";
-
-	document.getElementById("alt").innerHTML = tpv.alt.toLocaleString(undefined,{minimumFractionDigits:1, maximumFractionDigits: 1})+"&rsquo;";
-	document.getElementById("epv").innerHTML = "&plusmn;"+Math.round(tpv.epv*m_to_ft)+"ft";
-
-	document.getElementById("speed").innerText = Math.round(tpv.speed*ms_to_mph);
-	document.getElementById("eps").innerHTML = "&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph";
-
-	document.getElementById("mode").innerText = tpv.mode + "D ";
-
-	if (tpv.hold == -1) {
-	  document.getElementById("hold").innerText = "OFF";
-	} else {
-	  document.getElementById("hold").innerText = tpv.hold;
+	if (tpv.time) {
+	    document.getElementById("gpstime").innerHTML = tpv.time.replace('T', '<br>');
+	}
+	if (tpv.ept) {
+	    document.getElementById("ept").innerHTML = "&plusmn;"+tpv.ept+"s";
+	}
+	if (tpv.lat) {
+	    document.getElementById("lat").innerHTML = tpv.lat.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;";
+	}
+	if (tpv.epv) {
+	    document.getElementById("epy").innerHTML = "&plusmn;"+Math.round(tpv.epy*m_to_ft)+"ft";
+	}
+	if (tpv.lon) {
+	    document.getElementById("lon").innerHTML = tpv.lon.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;";
+	}
+	if (tpv.epx) {
+	    document.getElementById("epx").innerHTML = "&plusmn;"+Math.round(tpv.epx*m_to_ft)+"ft";
+	}
+	if (tpv.alt) {
+	    document.getElementById("alt").innerHTML = tpv.alt.toLocaleString('en-US',{minimumFractionDigits:1, maximumFractionDigits: 1})+"&rsquo;";
+	}
+	if (tpv.epv) {
+	    document.getElementById("epv").innerHTML = "&plusmn;"+Math.round(tpv.epv*m_to_ft)+"ft";
+	}
+	if (tpv.speed) {
+	    document.getElementById("speed").innerText = Math.round(tpv.speed*ms_to_mph);
+	}
+	if (tpv.eps) {
+	    document.getElementById("eps").innerHTML = "&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph";
+	}
+	if (tpv.mode) {
+	    document.getElementById("mode").innerText = tpv.mode + "D ";
+	}
+	if (tpv.hold) {
+	    if (tpv.hold == -1) {
+	        document.getElementById("hold").innerText = "OFF";
+	    } else {
+	        document.getElementById("hold").innerText = tpv.hold;
+	    }
 	}
     });
 
