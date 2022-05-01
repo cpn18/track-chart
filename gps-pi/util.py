@@ -20,14 +20,13 @@ DONE = False
 def timestamp():
     return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
-# Configure Axis
 def read_config():
     """ Read Configuration """
     with open("config.json", "r") as config_file:
         config = json.loads(config_file.read())
 
     with open("version.txt", "r") as version_file:
-        config['sw_version'] = version_file.read()
+        config['sw_version'] = version_file.readline()
 
     config['class'] = "CONFIG"
     config['time'] = timestamp()
