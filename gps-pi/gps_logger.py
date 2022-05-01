@@ -22,12 +22,10 @@ import util
 
 ALWAYS_LOG = True
 
-INLOCSYNC = False
 TPV = SKY = {}
 HOLD = -1
 MEMO = ""
 
-GPS_STATUS = 0
 GPS_NUM_SAT = 0
 GPS_NUM_USED = 0
 
@@ -148,10 +146,9 @@ class MyHandler(BaseHTTPRequestHandler):
 
 def gps_logger(output_directory):
     """ GPS Data Logger """
-    global INLOCSYNC
     global SKY, TPV
     global HOLD
-    global GPS_STATUS, GPS_NUM_SAT, GPS_NUM_USED
+    global GPS_NUM_SAT, GPS_NUM_USED
 
     hold_lat = []
     hold_lon = []
@@ -198,49 +195,39 @@ def gps_logger(output_directory):
             if 'time' in obj:
                 gps_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
 
-            if obj['class'] == 'TPV':
-                if 'mode' in obj:
-                    GPS_STATUS = obj['mode']
-                    if obj['mode'] == 1:
-                        INLOCSYNC = False
-                        print("%s Lost location sync" % obj['time'])
-                        continue
+            # Short Circuit the rest of the checks
+            if HOLD == -1:
+                continue
 
-                if 'lat' in obj and 'lon' in obj and 'time' in obj:
-                    if not INLOCSYNC:
-                        INLOCSYNC = True
-                        print("%s Have location sync" % obj['time'])
-
-                    if HOLD == 0:
-                        with open(os.path.join(output_directory,timestamp+"_marks.csv"), "a") as mark:
-                            mark_obj = {
-                                "class": "MARK",
-                                "lat": statistics.mean(hold_lat),
-                                "lon": statistics.mean(hold_lon),
-                                "num_sat": GPS_NUM_SAT,
-                                "num_used": GPS_NUM_USED,
-                                "time": obj['time'],
-                                "memo": MEMO,
-                            }
-                            if len(hold_alt) > 0:
-                                mark_obj['alt'] = statistics.mean(hold_alt)
-                            mark.write("%s %s %s *\n" % (mark_obj['time'], mark_obj['class'], json.dumps(mark_obj)))
-                        hold_lat = []
-                        hold_lon = []
-                        hold_alt = []
-                        HOLD = -1
-                    elif HOLD > 0:
-                        hold_lat.append(report.lat)
-                        hold_lon.append(report.lon)
-                        if 'alt' in report:
-                            hold_alt.append(report.alt)
-                        HOLD -= 1
+            if obj['class'] == 'TPV' and 'lat' in obj and 'lon' in obj and 'time' in obj:
+                if HOLD > 0:
+                    hold_lat.append(report.lat)
+                    hold_lon.append(report.lon)
+                    if 'alt' in report:
+                        hold_alt.append(report.alt)
+                    HOLD -= 1
+                elif HOLD == 0:
+                    with open(os.path.join(output_directory,timestamp+"_marks.csv"), "a") as mark:
+                        mark_obj = {
+                            "class": "MARK",
+                            "lat": statistics.mean(hold_lat),
+                            "lon": statistics.mean(hold_lon),
+                            "num_sat": GPS_NUM_SAT,
+                            "num_used": GPS_NUM_USED,
+                            "time": obj['time'],
+                            "memo": MEMO,
+                        }
+                        if len(hold_alt) > 0:
+                            mark_obj['alt'] = statistics.mean(hold_alt)
+                        mark.write("%s %s %s *\n" % (mark_obj['time'], mark_obj['class'], json.dumps(mark_obj)))
+                    hold_lat = []
+                    hold_lon = []
+                    hold_alt = []
+                    HOLD = -1
 
 def gps_logger_wrapper(output_directory):
     """ Wrapper Around GPS Logger Function """
-    global GPS_STATUS
 
-    GPS_STATUS = 0
     try:
         gps_logger(output_directory)
     except StopIteration:
@@ -248,7 +235,6 @@ def gps_logger_wrapper(output_directory):
         util.DONE = True
     except Exception as ex:
         print("GPS Logger Exception: %s" % ex)
-    GPS_STATUS = 0
     print("GPS done")
 
 # MAIN START
