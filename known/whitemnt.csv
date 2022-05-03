@@ -3,14 +3,14 @@
 - K 43.215177 -71.536918 0.77 U '{"name": "I-93; Ex 15 SB"}' *
 - K 43.215623 -71.536843 0.80 U '{"name": "I-393"}' *
 - K 43.219356 -71.534359 1.00 MP '{"name": "C1"}' *
-- K 43.2231447 -71.5360538 1.34 X '{"name": "Delta Drive (845413E)"}' *
+- K 43.2231447 -71.5360538 1.34 X '{"name": "Delta Drive", "crossing": "845413E"}' *
 - K 43.225599 -71.536875 1.53 O '{"name": "Wannatunnams Brook"}' *
-- K 43.226146 -71.537068 1.54 O '{"name": "Brochu Nursery (RR Over; 845414L)"}' *
+- K 43.226146 -71.537068 1.54 O '{"name": "Brochu Nursery (RR Over)", "crossing": "845414L"}' *
 - K 43.228522 -71.537393 1.66 X '{"name": "Brochu Crossing (Private)"}' *
 - K 43.229242 -71.537261 1.67 O '{"name": "Merrimack River (Br 1.72)", "survey": "85+75", "val": "V21_37"}' *
 - K 43.232217 -71.537783 2.00 MP '{"name": "C2", "survey": "99+166", "val": "V21_37"}' *
 - K 43.233987 -71.539589 2.17 S '{"offset": -1, "name": "Eastside"}' *
-- K 43.2361408 -71.5414461 2.33 X '{"name": "West Portsmouth St (845416A)"}' *
+- K 43.2361408 -71.5414461 2.33 X '{"name": "West Portsmouth St", "crossing": "845416A"}' *
 - K 43.244275 -71.543996 2.89 O '{"name": "Brook (Culv 2.86)", "survey": "145+92", "val": "V21_38"}' *
 - K - - 2.96 O '{"name": "(Culv 2.93)", "survey": "149+28", "val": "V21_38"}' *
 - K 43.245617 -71.54475 3.00 MP '{"name": "C3", "survey": "151+49", "val": "V21_38"}' *
@@ -20,7 +20,7 @@
 - K 43.262367 -71.553283 4.00 MP '{"name": "C4", "survey": "204+23.79", "val": "V21_39"}' *
 - K 43.264378 -71.555253 4.40 S '{"name": "Bloods", "offset": 0}' *
 - K 43.272233 -71.562583 5.00 MP '{"name": "C5", "survey": "257+05", "val": "V21_40"}' *
-- K 43.2727284 -71.5629257 5.11 X '{"name": "Sewells Falls Rd (845417G)"}' *
+- K 43.2727284 -71.5629257 5.11 X '{"name": "Sewells Falls Rd", "crossing": "845417G"}' *
 - K 43.274383 -71.563871 5.25 O '{"name": "Hayward Brook (Br 5.20)", "survey": "270+00", "val": "V21_40"}' *
 - K 43.285476 -71.570758 6.00 MP '{"name": "C6", "survey": "309+82", "val": "V21_41"}' *
 - K 43.287367 -71.571988 6.25 O '{"name": "Burnham Brook (Br 6.21)", "survey": "323+13", "val": "V21_41"}' *
@@ -34,7 +34,7 @@
 - K 43.322417 -71.59905 9.00 MP '{"name": "C9", "survey": "470+39", "val": "V21_44"}' *
 - K 43.328956 -71.608199 9.64 CRF '{"start": 0, "end": -1, "name": "Canterbury South", "survey": "504+19", "val": "V21_45"}' *
 - K - - 9.64 ST '{"offset": -1, "end": 9.81}' *
-- K 43.3287942 -71.6079764 9.64 X '{"name": "West Rd (845420P)"}' *
+- K 43.3287942 -71.6079764 9.64 X '{"name": "West Rd", "crossing": "845420P"}' *
 - K - - 9.67 S '{"offset": -1, "name": "Canterbury"}' *
 - K - - 9.74 ST '{"offset": 1, "end": 9.87}' *
 - K - - 9.74 ST '{"offset": -2, "end": 9.83}' *
@@ -49,24 +49,24 @@
 - K 43.35905 -71.614733 12.00 MP '{"name": "C12", "survey": "627+79", "val": "V21_47"}' *
 - K 43.370358 -71.619346 12.83 TL '{"name": "Canterbury/Northfield"}' *
 - K 43.3728 -71.618317 13.00 MP '{"name": "C13", "survey": "680+57", "val": "V21_48"}' *
-- K 43.3745969 -71.617607 13.15 X '{"name": "Lambert Rd (845421W)"}' *
+- K 43.3745969 -71.617607 13.15 X '{"name": "Lambert Rd", "crossing": "845421W"}' *
 - K 43.375436 -71.617191 13.19 S '{"offset": 1, "name": "Northfield"}' *
 - K 43.386517 -71.611167 14.00 MP '{"name": "C14", "survey": "734+42", "val": "V21_49"}' *
-- K 43.3900634 -71.606702 14.36 X '{"name": "NH-132 / Concord Rd (845422D)"}' *
+- K 43.3900634 -71.606702 14.36 X '{"name": "NH-132 / Concord Rd", "crossing": "845422D"}' *
 - K 43.398017 -71.600517 15.00 MP '{"name": "C15", "survey": "787+22", "val": "V21_50"}' *
 - K 43.399489 -71.600101 15.07 O '{}' *
 - K 43.412333 -71.59595 16.00 MP '{"name": "C16", "survey": "840+02", "val": "V21_51"}' *
-- K 43.4160072 -71.5949969 16.26 X '{"name": "NH-132 / Concord Rd (845423K)"}' *
-- K 43.418453 -71.594258 16.55 X '{"name": "Farm (Private; 400599P)"}' *
+- K 43.4160072 -71.5949969 16.26 X '{"name": "NH-132 / Concord Rd", "crossing": "845423K"}' *
+- K 43.418453 -71.594258 16.55 X '{"name": "Farm", "crossing": "400599P"}' *
 - K 43.422314 -71.592967 16.81 O '{"name": "(Br 16.83)", "survey": "884+10", "val": "V21_52"}' *
 - K 43.4251 -71.592217 17.00 MP '{"name": "C17", "survey": "892+90", "val": "V21_52"}' *
 - K 43.425895 -71.59227 17.08 CLF '{"start": 0, "end": 1, "name": "Gas Plant", "survey": "897+13.5", "val": "V21_52"}' *
-- K 43.4258156 -71.5922822 17.08 X '{"name": "Old Forrest Rd (845424S)"}' *
+- K 43.4258156 -71.5922822 17.08 X '{"name": "Old Forrest Rd", "crossing": "845424S"}' *
 - K 43.432401 -71.592934 17.53 O '{}' *
-- K 43.4335524 -71.5931294 17.61 X '{"name": "Sargent St (845425Y)"}' *
+- K 43.4335524 -71.5931294 17.61 X '{"name": "Sargent St", "crossing": "845425Y"}' *
 - K 43.433755 -71.593165 17.62 CRF '{"start": 0, "end": -1, "name": "Northfield South", "survey": "925+84", "val": "V21_53"}' *
 - K - - 17.63 ST '{"offset": -1, "end": 17.97}' *
-- K 43.4364256 -71.5935841 17.78 X '{"name": "Tilton Memorial (845426F)"}' *
+- K 43.4364256 -71.5935841 17.78 X '{"name": "Tilton Memorial", "crossing": "845426F"}' *
 - K 43.438297 -71.593827 17.93 CLT '{"start": -1, "end": -1, "name": "Siding"}' *
 - K 43.438866 -71.593963 17.98 CLT '{"start": 0, "end": -1, "name": "Northfield North"}' *
 - K 43.4391 -71.593933 18.00 MP '{"name": "C18", "survey": "945+60", "val": "V21_53"}' *
@@ -79,32 +79,32 @@
 - K - - 18.29 ST '{"offset": 1, "end": 18.23}' *
 - K 43.442991 -71.592491 18.30 CRT '{"start": 0, "end": 1, "name": "River Track"}' *
 - K 43.443096 -71.59222 18.32 TL '{"name": "Northfield/Tilton"}' *
-- K 43.443243 -71.591812 18.34 X '{"name": "Lower Main St (845428U)"}' *
-- K 43.443317 -71.591565 18.35 X '{"name": "Prospect St (845429B)"}' *
+- K 43.443243 -71.591812 18.34 X '{"name": "Lower Main St", "crossing": "845428U"}' *
+- K 43.443317 -71.591565 18.35 X '{"name": "Prospect St", "crossing": "845429B"}' *
 - K - - 18.38 S '{"offset": -1, "name": "Tilton House of Pizza"}' *
-- K 43.443395 -71.586566 18.60 X '{"name": "East Main St (845431C)"}' *
+- K 43.443395 -71.586566 18.60 X '{"name": "East Main St", "crossing": "845431C"}' *
 - K 43.443502 -71.586033 18.61 O '{"name": "Winnipesauke River (Br 18.61)", "survey": "980+00", "val": "V21_54"}' *
-- K 43.4437988 -71.5847791 18.69 X '{"name": "Granite St (845432J)"}' *
+- K 43.4437988 -71.5847791 18.69 X '{"name": "Granite St", "crossing": "845432J"}' *
 - K 43.4444 -71.582815 18.78 O '{"name": "Winnipesauke River (Br 18.78)", "survey": "987+64", "val": "V21_54"}' *
-- K 43.444905 -71.581389 18.89 X '{"name": "Knapp Rd (845433R)"}' *
+- K 43.444905 -71.581389 18.89 X '{"name": "Knapp Rd", "crossing": "845433R"}' *
 - K - - 19.00 MP '{"name": "C19", "survey": "998+38", "val": "V21_54"}' *
-- K 43.4540778 -71.5663846 19.89 X '{"name": "Tilton Rd (845435E)"}' *
+- K 43.4540778 -71.5663846 19.89 X '{"name": "Tilton Rd", "crossing": "845435E"}' *
 - K - - 20.00 MP '{"name": "C20", "survey": "1051+20", "val": "V21_55"}' *
 - K 43.455192 -71.563563 20.03 O '{"name": "Hunt Brook (Br 19.99)", "val": "V21_55"}' *
 - K 43.459199 -71.553914 20.61 CRF '{"start": 0, "end": -1, "name": "3M", "survey": "1083+25", "val": "V21_56"}' *
 - K - - 20.61 S '{"offset": 1, "name": "Wrap City"}' *
-- K 43.460124 -71.551668 20.74 X '{"name": "Manville Rd (845436L)"}' *
+- K 43.460124 -71.551668 20.74 X '{"name": "Manville Rd", "crossing": "845436L"}' *
 - K 43.462532 -71.547783 21.00 MP '{"name": "C21", "survey": "1104+10", "val": "V21_56"}' *
 - K 43.463947 -71.546619 21.12 O '{"name": "Brook"}' *
-- K 43.465205 -71.545799 21.22 X '{"name": "Noyes Rd (845437T)"}' *
+- K 43.465205 -71.545799 21.22 X '{"name": "Noyes Rd", "crossing": "845437T"}' *
 - K 43.470296 -71.540863 21.65 O '{"name": "Winding Hill Brook"}' *
 - K 43.471432 -71.538962 21.77 CLF '{"start": 0, "end": 1, "name": "Lockmere South"}' *
 - K - - 21.78 ST '{"offset": 1, "end": 21.88}' *
 - K - - 21.86 S '{"offset": 0, "name": "Lochmere"}' *
 - K 43.472487 -71.537152 21.89 CRT '{"start": 0, "end": 1, "name": "Lockmere North"}' *
-- K 43.472617 -71.5369564 21.90 X '{"name": "Silver Lake Rd (845438A)"}' *
+- K 43.472617 -71.5369564 21.90 X '{"name": "Silver Lake Rd", "crossing": "845438A"}' *
 - K 43.472673 -71.53688 21.91 TL '{"name": "End NEGS/Start P&L"}' *
-- K 43.4739201 -71.5346525 22.03 U '{"name": "River Rd (845439G)"}' *
+- K 43.4739201 -71.5346525 22.03 U '{"name": "River Rd", "crossing": "845439G"}' *
 - K 43.474097 -71.534389 22.06 O '{"name": "river"}' *
 - K 43.474095 -71.534387 22.07 TL '{"name": "Tilton/Belmont"}' *
 - K 43.475493 -71.531526 22.23 U '{"name": "Grey Rock Rd"}' *
@@ -115,10 +115,10 @@
 - K 43.484005 -71.511223 23.43 X '{"name": "Fox Hill Rd"}' *
 - K 43.490203 -71.506622 23.93 X '{"name": "Mallards Landing Rd/Sandy Beach"}' *
 - K 43.491189 -71.506651 24.00 O '{"name": "Durgin Brook"}' *
-- K 43.4928316 -71.5066558 24.11 X '{"name": "Tucker Shores Rd (845446S)"}' *
-- K 43.497654 -71.507029 24.43 X '{"name": "Pump House (926716N)"}' *
-- K 43.5017061 -71.5075998 24.71 X '{"name": "Winnisquam Way (845447Y)"}' *
-- K 43.5020087 -71.507613 24.72 X '{"name": "Daniel Webster Hy (845448F)"}' *
+- K 43.4928316 -71.5066558 24.11 X '{"name": "Tucker Shores Rd", "crossing": "845446S"}' *
+- K 43.497654 -71.507029 24.43 X '{"name": "Pump House", "crossing": "926716N"}' *
+- K 43.5017061 -71.5075998 24.71 X '{"name": "Winnisquam Way", "crossing": "845447Y"}' *
+- K 43.5020087 -71.507613 24.72 X '{"name": "Daniel Webster Hy", "crossing": "845448F"}' *
 - K 43.506083 -71.50583 25.02 X '{"name": "Dutile Shore Rd"}' *
 - K 43.51117 -71.503458 25.41 S '{"name": "Benches", "offset": 1}' *
 - K 43.517177 -71.496131 26.00 MP '{"name": "C26"}' *
@@ -136,97 +136,128 @@
 - K 43.5324109 -71.4687126 27.87 X '{"name": "Messer St Lower"}' *
 - K 43.534808 -71.467765 28.02 O '{"name": "Jewett Brook"}' *
 - K 43.5372216 -71.467085 28.25 X '{"name": "Messer St Upper"}' *
-- K - - 28.47 X '{"name": "Irving Oil Co (845456X)"}' *
-- K 43.5427162 -71.466152 28.65 X '{"name": "Moulton St (918965Y)"}' *
-- K - - 28.66 X '{"name": "Bridge St (845457E)"}' *
-- K 43.547562 -71.463516 28.99 X '{"name": "Elm St (845458L)"}' *
+- K - - 28.47 X '{"name": "Irving Oil Co", "crossing": "845456X"}' *
+- K 43.5427162 -71.466152 28.65 X '{"name": "Moulton St", "crossing": "918965Y"}' *
+- K - - 28.66 X '{"name": "Bridge St", "crossing": "845457E"}' *
+- K 43.547562 -71.463516 28.99 X '{"name": "Elm St", "crossing": "845458L"}' *
 - K - - 29.04 S '{"offset": 1, "name": "Lakeport"}' *
-- K 43.548883 -71.462111 29.05 X '{"name": "Lakeport Landing (926722S)"}' *
-- K - - 29.58 X '{"name": "Appleton St (845459T)"}' *
-- K 43.559 -71.463 29.84 X '{"name": "destefano (926723Y)"}' *
-- K 43.560962 -71.463892 29.92 X '{"name": "breakwater (926724F)"}' *
-- K 43.5675021 -71.466776 30.40 X '{"name": "VANBURAN RD (845460M)"}' *
-- K 43.570309 -71.468409 30.60 X '{"name": "laconia sewer (926725M)"}' *
-- K 43.571325 -71.468868 30.68 X '{"name": "nutters beach club (926726U)"}' *
-- K 43.572248 -71.468742 30.74 X '{"name": "southdown marina (926727B)"}' *
-- K 43.576014 -71.467275 31.01 X '{"name": "southdown beach club (926728H)"}' *
-- K 43.57838 -71.4665845 31.15 X '{"name": "Bay reach beach (926729P)"}' *
-- K 43.582584 -71.46863 31.48 X '{"name": "dock access (926730J)"}' *
-- K 43.584066 -71.470099 31.62 X '{"name": "long bay marina (926731R)"}' *
-- K 43.58645 -71.471948 31.82 X '{"name": "long bay beach (926732X)"}' *
-- K - - 32.72 X '{"name": "BIRCH HAVEN LANE (845461U)"}' *
-- K 43.600205 -71.459425 33.18 X '{"name": "Channel Marine (926733E)"}' *
-- K 43.603288 -71.456638 33.44 X '{"name": "thurstons marine (926734L)"}' *
-- K 43.6040816 -71.4565721 33.50 X '{"name": "ENDICOTT ST NORTH (845462B)"}' *
-- K 43.605221 -71.457116 33.57 X '{"name": "south weirs  (926735T)"}' *
-- K 43.605714 -71.457521 33.60 X '{"name": "weirs 1 (926736A)"}' *
-- K 43.6069542 -71.4586026 33.70 X '{"name": "WEIRS #2 (845463H)"}' *
-- K 43.6075676 -71.459162 33.76 X '{"name": "WEIRS #3 (845464P)"}' *
+- K 43.548883 -71.462111 29.05 X '{"name": "Lakeport Landing", "crossing": "926722S"}' *
+- K - - 29.58 X '{"name": "Appleton St", "crossing": "845459T"}' *
+- K 43.559 -71.463 29.84 X '{"name": "destefano", "crossing": "926723Y"}' *
+- K 43.560962 -71.463892 29.92 X '{"name": "breakwater", "crossing": "926724F"}' *
+- K 43.5675021 -71.466776 30.40 X '{"name": "VANBURAN RD", "crossing": "845460M"}' *
+- K 43.570309 -71.468409 30.60 X '{"name": "laconia sewer", "crossing": "926725M"}' *
+- K 43.571325 -71.468868 30.68 X '{"name": "nutters beach club", "crossing": "926726U"}' *
+- K 43.572248 -71.468742 30.74 X '{"name": "southdown marina", "crossing": "926727B"}' *
+- K 43.576014 -71.467275 31.01 X '{"name": "southdown beach club", "crossing": "926728H"}' *
+- K 43.57838 -71.4665845 31.15 X '{"name": "Bay reach beach", "crossing": "926729P"}' *
+- K 43.582584 -71.46863 31.48 X '{"name": "dock access", "crossing": "926730J"}' *
+- K 43.584066 -71.470099 31.62 X '{"name": "long bay marina", "crossing": "926731R"}' *
+- K 43.58645 -71.471948 31.82 X '{"name": "long bay beach", "crossing": "926732X"}' *
+- K - - 32.72 X '{"name": "BIRCH HAVEN LANE", "crossing": "845461U"}' *
+- K 43.600205 -71.459425 33.18 X '{"name": "Channel Marine", "crossing": "926733E"}' *
+- K 43.603288 -71.456638 33.44 X '{"name": "thurstons marine", "crossing": "926734L"}' *
+- K 43.6040816 -71.4565721 33.50 X '{"name": "ENDICOTT ST NORTH", "crossing": "845462B"}' *
+- K 43.605221 -71.457116 33.57 X '{"name": "south weirs ", "crossing": "926735T"}' *
+- K 43.605714 -71.457521 33.60 X '{"name": "weirs 1", "crossing": "926736A"}' *
+- K 43.6069542 -71.4586026 33.70 X '{"name": "WEIRS #2", "crossing": "845463H"}' *
+- K 43.6075676 -71.459162 33.76 X '{"name": "WEIRS #3", "crossing": "845464P"}' *
 - K - - 33.77 S '{"offset": -1, "name": "Weirs Beach"}' *
-- K 43.608199 -71.459704 33.83 X '{"name": "weirs 4 (926737G)"}' *
+- K 43.608199 -71.459704 33.83 X '{"name": "weirs 4", "crossing": "926737G"}' *
 - K 43.6083546 -71.4598687 33.84 X '{}' *
-- K 43.6090057 -71.4604814 33.90 X '{"name": "PATIO GARDEN XING (845466D)"}' *
-- K - - 33.94 X '{"name": "CENTENARY AVE (845467K)"}' *
-- K 43.611469 -71.4636235 34.13 X '{"name": "CENTENARY AV (845483U)"}' *
-- K 43.6131394 -71.4646843 34.27 X '{"name": "DOCK ACCESS (845484B)"}' *
-- K - - 34.88 X '{"name": "WOODWINDS HILL (845485H)"}' *
-- K - - 34.94 X '{"name": "SUNSET COVE (845486P)"}' *
-- K 43.622602 -71.470749 35.01 X '{"name": "scenic cove (926738N)"}' *
-- K 43.6318297 -71.4798316 35.82 X '{"name": "NEAL SHORES RD (845487W)"}' *
-- K 43.6348899 -71.480687 36.04 X '{"name": "BEACH CLUB (845488D)"}' *
-- K 43.639226 -71.484451 36.40 X '{"name": "Grouse point club (926740P)"}' *
-- K 43.645867 -71.48751 36.95 X '{"name": "mile point drive (926741W)"}' *
-- K 43.647913 -71.491364 37.16 X '{"name": "18 mile point (926742D)"}' *
-- K 43.6507276 -71.4979721 37.55 U '{"name": "DANIEL WEBSTER HY (845489K)"}' *
+- K 43.6090057 -71.4604814 33.90 X '{"name": "PATIO GARDEN XING", "crossing": "845466D"}' *
+- K - - 33.94 X '{"name": "CENTENARY AVE", "crossing": "845467K"}' *
+- K 43.611469 -71.4636235 34.13 X '{"name": "CENTENARY AV", "crossing": "845483U"}' *
+- K 43.6131394 -71.4646843 34.27 X '{"name": "DOCK ACCESS", "crossing": "845484B"}' *
+- K - - 34.88 X '{"name": "WOODWINDS HILL", "crossing": "845485H"}' *
+- K - - 34.94 X '{"name": "SUNSET COVE", "crossing": "845486P"}' *
+- K 43.622602 -71.470749 35.01 X '{"name": "scenic cove", "crossing": "926738N"}' *
+- K 43.6318297 -71.4798316 35.82 X '{"name": "NEAL SHORES RD", "crossing": "845487W"}' *
+- K 43.6348899 -71.480687 36.04 X '{"name": "BEACH CLUB", "crossing": "845488D"}' *
+- K 43.639226 -71.484451 36.40 X '{"name": "Grouse point club", "crossing": "926740P"}' *
+- K 43.645867 -71.48751 36.95 X '{"name": "mile point drive", "crossing": "926741W"}' *
+- K 43.647913 -71.491364 37.16 X '{"name": "18 mile point", "crossing": "926742D"}' *
+- K 43.6507276 -71.4979721 37.55 U '{"name": "DANIEL WEBSTER HY", "crossing": "845489K"}' *
 - K - - 37.60 S '{"offset": -1, "name": "Meredith"}' *
-- K 43.6506379 -71.5003298 37.67 X '{"name": "LOWER LADD HL RD (845490E)"}' *
-- K 43.648244 -71.50549 37.98 X '{"name": "Lakeview Dr (845491L)"}' *
+- K 43.6506379 -71.5003298 37.67 X '{"name": "LOWER LADD HL RD", "crossing": "845490E"}' *
+- K 43.648244 -71.50549 37.98 X '{"name": "Lakeview Dr", "crossing": "845491L"}' *
 - K 43.648012 -71.505896 38.00 MP '{"name": "C38"}' *
-- K 43.6468146 -71.5082657 38.15 X '{"name": "WAUKEWAN ST (845492T)"}' *
+- K 43.6468146 -71.5082657 38.15 X '{"name": "WAUKEWAN ST", "crossing": "845492T"}' *
 - K 43.650002 -71.523747 39.00 MP '{"name": "C39"}' *
-- K 43.651206 -71.525953 39.13 X '{"name": "Rennicke (926743K)"}' *
-- K 43.651854 -71.52705 39.22 X '{"name": "Frickman (926744S)"}' *
-- K 43.652452 -71.52808 39.25 X '{"name": "Trauring (926745Y)"}' *
-- K 43.6569571 -71.5348322 39.61 X '{"name": "Wionna Shores Rd (845495N)"}' *
+- K 43.651206 -71.525953 39.13 X '{"name": "Rennicke", "crossing": "926743K"}' *
+- K 43.651854 -71.52705 39.22 X '{"name": "Frickman", "crossing": "926744S"}' *
+- K 43.652452 -71.52808 39.25 X '{"name": "Trauring", "crossing": "926745Y"}' *
+- K 43.6569571 -71.5348322 39.61 X '{"name": "Wionna Shores Rd", "crossing": "845495N"}' *
 - K 43.658644 -71.538865 40.00 MP '{"name": "C40"}' *
-- K 43.6618701 -71.5463726 40.43 X '{"name": "Waukewan Rd (845494G)"}' *
+- K 43.6618701 -71.5463726 40.43 X '{"name": "Waukewan Rd", "crossing": "845494G"}' *
 - K - - 41.00 S '{"offset": 0, "name": "Winona"}' *
 - K 43.665716 -71.556145 41.00 MP '{"name": "C41"}' *
-- K 43.6660685 -71.5581688 41.10 O '{"name": "Wionna Rd (845496V)"}' *
+- K 43.6660685 -71.5581688 41.10 O '{"name": "Wionna Rd", "crossing": "845496V"}' *
 - K 43.675198 -71.57071 42.00 MP '{"name": "C42"}' *
 - K 43.686087 -71.581767 43.00 MP '{"name": "C43"}' *
 - K 43.687181 -71.600574 44.00 MP '{"name": "C44"}' *
-- K 43.686792 -71.601507 44.05 X '{"name": "Boynton Rd (845499R)"}' *
+- K 43.686792 -71.601507 44.05 X '{"name": "Boynton Rd", "crossing": "845499R"}' *
 - K 43.6855 -71.618872 45.00 MP '{"name": "C45"}' *
 - K - - 45.80 S '{"offset": -1, "name": "Ashland"}' *
-- K 43.6901373 -71.6336974 45.85 X '{"name": "Depot Rd (845504K)"}' *
+- K 43.6901373 -71.6336974 45.85 X '{"name": "Depot Rd", "crossing": "845504K"}' *
 - K 43.691531 -71.63636 46.00 MP '{"name": "C46"}' *
-- K 43.6943485 -71.6432452 46.49 U '{"name": "Styles Bridges Hw (845507F)"}' *
+- K 43.6943485 -71.6432452 46.49 U '{"name": "Styles Bridges Hw", "crossing": "845507F"}' *
 - K 43.700776 -71.650503 47.00 MP '{"name": "C47"}' *
-- K 43.712326 -71.658073 47.83 X '{"name": "Siding Rd (845510N)"}' *
+- K 43.712326 -71.658073 47.84 X '{"name": "Siding Rd", "crossing": "845510N"}' *
 - K - - 47.90 S '{"offset": 0, "name": "Bridgewater"}' *
 - K 43.714547 -71.658927 48.00 MP '{"name": "C48"}' *
-- K 43.715681 -71.659813 48.09 X '{"name": "Bridgewater Power (927609C)"}' *
-- K 43.716424 -71.660449 48.12 X '{"name": "Deer Farm South (926760B)"}' *
-- K - - 48.48 X '{"name": "Deer Farm North"}' *
+- K 43.715681 -71.659813 48.09 X '{"name": "Bridgewater Power", "crossing": "927609C"}' *
+- K 43.716424 -71.660449 48.12 X '{"name": "Deer Farm South", "crossing": "926760B"}' *
+- K 43.720187484895625 -71.66449010632103 48.48 X '{"name": "Deer Farm North"}' *
 - K 43.723721 -71.667237 48.78 O '{"name": "brook"}' *
 - K 43.726672 -71.668801 49.00 MP '{"name": "C49"}' *
-- K - - 49.10 X '{"name": "Christmas Tree Farm"}' *
-- K 43.728858 -71.669912 49.14 X '{"name": "Glove Hollow Farm"}' *
+- K 43.727844159781206 -71.66939780836644 49.06 X '{"name": "Tree Farm South", "crossing": "845512C"}' *
+- K 43.728858 -71.669912 49.14 X '{"name": "Tree Farm North", "crossing": "845513J"}' *
 - K 43.732055 -71.67159 49.39 O '{"name": "Glove Hollow Brook"}' *
 - K - - 49.48 X '{"name": "Farm"}' *
 - K 43.733989 -71.672556 49.54 O '{"name": "brook"}' *
 - K 43.752642 -71.6864 51.00 MP '{"name": "C51"}' *
 - K - - 51.07 X '{"name": "DPW"}' *
-- K 43.756251 -71.686605 51.30 X '{"name": "Ped (926761H)"}' *
-- K - - 51.30 S '{"offset": 1, "name": "Plymouth"}' *
-- K - - 51.32 X '{"name": "Green St"}' *
-- K - - 51.54 X '{"name": "Bridge St"}' *
-- K - - 51.81 X '{"name": "Ped"}' *
-- K - - 52.30 MP '{"name": "P1"}' *
-- K 43.781317 -71.671961 53.30 MP '{"name": "P2"}' *
-- K 43.794094 -71.669658 54.30 MP '{"name": "P3"}' *
-- K 43.807154 -71.665 55.30 MP '{"name": "P4"}' *
-- K 43.820263 -71.658304 56.30 MP '{"name": "P5"}' *
-- K 43.833367 -71.651239 57.30 MP '{"name": "P6"}' *
-- K 43.847355 -71.646977 58.30 MP '{"name": "P7"}' *
+- K 43.756251 -71.686605 51.30 X '{"name": "Ped", "crossing": "926761H"}' *
+- K 43.75633994722857 -71.68666868412811 51.26 S '{"offset": 1, "name": "Plymouth"}' *
+- K 43.75661986975612 -71.68667284642817 51.28 X '{"name": "Green St"}' *
+- K 43.75925380145796 -71.6867569846422 51.47 X '{"name": "Court House (ped)", "crossing": "926766S"}' *
+- K 43.75974917011926, -71.68680538860855 51.50 X '{"name": "Samaha Dr", "crossing": "926767Y"}' *
+- K 43.759913287081424 -71.6868333951551 51.52 X '{"name": "Bridge St", "crossing": "845516E"}' *
+- K 43.764054490315495 -71.6869923500891 51.77 X '{"name": "Five Points (ped)", "crossing": "845517L"}' *
+- K 43.767648264191024 -71.68622807290141 52.03 X '{"name": "Old Main St", "crossing": "845518T"}' *
+- K 43.76882472411806 -71.6852847587648 52.13 X '{"name": "Foster St", "crossing": "845519A"}' *
+- K - - 52.26 MP '{"name": "P1"}' *
+- K 43.781317 -71.671961 53.26 MP '{"name": "P2"}' *
+- K 43.78424401507121 -71.66845982294001 53.51 X '{"name": "Livermore Falls", "crossing": "926764D"}' *
+- K 43.794094 -71.669658 54.26 MP '{"name": "P3"}' *
+- K - - 54.80 X '{"name": "farm", "crossing": "845524W"}' *
+- K - - 55.08 X '{"name": "farm", "crossing": "845525D"}' *
+- K 43.807154 -71.665 55.26 MP '{"name": "P4"}' *
+- K 43.81046522447002 -71.66415268788931 55.51 X '{"name": "Blair Rd", "crossing": "845526K"}' *
+- K 43.820263 -71.658304 56.26 MP '{"name": "P5"}' *
+- K - - 56.86 X '{"name": "Beebe River", "crossing": "845527S"}' *
+- K - - 57.12 X '{"name": "farm", "crossing": "845529F"}' *
+- K 43.833367 -71.651239 57.26 MP '{"name": "P6"}' *
+- K 43.847355 -71.646977 58.26 MP '{"name": "P7"}' *
+- K 43.85063164911812 -71.64819140792781 58.89 X '{"name": "Campton Village Rd", "crossing": "845553V"}' *
+- K 43.8532122564536 -71.64985411419319 58.97 X '{"name": "Campton Depot LLC", "crossing": "926765K"}' *
+- K 43.855264944768564 -71.65116391132916 59.05 X '{"name": "Owl St", "crossing": "845534C"}' *
+- K - - 59.26 MP '{"name": "P8"}' *
+- K 43.864589537263114 -71.6580147046728 60.08 X '{"name": "Campton Country Club"}' *
+- K 43.86724365908216 -71.65918369922171 60.13 X '{"name": "Campton Country Club"}' *
+- K - - 60.26 MP '{"name": "P9"}' *
+- K 43.87524371955013 -71.66219570729581 60.43 X '{"name": "Lyford\'s Siding", "crossing": "845539L"}' *
+- K 43.876471770798766 -71.66324267973195 60.51 X '{"name": "McGongle\'s", "crossing": "926768F"}' *
+- K 43.87700309608216 -71.66374812294379 60.53 X '{"name": "Helgerson\'s", "crossing": "926769M"}' *
+- K 43.880219033454814 -71.66700059897524 60.80 X '{"name": "Maxie\'s Way", "crossing": "845540F"}' *
+- K - - 61.26 MP '{"name": "P10"}' *
+- K 43.88747517189512 -71.67225495900647 61.38 X '{"name": "Rand\'s", "crossing": "845542U"}' *
+- K 43.88994183847607 -71.67377051391921 61.53 X '{"name": "Old Route 3", "crossing": "845543B"}' *
+- K - - 61.85 X '{"name": "Farm", "crossing": "845544H"}' *
+- K - - 62.26 MP '{"name": "P11"}' *
+- K - - 62.30 X '{"name": "Farm"}' *
+- K - - 62.44 X '{"name": "Farm", "crossing": "926771N"}' *
+- K 43.90914399169642 -71.6842097079285 63.11 X '{"name": "Avery McGee Rd", "crossing": "845546W"}' *
+- K - - 63.26 MP '{"name": "P12"}' *
+- K 43.917641858842074, -71.68455695658396 63.44 X '{"name": "Cross Rd", "crossing": "845547D"}' *

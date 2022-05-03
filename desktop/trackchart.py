@@ -163,12 +163,15 @@ def mileposts(tc, from_file=False, mod=1):
             })
 
     # Filter and draw the mileposts
+    post_count = 0
     for obj in mp_list:
         mileage = obj['mileage']
         if not (first <= mileage <= last):
             continue
 
-        if mileage % mod != 0:
+        post_count += 1
+
+        if post_count % mod != 0:
             continue
 
         x = mile_to_pixel(tc, mileage-first)
