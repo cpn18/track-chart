@@ -47,9 +47,13 @@ def sky_to_json(report):
     return sky
 
 def calc_used(sky):
-    num_sat = len(sky['satellites'])
-    num_used = 0
-    for i in range(num_sat):
-        if sky['satellites'][i]['used'] is True:
-            num_used += 1
+    if 'uSat' in sky and 'nSat' in sky:
+        num_used = sky['uSat']
+        num_sat = sky['nSat']
+    else:
+        num_sat = len(sky['satellites'])
+        num_used = 0
+        for i in range(num_sat):
+            if sky['satellites'][i]['used'] is True:
+                num_used += 1
     return (num_used, num_sat)

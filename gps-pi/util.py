@@ -9,7 +9,7 @@ import datetime
 STREAM_DELAY = 1 # Seconds
 
 # Data File API Version
-DATA_API = 9
+DATA_API = 10
 
 # Error Delay
 ERROR_DELAY = 5 # Seconds

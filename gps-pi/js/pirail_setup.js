@@ -6,6 +6,10 @@ function setup_reset()
     success: function(obj) {
       $('#msg').text("");
       $('#gps_enable').prop('checked', obj.gps.enable);
+      $('#gpsimu_enable').prop('checked', obj.gpsimu.enable);
+      $('#gpsimu_x').val(obj.gpsimu.x);
+      $('#gpsimu_y').val(obj.gpsimu.y);
+      $('#gpsimu_z').val(obj.gpsimu.z);
       $('#imu_enable').prop('checked', obj.imu.enable);
       $('#imu_x').val(obj.imu.x);
       $('#imu_y').val(obj.imu.y);
@@ -21,6 +25,12 @@ function setup_save()
   formdata = {
 	  gps: {
 		  enable: $('#gps_enable').is(":checked")
+	  },
+	  gpsimu: {
+		  x: $('#gpsimu_x').val(),
+		  y: $('#gpsimu_y').val(),
+		  z: $('#gpsimu_z').val(),
+		  enable: $('#gpsimu_enable').is(":checked")
 	  },
 	  imu: {
 		  x: $('#imu_x').val(),
