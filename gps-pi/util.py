@@ -2,6 +2,7 @@
 """
 Utilities
 """
+import os
 import json
 import datetime
 
@@ -22,11 +23,18 @@ def timestamp():
 
 def read_config():
     """ Read Configuration """
-    with open("config.json", "r") as config_file:
-        config = json.loads(config_file.read())
+    if os.path.isfile("config.json"):
+        with open("config.json", "r") as config_file:
+            config = json.loads(config_file.read())
+    else:
+        with open("config.json.sample", "r") as config_file:
+            config = json.loads(config_file.read())
 
-    with open("version.txt", "r") as version_file:
-        config['sw_version'] = version_file.readline()
+    if os.path.isfile("version.txt"):
+        with open("version.txt", "r") as version_file:
+            config['sw_version'] = version_file.readline()
+    else:
+        config['sw_version'] = "Unknown"
 
     config['class'] = "CONFIG"
     config['time'] = timestamp()
