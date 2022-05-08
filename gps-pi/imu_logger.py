@@ -110,7 +110,7 @@ def imu_logger(output_directory):
 
     # Open the output file
     with open(os.path.join(output_directory,datetime.datetime.now().strftime("%Y%m%d%H%M")+"_imu.csv"), "w") as imu_output:
-        imu_output.write("%s %s %s *\n" % (config['time'], "VERSION", {"class": "VERSION", "version": util.DATA_API}))
+        imu_output.write("%s %s %s *\n" % (config['time'], "VERSION", json.dumps({"class": "VERSION", "version": util.DATA_API})))
         imu_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
 
         now = time.time()

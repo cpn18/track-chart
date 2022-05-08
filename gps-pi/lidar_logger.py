@@ -100,7 +100,7 @@ def lidar_logger(output_directory):
             # Open the output file
             timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
             with open(os.path.join(output_directory,timestamp+"_lidar.csv"), "w") as lidar_output:
-                lidar_output.write("%s %s %s *\n" % (config['time'], "VERSION", {"class": "VERSION", "version": util.DATA_API}))
+                lidar_output.write("%s %s %s *\n" % (config['time'], "VERSION", json.dumps({"class": "VERSION", "version": util.DATA_API})))
                 lidar_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
                 for _, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
                     lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
