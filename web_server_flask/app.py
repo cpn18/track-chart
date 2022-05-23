@@ -1,3 +1,8 @@
+"""
+UNH Capstone 2022 Project
+
+Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
+"""
 from statistics import mean
 from flask import Flask, render_template, request, abort, jsonify, redirect, send_file
 import os

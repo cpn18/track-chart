@@ -1,3 +1,7 @@
+// UNH Capstone 2022 Project
+//
+// Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
+
 function displayChart (jsonfile) {
     const labels = jsonfile.jsonarray.map(function(e) {
         if (e.class == "ATT") {

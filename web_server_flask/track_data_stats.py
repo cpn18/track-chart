@@ -1,3 +1,8 @@
+"""
+UNH Capstone 2022 Project
+
+Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
+"""
 import pirail
 import json
 import os

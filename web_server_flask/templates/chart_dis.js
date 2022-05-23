@@ -1,4 +1,6 @@
-
+// UNH Capstone 2022 Project
+//
+// Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
 
 function info() {
     var url_s = window.location.href;
