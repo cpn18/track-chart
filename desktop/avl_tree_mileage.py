@@ -1,3 +1,9 @@
+"""
+UNH Capstone 2022 Project
+
+Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
+"""
+
 from desktop import acceleration_gyroscopic_data
 from desktop.mileage_node import mileage_node
 

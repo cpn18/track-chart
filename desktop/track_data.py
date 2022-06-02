@@ -1,3 +1,9 @@
+"""
+UNH Capstone 2022 Project
+
+Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
+"""
+
 import math
 from os import stat
 import statistics
