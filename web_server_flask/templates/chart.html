@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!-- 
+UNH Capstone 2022 Project
+
+Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
+-->
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>example of chart.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.0/dist/chart.min.js"></script>
+
+    <!-- Hammer.js is used for gesture recognition.-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Zoom function-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.0/chartjs-plugin-zoom.min.js" integrity="sha512-TT0wAMqqtjXVzpc48sI0G84rBP+oTkBZPgeRYIOVRGUdwJsyS3WPipsNh///ay2LJ+onCM23tipnz6EvEy2/UA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</head>
+
+<body>
+
+<h1>My First Heading</h1>
+<p>My first paragraph.</p>
+
+<form id="rangeFrom" method="post">
+    <label for="minRange">Minimum Range: </label>
+    <input type="number" step="0.0001" id="minRange" size="20" name="minRange"><br>
+    <label for="maxRange">Maximum Range: </label>
+    <input type="number" step="0.0001" id="maxRange" size="20" name="maxRange"><br><br>
+    <button type="submit" id="min">Submit</button>
+</form>
+
+
+<!--
+<form action="/chart" onsubmit="return myFunction()">
+    Location: <input type="text" id="location" size="20" name="location"><br>
+    Minimum Range: <input type="number" step="0.1" id="minRange" size="20" name="minRange"><br> Can only accept number (one decimal place)
+    Maximum Range: <input type="number" step="0.1" id="maxRange" size="20" name="maxRange"><br><br> Can only accept number (one decimal place)
+    <input type="submit" value="Submit">
+</form>
+-->
+
+<div class = "chartbox">
+    <canvas id="myChart" width="0" height="500"></canvas>
+</div>
+
+<button id="reset">Reset</button>
+
+<script src="../static/main.js"> </script>
+</body>
+
+</html>

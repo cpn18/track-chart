@@ -6,6 +6,7 @@ import json
 import datetime
 import sys
 import math
+import requests
 
 # Number of Satellites
 GPS_THRESHOLD = 10
@@ -41,7 +42,7 @@ def parse_cmd_line_args():
 def read(filename, handlers=None, classes=None, args=None):
     """
     Read File
-        filename = name of JSON files
+        filename = name of JSON files, or URL
         (optional)
         handlers = dictionary of handler functions, indexed by class
         classes = array of classes to return
@@ -73,51 +74,76 @@ def read(filename, handlers=None, classes=None, args=None):
     start_longitude = args.get("start-longitude", None)
     end_longitude = args.get("end-longitude", None)
 
-    with my_open(filename) as input_file:
-        count = 0
-        for line in input_file:
-            count += 1
+    if filename.startswith("http://"):
+        r = requests.get(filename, stream=True)
+        f = r.iter_lines()
+        needs_closed=False
+    else:
+        f = my_open(filename)
+        needs_closed=True
 
-            # Parse the Line
-            try:
-                obj = json.loads(line)
-            except Exception as ex:
-                print("ERROR: line=%d, %s" % (count, ex))
-                raise Exception from ex
+    count = 0
+    for line in f:
+        count += 1
 
-            # Check Class
-            if classes is not None:
-                if obj['class'] not in classes:
-                    continue
+        # Convert from bytes to str
+        if not isinstance(line, str):
+            line = str(line.decode('utf-8'))
 
-            # Check Bounds
-            if 'time' in obj:
-                if start_time is not None and obj['time'] < start_time:
-                    continue
-                if end_time is not None and obj['time'] > end_time:
-                    continue
-            if 'mileage' in obj:
-                if start_mileage is not None and obj['mileage'] < start_mileage:
-                    continue
-                if end_mileage is not None and obj['mileage'] > end_mileage:
-                    continue
-            if 'lat' in obj:
-                if start_latitude is not None and obj['lat'] < start_latitude:
-                    continue
-                if end_latitude is not None and obj['lat'] > end_latitude:
-                    continue
-            if 'lon' in obj:
-                if start_longitude is not None and obj['lon'] < start_longitude:
-                    continue
-                if end_longitude is not None and obj['lon'] > end_longitude:
-                    continue
+        # Handle event-stream
+        if line.startswith('event: pirail'):
+            continue
+        elif line.startswith('data: '):
+            line = line.split(' ', 1)[1]
 
-            # Call the handler, or yield the result
-            if handlers is not None:
-                if obj['class'] in handlers:
-                    handlers[obj['class']](count, obj)
-            else:
-                yield (count, obj)
+        # Skip Blank Lines
+        if len(line) == 0:
+            continue
+
+        # Parse the Line
+        try:
+            obj = json.loads(line)
+        except Exception as ex:
+            print("Line: %s" % line)
+            print("ERROR: line=%d, %s" % (count, ex))
+            raise Exception
+
+        # Check Class
+        if classes is not None:
+            if obj['class'] not in classes:
+                continue
+
+        # Check Bounds
+        if 'time' in obj:
+            if start_time is not None and obj['time'] < start_time:
+                continue
+            if end_time is not None and obj['time'] > end_time:
+                continue
+        if 'mileage' in obj:
+            if start_mileage is not None and obj['mileage'] < start_mileage:
+                continue
+            if end_mileage is not None and obj['mileage'] > end_mileage:
+                continue
+        if 'lat' in obj:
+            if start_latitude is not None and obj['lat'] < start_latitude:
+                continue
+            if end_latitude is not None and obj['lat'] > end_latitude:
+                continue
+        if 'lon' in obj:
+            if start_longitude is not None and obj['lon'] < start_longitude:
+                continue
+            if end_longitude is not None and obj['lon'] > end_longitude:
+                continue
+
+        # Call the handler, or yield the result
+        if handlers is not None:
+            if obj['class'] in handlers:
+                handlers[obj['class']](count, obj)
+        else:
+            yield (count, obj)
+
+    if needs_closed:
+        f.close()
 
 def write(filename, data):
     """

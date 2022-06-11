@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<!--
+UNH Capstone 2022 Project
+
+Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
+-->
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>About</title>
+  <link rel="icon" href="../static/redRail.ico">
+  <link rel="stylesheet" href="../static/stylesheet.css">
+</head>
+<body>
+  <div class="header">
+    <img src="../static/PiRail_color.png" alt="PiRail Logo">
+    <div class="header-right">
+      <a href="/">Data</a>
+      <!--<a href="#contact">Contact</a>-->
+      <a class="active" href="about">About</a>
+      <a href="info">Info</a>
+    </div>
+  </div>
+
+  <div class="pad">
+      <h1>About PiRail</h1>
+  <h3>What We Do</h3>
+  <p> &emsp;PiRail is a budget friendly, geo-tagging, IMU/LIDAR/LPCM data logger.
+    It is an integration of commercial hardware and open-source software, designed as a research platform.
+    It is vehicle agnostic, and has been tested in several configurations.
+  </p>
+  </div>
+
+        <img class="mySlides" src="../slideShow/car.jpeg" style="max-width:400px;height:300px;">
+        <img class="mySlides" src="../slideShow/card.jpeg" style="max-width:400px;height:250px;">
+        <img class="mySlides" src="../slideShow/penguin.jpeg" style="max-width:400px;height:300px;">
+      <img class="mySlides" src="../slideShow/measure.jpeg" style="max-width:300px;height:300px;">
+      <img class="mySlides" src="../slideShow/rail1.jpeg" style="max-width:400px;height:250px;">
+      <img class="mySlides" src="../slideShow/rail2.jpeg" style="max-width:300px;height:250px;">
+      <img class="mySlides" src="../slideShow/rail3.jpeg" style="max-width:300px;height:300px;">
+      <img class="mySlides" src="../slideShow/rail4.jpeg" style="max-width:400px;height:250px;">
+      <img class="mySlides" src="../slideShow/rail5.jpeg" style="max-width:300px;height:250px;">
+      <img class="mySlides" src="../slideShow/setup.jpeg" style="max-width:300px;height:300px;">
+      <img class="mySlides" src="../slideShow/setup2.jpeg" style="max-width:400px;height:250px;">
+      <img class="mySlides" src="../slideShow/yellow.jpeg" style="max-width:300px;height:250px;">
+      <img class="mySlides" src="../slideShow/yellow2.jpeg" style="max-width:300px;height:300px;">
+      <img class="mySlides" src="../slideShow/yellow3.jpeg" style="max-width:400px;height:250px;">
+      <img class="mySlides" src="../slideShow/yellow4.jpeg" style="max-width:300px;height:250px;">
+      <img class="mySlides" src="../slideShow/yellow5.jpeg" style="max-width:300px;height:300px;">
+      <img class="mySlides" src="../slideShow/yellow6.jpeg" style="max-width:400px;height:250px;">
+
+  <div class="pad">
+    <h3>Contact</h3>
+    <p>
+      Phone: (603) 340-1414<br>
+      Email: <a href="mailto: cp_n18@yahoo.com">cp_n18@yahoo.com</a>
+    </p>
+  </div>
+
+  <script>
+    var myIndex = 0;
+    carousel();
+
+    function carousel() {
+      var i;
+      var x = document.getElementsByClassName("mySlides");
+      for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
+      }
+      myIndex++;
+      if (myIndex > x.length) {myIndex = 1}
+      x[myIndex-1].style.display = "block";
+      setTimeout(carousel, 3000); // Change image every 3 seconds
+    }
+</script>
+
+</body>
+
+<footer>
+  <p>Research Project By Jon Miner</p>
+  <a target="_blank" rel="noreferrer noopener" href="https://www.facebook.com/PiRailNH/?ref=page_internal">
+    <img class="small" src="../static/facebook.png" alt="PiRail Facebook"></a>
+</footer>
+</html>

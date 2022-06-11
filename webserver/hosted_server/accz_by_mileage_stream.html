@@ -1,0 +1,46 @@
+<html>
+<head>
+<title>PiRail Chart Example</title>
+<script src="js/chart-3.7.1.js"></script>
+<script src="js/pirail.js"></script>
+</head>
+<body>
+<input type=text id="file" value="plrr_20210829_northbound.json"><br>
+<input type=text id="startmileage" value="42"><br>
+<input type=text id="endmileage" value="43"><br>
+<input type=text id="percentile" value="0.99"><br>
+<canvas id="myChart" width="400" height="200"></canvas>
+<script>
+url = "pirail_data_fetch.php" +
+    "?classes=ATT&xform=thin" +
+    "&start-mileage=" + document.getElementById('startmileage').value +
+    "&end-mileage=" + document.getElementById('endmileage').value +
+    "&file=" + document.getElementById('file').value;
+console.log(url);
+
+streamdata = [];
+
+const dataStream = new EventSource(url);
+
+dataStream.onopen = function() {
+    console.log("connection opened");
+};
+
+dataStream.onerror = function() {
+    console.log("connection error");
+    dataStream.close();
+};
+
+dataStream.addEventListener("pirail", function(event) {
+    obj = JSON.parse(event.data);
+    //console.log(obj);
+    if (obj.done) {
+        plot_data('myChart', streamdata);
+        dataStream.close();
+    } else {
+        streamdata.push(obj);
+    }
+});
+</script>
+</body>
+</html>

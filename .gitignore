@@ -108,3 +108,4 @@ desktop/slices/
 desktop/*.csv
 desktop/*.json
 desktop/*.png
+.DS_Store
