@@ -7,6 +7,9 @@ apt-get install upgrade
 apt-get install vim
 apt-get install python3-smbus i2c-tools git
 
+# Timezone
+${cmd} timezone /etc/timezone
+
 # WiFi Hotspot
 apt-get install hostapd dnsmasq iptables-persistent
 ${cmd} hostapd.conf /etc/hostapd
