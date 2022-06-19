@@ -38,6 +38,13 @@ def read_config():
 
     config['class'] = "CONFIG"
     config['time'] = timestamp()
+
+    if os.path.isfile("/etc/timezone"):
+        with open("/etc/timezone") as timezone_file:
+            config['timezone'] = timezone_file.readline()
+    else:
+        config['timezone'] = "Unknown"
+
     return config
 
 def write_config(config):
