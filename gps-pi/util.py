@@ -32,7 +32,7 @@ def read_config():
 
     if os.path.isfile("version.txt"):
         with open("version.txt", "r") as version_file:
-            config['sw_version'] = version_file.readline()
+            config['sw_version'] = version_file.readline().rstrip()
     else:
         config['sw_version'] = "Unknown"
 
@@ -41,7 +41,7 @@ def read_config():
 
     if os.path.isfile("/etc/timezone"):
         with open("/etc/timezone") as timezone_file:
-            config['timezone'] = timezone_file.readline()
+            config['timezone'] = timezone_file.readline().rstrip()
     else:
         config['timezone'] = "Unknown"
 
