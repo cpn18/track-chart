@@ -879,7 +879,7 @@ def accel(tc, scale=1):
 
         if obj['class'] == "G" or obj['class'] == "TPV":
             # Speed
-            speed = obj['speed']
+            speed = obj.get('speed', 0)
             #draw.point((x, ys-speed), fill=COLORS['black'])
         elif obj['class'] in ["A", "ATT"]:
             if speed == 100:
