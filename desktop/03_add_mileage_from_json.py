@@ -30,9 +30,11 @@ for line_no, obj in pirail.read(json_file):
         if obj['num_used'] < pirail.GPS_THRESHOLD or obj['mode'] < GPS_MIN_MODE:
             continue
         if last_tpv is not None:
+            if obj['time'] == last_tpv['time']:
+                continue
+            time_start = pirail.parse_time(obj['time'])
+            time_delta = time_start - pirail.parse_time(last_tpv['time'])
             if len(acclist) > 0:
-                time_start = pirail.parse_time(obj['time'])
-                time_delta = time_start - pirail.parse_time(last_tpv['time'])
                 delta_lat = (obj['lat'] - last_tpv['lat'])
                 delta_lon = (obj['lon'] - last_tpv['lon'])
                 delta_alt = (obj['alt'] - last_tpv['alt'])
