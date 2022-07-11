@@ -824,7 +824,7 @@ def plot_value(tc, field="acc_z", scale=1):
 
     del draw
 
-def accel(tc, scale=1):
+def accel(tc, scale=1, ax=False, ay=False, az=False, gx=False, gy=False, gz=False, s=False):
     """
     Draw Acceleration Data
     """
@@ -848,13 +848,20 @@ def accel(tc, scale=1):
     GYRyp = [0] * im.size[0]
     GYRzp = [0] * im.size[0]
 
-    draw.text((margin, yx), "AX", fill=COLORS['red'])
-    draw.text((margin, yy), "AY", fill=COLORS['blue'])
-    draw.text((margin, yz), "AZ", fill=COLORS['green'])
-    draw.text((margin, ygx), "GX", fill=COLORS['red'])
-    draw.text((margin, ygy), "GY", fill=COLORS['blue'])
-    draw.text((margin, ygz), "GZ", fill=COLORS['green'])
-    #draw.text((margin, ys), "S", fill=COLORS['black'])
+    if ax:
+        draw.text((margin, yx), "AX", fill=COLORS['red'])
+    if ay:
+        draw.text((margin, yy), "AY", fill=COLORS['blue'])
+    if az:
+        draw.text((margin, yz), "AZ", fill=COLORS['green'])
+    if gx:
+        draw.text((margin, ygx), "GX", fill=COLORS['red'])
+    if gy:
+        draw.text((margin, ygy), "GY", fill=COLORS['blue'])
+    if gz:
+        draw.text((margin, ygz), "GZ", fill=COLORS['green'])
+    if s:
+        draw.text((margin, ys), "S", fill=COLORS['black'])
 
     accel_threshold = 0.00
 
@@ -880,13 +887,14 @@ def accel(tc, scale=1):
         if obj['class'] == "G" or obj['class'] == "TPV":
             # Speed
             speed = obj.get('speed', 0)
-            #draw.point((x, ys-speed), fill=COLORS['black'])
+            if s:
+                draw.point((x, ys-speed), fill=COLORS['black'])
         elif obj['class'] in ["A", "ATT"]:
             if speed == 100:
-                #draw.point((x, yx), fill=COLORS['black'])
-                #draw.point((x, yy), fill=COLORS['black'])
-                #draw.point((x, yz), fill=COLORS['black'])
-                pass
+                if s:
+                    draw.point((x, yx), fill=COLORS['black'])
+                    draw.point((x, yy), fill=COLORS['black'])
+                    draw.point((x, yz), fill=COLORS['black'])
             else:
                 ACCx = (obj['acc_x'])
                 if abs(ACCx) > ACCxp[x]:
@@ -909,12 +917,18 @@ def accel(tc, scale=1):
                 accel_file.write("%f %f %f %f %f %f %f %f %f\n" %( obj['mileage'], obj['lat'], obj['lon'], obj['acc_x'], obj['acc_y'], obj['acc_z'], obj['gyro_x'], obj['gyro_y'], obj['gyro_z']))
 
     for x in range(margin, len(ACCxp)-2*margin):
-        draw.line((x,yx-scale*ACCxp[x],x-1,yx-scale*ACCxp[x-1]),fill=COLORS['red'])
-        draw.line((x,yy-scale*ACCyp[x],x-1,yy-scale*ACCyp[x-1]),fill=COLORS['blue'])
-        draw.line((x,yz-scale*ACCzp[x],x-1,yz-scale*ACCzp[x-1]),fill=COLORS['green'])
-        draw.line((x,ygx-scale*GYRxp[x],x-1,ygx-scale*GYRxp[x-1]),fill=COLORS['red'])
-        draw.line((x,ygy-scale*GYRyp[x],x-1,ygy-scale*GYRyp[x-1]),fill=COLORS['blue'])
-        draw.line((x,ygz-scale*GYRzp[x],x-1,ygz-scale*GYRzp[x-1]),fill=COLORS['green'])
+        if ax:
+            draw.line((x,yx-scale*ACCxp[x],x-1,yx-scale*ACCxp[x-1]),fill=COLORS['red'])
+        if ay:
+            draw.line((x,yy-scale*ACCyp[x],x-1,yy-scale*ACCyp[x-1]),fill=COLORS['blue'])
+        if az:
+            draw.line((x,yz-scale*ACCzp[x],x-1,yz-scale*ACCzp[x-1]),fill=COLORS['green'])
+        if gx:
+            draw.line((x,ygx-scale*GYRxp[x],x-1,ygx-scale*GYRxp[x-1]),fill=COLORS['red'])
+        if gy:
+            draw.line((x,ygy-scale*GYRyp[x],x-1,ygy-scale*GYRyp[x-1]),fill=COLORS['blue'])
+        if gz:
+            draw.line((x,ygz-scale*GYRzp[x],x-1,ygz-scale*GYRzp[x-1]),fill=COLORS['green'])
 
     accel_file.close()
     del draw
