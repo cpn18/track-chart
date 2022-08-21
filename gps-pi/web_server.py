@@ -86,7 +86,7 @@ class MyHandler(BaseHTTPRequestHandler):
             if not extension in MIME_MAP:
                 extension = 'default'
             content_type = MIME_MAP[extension]
-            with open(pathname) as j:
+            with open(pathname, 'b') as j:
                 output = j.read()
         elif self.path == "/setup":
             content_type = "application/json"
@@ -301,7 +301,8 @@ class MyHandler(BaseHTTPRequestHandler):
             return
 
         # If we made it this far, then send output to the browser
-        output = output.encode('utf-8')
+        if not isinstance(output, bytes):
+            output = output.encode('utf-8')
         self.send_response(http.client.OK)
         self.send_header("Content-type", content_type)
         self.send_header("Content-length", str(len(output)))
