@@ -86,7 +86,7 @@ class MyHandler(BaseHTTPRequestHandler):
             if not extension in MIME_MAP:
                 extension = 'default'
             content_type = MIME_MAP[extension]
-            with open(pathname, 'b') as j:
+            with open(pathname, 'rb') as j:
                 output = j.read()
         elif self.path == "/setup":
             content_type = "application/json"
