@@ -35,30 +35,32 @@ def read_wav(filename):
             xr.append(value)
 
     if TIME_ADJUST:
-        mindiff=999999
-        minoffset=0
-        for offset in range(1000):
+        mindiff=None
+        # Look at the first 1/100th of a second
+        for offset in range(int(Fr/100)):
             diffsum = 0
-            for i in range(500):
-                diffsum += xl[i] - xr[i+offset]
-            diffsum = abs(diffsum)
-            if diffsum < mindiff:
+            # Use a 1/2 second window
+            for i in range(int(Fr/2)):
+                diffsum += pow(xl[i+offset] - xr[i], 2)  # Sum of Squares
+            if mindiff is None or diffsum < mindiff:
                 mindiff = diffsum
                 minoffset = offset
         print("Offset = %d (samples)" % minoffset)
 
+        # Create new arrays, and copy the data
         new_xl = [0] * len(xl)
         new_xr = [0] * len(xl)
         for i in range(len(xl)):
             new_xl[i] = xl[i]
-            try:
-                new_xr[i] = xr[i + minoffset]
-            except IndexError:
+            if i < minoffset:
                 new_xr[i] = 0
+            else:
+                new_xr[i] = xr[i - minoffset]  # shift data to the right
 
         xl = new_xl
         xr = new_xr
 
+    # Noise Reduction
     if CROSS_RATIO != 0:
         for i in range(len(xl)):
             xl_val = abs(xl[i])
@@ -68,11 +70,13 @@ def read_wav(filename):
             elif xr_val > xl_val:
                 xr[i] -= CROSS_RATIO * xl[i]
 
+    # Scale the result
     if UPSCALE != 1:
         for i in range(len(xl)):
             xl[i] *= UPSCALE
             xr[i] *= UPSCALE
 
+    # Apply an FFT
     NFFT = 1024
     t = np.array(ts)
     t = np.arange(0.0,Fs*len(ts), Fs) 
