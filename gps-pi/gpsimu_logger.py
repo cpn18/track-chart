@@ -265,9 +265,11 @@ def gpsimu_logger(output_directory):
                             obj["mag_st"] = "N"
 
                             imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+                            imu_output.flush()
                             ATT = obj
                         elif typeclass in ["TPV", "SKY"]:
                             gps_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+                            gps_output.flush()
 
                     # Short Circuit the rest of the checks
                     if HOLD == -1:

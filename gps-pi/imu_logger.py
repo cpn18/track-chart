@@ -168,6 +168,7 @@ def imu_logger(output_directory):
 
             # Log the output
             imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+            imu_output.flush()
             ATT = obj
 
             # Delay Loop

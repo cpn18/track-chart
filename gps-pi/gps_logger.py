@@ -194,6 +194,7 @@ def gps_logger(output_directory):
             # Log the Data
             if 'time' in obj:
                 gps_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+                gps_output.flush()
 
             # Short Circuit the rest of the checks
             if HOLD == -1:

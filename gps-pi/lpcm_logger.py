@@ -112,6 +112,7 @@ def lpcm_logger(output_directory):
                             LPCM_DATA['class'],
                             json.dumps(LPCM_DATA),
                         ))
+                    lpcm_output.flush()
             except KeyboardInterrupt:
                 util.DONE = True
             except Exception as ex:

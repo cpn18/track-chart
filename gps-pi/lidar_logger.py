@@ -115,6 +115,7 @@ def lidar_logger(output_directory):
                         'scan': data,
                     }
                     lidar_output.write("%s %s %s *\n" % (lidar_data['time'], lidar_data['class'], json.dumps(lidar_data)))
+                    lidar_output.flush()
                     LIDAR_DATA = lidar_data
                     LIDAR_STATUS = True
                     if util.DONE:
