@@ -104,20 +104,24 @@
 - K 43.472487 -71.537152 21.89 CRT '{"start": 0, "end": 1, "name": "Lockmere North"}' *
 - K 43.472617 -71.5369564 21.90 X '{"name": "Silver Lake Rd", "crossing": "845438A"}' *
 - K 43.472673 -71.53688 21.91 TL '{"name": "End NEGS/Start P&L"}' *
+- K - - 22.00 MP '{"name": "C22"}' *
 - K 43.4739201 -71.5346525 22.03 U '{"name": "River Rd", "crossing": "845439G"}' *
 - K 43.474097 -71.534389 22.06 O '{"name": "river"}' *
 - K 43.474095 -71.534387 22.07 TL '{"name": "Tilton/Belmont"}' *
 - K 43.475493 -71.531526 22.23 U '{"name": "Grey Rock Rd"}' *
 - K 43.477207 -71.525149 22.47 X '{"name": "Dove Terrace/Beach St"}' *
 - K 43.479504 -71.518883 22.92 O '{"name": "Ephraims Cove"}' *
+- K - - 23.00 MP '{"name": "C23"}' *
 - K 43.481196 -71.515286 23.14 X '{"name": "Jefferson Rd"}' *
 - K 43.484005 -71.511223 23.43 X '{"name": "Fox Hill Rd"}' *
 - K 43.490203 -71.506622 23.93 X '{"name": "Mallards Landing Rd/Sandy Beach"}' *
+- K - - 24.00 MP '{"name": "C24"}' *
 - K 43.491189 -71.506651 24.00 O '{"name": "Durgin Brook"}' *
 - K 43.4928316 -71.5066558 24.11 X '{"name": "Tucker Shores Rd", "crossing": "845446S"}' *
 - K 43.497654 -71.507029 24.43 X '{"name": "Pump House", "crossing": "926716N"}' *
 - K 43.5017061 -71.5075998 24.71 X '{"name": "Winnisquam Way", "crossing": "845447Y"}' *
 - K 43.5020087 -71.507613 24.72 X '{"name": "Daniel Webster Hy", "crossing": "845448F"}' *
+- K - - 25.00 MP '{"name": "C25"}' *
 - K 43.506083 -71.50583 25.02 X '{"name": "Dutile Shore Rd"}' *
 - K 43.51117 -71.503458 25.41 S '{"name": "Benches", "offset": 1}' *
 - K 43.517177 -71.496131 26.00 MP '{"name": "C26"}' *
