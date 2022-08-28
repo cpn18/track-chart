@@ -23,6 +23,7 @@ import util
 ALWAYS_LOG = True
 
 TPV = SKY = {}
+TPV_SYS_TIME = SKY_SYS_TIME = 0
 HOLD = -1
 MEMO = ""
 
@@ -67,7 +68,7 @@ def handle_gps_stream(self, _groups, _qsdict):
     self.end_headers()
     while not util.DONE:
         try:
-            if TPV['time'] < SKY['time']:
+            if TPV_SYS_TIME < SKY_SYS_TIME:
                 lines = [
                     "event: tpv\n",
                     "data: "+json.dumps(TPV) + "\n",
@@ -93,7 +94,7 @@ def handle_gps_stream(self, _groups, _qsdict):
 
 def handle_gps(self, _groups, _qsdict):
     """ Single GPS """
-    if TPV['time'] < SKY['time']:
+    if TPV_SYS_TIME < SKY_SYS_TIME:
         do_json_output(self, [TPV, SKY])
     else:
         do_json_output(self, [SKY, TPV])
@@ -146,7 +147,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
 def gps_logger(output_directory):
     """ GPS Data Logger """
-    global SKY, TPV
+    global SKY, TPV, SKY_SYS_TIME, TPV_SYS_TIME
     global HOLD
     global GPS_NUM_SAT, GPS_NUM_USED
 
@@ -182,12 +183,14 @@ def gps_logger(output_directory):
                 obj['num_used'] = GPS_NUM_USED
                 obj['hold'] = HOLD
                 TPV = obj
+                TPV_SYS_TIME = time.time()
             elif report['class'] == 'SKY':
                 obj = nmea.sky_to_json(report)
                 # Add Time
                 obj['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 (GPS_NUM_USED, GPS_NUM_SAT) = nmea.calc_used(obj)
                 SKY = obj
+                SKY_SYS_TIME = time.time()
             else:
                 continue
 
