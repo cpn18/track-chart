@@ -15,8 +15,6 @@ if len(sys.argv) < 3:
 json_file = os.path.abspath(sys.argv[-2])
 known_file = sys.argv[-1]
 
-GPS_MIN_MODE = 3
-
 GPS = gps_to_mileage.Gps2Miles(known_file)
 
 acclist = []
@@ -27,8 +25,6 @@ for line_no, obj in pirail.read(json_file):
     if obj['class'] in ["SKY", "ATT", "LIDAR", "LPCM"]:
         acclist.append(obj)
     elif obj['class'] == "TPV":
-        if obj['num_used'] < pirail.GPS_THRESHOLD or obj['mode'] < GPS_MIN_MODE:
-            continue
         if last_tpv is not None:
             if obj['time'] == last_tpv['time']:
                 continue

@@ -26,8 +26,7 @@ def main(filename):
             if 'num_used' in obj:
                 used = obj['num_used']
             if 'lat' in obj and 'lon' in obj:
-                if used >= pirail.GPS_THRESHOLD:
-                    print("%s %f %f %d %d" % (obj['time'], obj['lat'], obj['lon'], used, count))
+                print("%s %f %f %d %d" % (obj['time'], obj['lat'], obj['lon'], used, count))
 
 if len(sys.argv) < 2:
     print("USAGE: %s [args] data_file.json" % sys.argv[0])

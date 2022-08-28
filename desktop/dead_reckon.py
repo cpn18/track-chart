@@ -113,14 +113,11 @@ for line_no, obj in pirail.read(filename, classes=['ATT', 'TPV']):
         data.append(obj)
         acc_count += 1
     elif obj['class'] == 'TPV':
-        if obj['num_used'] >= pirail.GPS_THRESHOLD:
-            min_lat = min(min_lat, obj['lat'])
-            max_lat = max(max_lat, obj['lat'])
-            min_lon = min(min_lon, obj['lon'])
-            max_lon = max(max_lon, obj['lon'])
-            data.append(obj)
-        else:
-            bad_data.append(obj)
+        min_lat = min(min_lat, obj['lat'])
+        max_lat = max(max_lat, obj['lat'])
+        min_lon = min(min_lon, obj['lon'])
+        max_lon = max(max_lon, obj['lon'])
+        data.append(obj)
 
 margin = max((max_lat - min_lat), (max_lon - min_lon)) * 0.01
 min_lat = min_lat-margin
@@ -178,19 +175,18 @@ output.write("Time DT Lat Long JerkY AccY SpeedY DR_Lat JerkX AccX SpeedX DR_Lon
 last_point = None
 for obj in data:
     if obj['class'] == "TPV":
-        if obj['num_used'] >= pirail.GPS_THRESHOLD:
-            latitude = obj['lat']
-            longitude = obj['lon']
-            y_speed = obj['speed']
-            z_bearing = obj['track']
+        latitude = obj['lat']
+        longitude = obj['lon']
+        y_speed = obj['speed']
+        z_bearing = obj['track']
 
-            draw_gps_fix(obj, COLOR_GREEN)
-            point = geo_to_xy(latitude, longitude)
-            if last_point is None:
-                draw.point(point, fill=COLOR_BLACK)
-            else:
-                draw.line((last_point, point), fill=COLOR_BLACK)
-            last_point = point
+        draw_gps_fix(obj, COLOR_GREEN)
+        point = geo_to_xy(latitude, longitude)
+        if last_point is None:
+            draw.point(point, fill=COLOR_BLACK)
+        else:
+            draw.line((last_point, point), fill=COLOR_BLACK)
+        last_point = point
         continue
     elif y_speed is None or z_bearing is None:
         continue

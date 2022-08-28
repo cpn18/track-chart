@@ -65,6 +65,8 @@ def read(filename, handlers=None, classes=None, args=None):
     if args is None:
         args = parse_cmd_line_args()
 
+    gps_threshold = args.get("gps-threshold", GPS_THRESHOLD)
+
     start_time = args.get("start-time", None)
     end_time = args.get("end-time", None)
     start_mileage = args.get("start-mileage", None)
@@ -111,6 +113,11 @@ def read(filename, handlers=None, classes=None, args=None):
         # Check Class
         if classes is not None:
             if obj['class'] not in classes:
+                continue
+
+        # Check Quality
+        if 'num_used' in obj:
+            if obj['num_used'] < gps_threshold:
                 continue
 
         # Check Bounds

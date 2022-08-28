@@ -493,9 +493,6 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
             'end-mileage': last,
         }):
 
-        if obj['num_used'] < pirail.GPS_THRESHOLD:
-            continue
-
         try:
             data.append(obj)
         except KeyError as ex:
@@ -604,14 +601,6 @@ def string_chart_by_time(tc):
             'end-mileage': last,
         }):
 
-        if obj['num_used'] < pirail.GPS_THRESHOLD:
-            continue
-        #if obj['speed'] < obj['eps']:
-        #    if skip:
-        #        continue
-        #    skip = True
-        #else:
-        #    skip = False
         mileage = obj['mileage']
         objtime = pirail.parse_time(obj['time'])
         speed = obj['speed']

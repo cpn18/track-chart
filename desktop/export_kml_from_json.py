@@ -25,13 +25,12 @@ with open(output, "w") as kml:
     kml.write('<coordinates>\n')
 
     for line_no, obj in pirail.read(sys.argv[1], classes=['TPV']):
-        if obj['num_used'] >= pirail.GPS_THRESHOLD:
-            kml.write("%f,%f,%f\n" % (
-                obj['lon'],
-                obj['lat'],
-                obj['alt'],
-                )
+        kml.write("%f,%f,%f\n" % (
+            obj['lon'],
+            obj['lat'],
+            obj['alt'],
             )
+        )
 
     kml.write('</coordinates>\n')
     kml.write('</LineString>\n')
