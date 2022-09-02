@@ -53,6 +53,9 @@ function setup_save()
     url: "/setup",
     success: function(obj) {
       $('#msg').text(obj.message);
+      setTimeout(function(){
+	      window.location.href="/index.html";
+      }. 5000);
     }
   });
 }
