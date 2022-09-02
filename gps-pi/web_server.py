@@ -41,6 +41,8 @@ MIME_MAP = {
     "default": "application/octet-stream",
 }
 
+SHUTDOWN_DELAY="now"
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
@@ -58,7 +60,7 @@ class MyHandler(BaseHTTPRequestHandler):
             output = json.dumps({
                 "message": "Stored. Rebooting...",
             })
-            os.system("shutdown --reboot +1")
+            os.system("shutdown --reboot %s" % SHUTDOWN_DELAY)
         else:
             self.send_error(http.client.NOT_FOUND, self.path)
             return
@@ -97,14 +99,14 @@ class MyHandler(BaseHTTPRequestHandler):
             output = json.dumps({
                 "message": "Shutting down...",
             })
-            os.system("shutdown --poweroff +1")
+            os.system("shutdown --poweroff %s" % SHUTDOWN_DELAY)
         elif self.path == "/reset":
             util.DONE = True
             content_type = "application/json"
             output = json.dumps({
                 "message": "Rebooting...",
             })
-            os.system("shutdown --reboot +1")
+            os.system("shutdown --reboot %s" % SHUTDOWN_DELAY)
         elif self.path == "/gps":
             content_type = "application/json"
             response = requests.get("http://localhost:%d/gps" % CONFIG['gps']['port'])
