@@ -55,7 +55,7 @@ function setup_save()
       $('#msg').text(obj.message);
       setTimeout(function(){
 	      window.location.href="/index.html";
-      }. 5000);
+      }, 5000);
     }
   });
 }
