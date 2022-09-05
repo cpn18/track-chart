@@ -4,21 +4,36 @@ Wait for GPS Fix and Set System Time
 """
 import os
 import sys
-import gps
 import threading
+import html
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
+import gps
+
+REPORT = {}
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
 class MyHandler(BaseHTTPRequestHandler):
+    """ Web Handler """
     def do_GET(self):
+        """ GET Handler """
         if self.path == "/favicon.ico":
             self.send_error(http.client.NOT_FOUND)
         else:
-            output="<html><head><meta http-equiv=\"refresh\" content=\"1;URL='/'\" /></head><body><h1 align=center>Waiting for GPS Sync... Check Antenna!</h1></body></html>"
+            output="""
+<html>
+  <head>
+    <meta http-equiv=\"refresh\" content=\"1;URL='/'\" />
+  </head>
+  <body>
+    <h1 align=center>Waiting for GPS Sync... Check Antenna!</h1>
+    <p>%s</p>
+  </body>
+</html>
+""" % html.escape(str(REPORT))
             output = output.encode('utf-8')
             self.send_response(http.client.OK)
             self.send_header("Content-type", "text/html")
@@ -40,6 +55,7 @@ def set_date(gps_date):
 
 def wait_for_timesync():
     """ Wait for Time Sync """
+    global REPORT
 
     # Listen on port 2947 (gpsd) of localhost
     session = gps.gps(mode=gps.WATCH_ENABLE)
@@ -48,21 +64,22 @@ def wait_for_timesync():
     while not done:
         try:
             report = session.next()
+            REPORT = str(report)
             if report['class'] != 'TPV':
                 continue
             if hasattr(report, 'mode') and report.mode == 1:
                 # can't trust a mode=1 time
                 continue
             if hasattr(report, 'time'):
-                print(report.time)
                 set_date(report.time)
                 done = True
         except Exception as ex:
             print(ex)
             sys.exit(1)
 
-def web_server(httpd):
-    httpd.serve_forever()
+def web_server(pirail_httpd):
+    """ Web Server Main Thread """
+    pirail_httpd.serve_forever()
 
 if __name__ == "__main__":
     httpd = ThreadedHTTPServer(("", 80), MyHandler)
