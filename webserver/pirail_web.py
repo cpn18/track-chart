@@ -29,11 +29,13 @@ SORTBY = "mileage"
 # Replace with the Python mimetypes module?
 # https://docs.python.org/3/library/mimetypes.html
 MIME_MAP = {
+    ".css": "text/css",
     ".html": "text/html",
     ".txt": "text/plain",
     ".js": "text/javascript",
     ".json": "application/json",
     ".ico": "image/x-icon",
+    ".png": "image/png",
     "default": "application/octet-stream",
 }
 
