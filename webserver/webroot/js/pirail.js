@@ -1,3 +1,5 @@
+myChart = null;
+
 function plot_data(chartname, result) {
   let windowsize = 0.5; // miles
 
@@ -86,7 +88,10 @@ function plot_data(chartname, result) {
 
   // Plot the chart
   const ctx = document.getElementById(chartname).getContext('2d');
-  const myChart = new Chart(ctx, {
+  if (myChart != null) {
+	  myChart.destroy()
+  }
+  myChart = new Chart(ctx, {
     type: 'scatter',
     data: data,
   })

@@ -1,0 +1,165 @@
+/*
+ * UNH Capstone 2022 Project
+ *
+ * Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
+ */
+body {
+    background-color: rgb(237,237,237);
+    font-family: Arial, sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+footer {
+    background-color: rgb(215,215,215);
+    position: relative;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    padding: 1px;
+}
+
+.fixed {
+    background-color: rgb(215,215,215);
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        padding: 1px;
+}
+
+img{
+    padding-left: 2%;
+    max-height: 40px;
+    width: auto;
+}
+
+aside {
+  width: 50%;
+  padding-left: 15px;
+  margin-left: 15px;
+  float: right;
+}
+
+.small {
+    max-width: 2%;
+    max-height: 2%;
+}
+
+.moveRight {
+    position: absolute;
+    right: 200px;
+}
+
+.mySlides {
+    max-height: 200%;
+    max-width: 200%;
+    display:none;
+}
+
+.pad {
+    padding: 2%;
+    max-width: 40%
+}
+
+.padding {
+    padding: 2%;
+}
+
+/* Style the header with a grey background and some padding */
+.header {
+  overflow: hidden;
+  background-color: rgb(215,215,215);
+  padding: 10px 10px;
+}
+
+/* Style the header links */
+.header a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 10px;
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 25px;
+  border-radius: 4px;
+}
+
+/* Change the background color on mouse-over */
+.header a:hover {
+  background-color: rgb(240,240,240);
+  color: black;
+}
+
+/* Style the active/current link*/
+.header a.active {
+  background-color: red;
+  color: white;
+}
+
+/* Float the link section to the right */
+.header-right {
+  float: right;
+}
+
+/* Add media queries for responsiveness -
+when the screen is 500px wide or less,
+stack the links on top of each other */
+@media screen and (max-width: 500px) {
+  img{
+      position: relative;
+      margin-left: 40%;
+      margin-right: 60%;
+      max-width: 25%;
+      height: auto;
+  }
+
+  aside {
+    padding-left: 0;
+    margin-left: 0;
+    float: none;
+    display: block;
+    margin-right: auto;
+    width: 50%;
+  }
+
+  .header a {
+    float: none;
+    display: block;
+    text-align: left;
+  }
+  .header-right {
+    float: none;
+  }
+
+  footer {
+    position: relative;
+  }
+
+  .pad {
+  max-width: 100%;
+  }
+
+  .small {
+      max-width: 4%;
+      max-height: 4%;
+  }
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
