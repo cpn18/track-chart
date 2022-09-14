@@ -81,6 +81,28 @@ function submit_handler()
       plot_data('myChart', data);
     },
   });
+
+  var url = "pirail_stats_fetch.php" +
+    "?start-mileage=" + document.getElementById('startmileage').value +
+    "&end-mileage=" + document.getElementById('endmileage').value +
+    "&percentile=" + document.getElementById('percentile').value +
+    "&file=" + document.getElementById('file').value;
+  console.log(url);
+  $.ajax({
+    type: "GET",
+    dataType: "json",
+    headers: {"Accept": "application/json"},
+    url: url,
+    success: function(data, textStatus, jqXHR) {
+      console.log(data);
+      document.getElementById('min_acc_z').innerHTML = data.acc_z.min.acc_z.toFixed(4);
+      document.getElementById('avg_acc_z').innerHTML = data.acc_z.avg.toFixed(4);
+      document.getElementById('max_acc_z').innerHTML = data.acc_z.max.acc_z.toFixed(4);
+      document.getElementById('mean_acc_z').innerHTML = data.acc_z.mean.acc_z.toFixed(4);
+      document.getElementById('nf_label').innerHTML = "NoiseFloor("+document.getElementById('percentile').value*100+"%)";
+      document.getElementById('nf_acc_z').innerHTML = data.acc_z.noise_floor.acc_z.toFixed(4);
+    },
+  });
 }
             </script>
         </div>
@@ -88,18 +110,22 @@ function submit_handler()
             <table>
                 <tr>
                     <th colspan="6">
-                        Averages
+                        ACC_Z Statistics
                     </th>
                 </tr>
                 <tr>
-                    {% for name in stats_names %}
-                        <th>{{ name }}</th>
-                    {% endfor %}
+                        <th>Minimum</th>
+                        <th>Average</th>
+                        <th>Maximum</th>
+                        <th>Mean</th>
+                        <th id="nf_label">NoiseFloor</th>
                 </tr>
                 <tr>
-                    {% for stat in stats_list %}
-                        <td>{{ stat }}</td>
-                    {% endfor %}
+                        <td id="min_acc_z"></td>
+                        <td id="avg_acc_z"></td>
+                        <td id="max_acc_z"></td>
+                        <td id="mean_acc_z"></td>
+                        <td id="nf_acc_z"></td>
                 </tr>
             </table>
         </div>

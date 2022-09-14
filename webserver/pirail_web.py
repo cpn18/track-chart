@@ -188,6 +188,98 @@ def get_file(self, groups, qsdict):
         output = "event: pirail\ndata: %s\n\n" % json.dumps({"done": True})
         self.wfile.write(output.encode('utf-8'))
 
+def get_stats(self, groups, qsdict):
+    """
+    Stats Fetching API
+    GET pirail_stats_fetch.php
+    """
+
+    # Parse the query string and
+    # Build the Args Dictionary
+    args = {}
+    try:
+        filename = qsdict.get("file", [None])[0]
+        if filename is None:
+            self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
+            return
+        else:
+            pathname = os.path.normpath(DATAROOT + "/" + filename)
+            if not os.path.isfile(pathname):
+                self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
+                return
+
+        value = qsdict.get("start-mileage",[None])[0]
+        if value is not None:
+            args['start-mileage'] = float(value)
+
+        value = qsdict.get("end-mileage",[None])[0]
+        if value is not None:
+            args['end-mileage'] = float(value)
+
+        value = qsdict.get("start-time",[None])[0]
+        if value is not None:
+            args['start-time'] = value
+
+        value = qsdict.get("end-time",[None])[0]
+        if value is not None:
+            args['end-time'] = float(value)
+
+        value = qsdict.get("start-latitude",[None])[0]
+        if value is not None:
+            args['start-latitude'] = float(value)
+
+        value = qsdict.get("end-latitude",[None])[0]
+        if value is not None:
+            args['end-latitude'] = float(value)
+
+        value = qsdict.get("start-longitude",[None])[0]
+        if value is not None:
+            args['start-longitude'] = float(value)
+
+        value = qsdict.get("end-longitude",[None])[0]
+        if value is not None:
+            args['end-longitude'] = float(value)
+
+        value = qsdict.get("percentile",["0.95"])[0]
+        percentile = float(value)
+
+        classes = "ATT"
+        xform_function = DATA_XFORM['thin']
+
+    except ValueError as ex:
+        self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
+        return
+
+    data = []
+    self.send_response(HTTPStatus.OK)
+    self.send_header("Content-type", "application/json")
+
+    for line_no, obj in pirail.read(pathname, classes=classes, args=args):
+        data.append(xform_function(obj, qsdict))
+
+    # Sort the data
+    data = sorted(data, key=lambda k: k['acc_z'], reverse=False)
+
+    sum_acc_z = 0
+    for obj in data:
+        sum_acc_z += obj['acc_z']
+
+    result = {
+        "acc_z": {
+            "min": data[0],
+            "max": data[-1],
+            "mean": data[int(len(data)/2)],
+            "avg": sum_acc_z / len(data),
+            "noise_floor": data[int(len(data)*percentile)],
+        },
+    }
+
+    output = json.dumps(result, indent=4) + "\n"
+
+    self.send_header("Content-length", str(len(output)))
+    self.end_headers()
+    self.wfile.write(output.encode('utf-8'))
+
 def get_any(self, groups, _qsdict):
     """
     Generic File Handler API
@@ -220,6 +312,11 @@ def get_any(self, groups, _qsdict):
 
 MATCHES = [
     # Most specific matches go first
+    # Fakeout PHP handler
+    {
+        "pattern": re.compile(r"GET /pirail_stats_fetch.php"),
+        "handler": get_stats,
+    },
     # Fakeout PHP handler
     {
         "pattern": re.compile(r"GET /pirail_data_fetch.php"),
