@@ -7,11 +7,6 @@ import json
 import re
 import sys
 
-# This is sort of a hack, but it's better than
-# copying the PiRail module here.  It's expected that
-# as this evolves, more of the analysis tools become
-# web-enabled.
-sys.path.append("../desktop")
 import pirail
 
 
