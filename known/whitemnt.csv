@@ -148,16 +148,20 @@
 - K - - 29.58 X '{"name": "Appleton St", "crossing": "845459T"}' *
 - K 43.559 -71.463 29.84 X '{"name": "destefano", "crossing": "926723Y"}' *
 - K 43.560962 -71.463892 29.92 X '{"name": "breakwater", "crossing": "926724F"}' *
+- K 43.56220979749092 -71.46421420872592 30.00 MP '{"name": "C30", "survey": "1579+17", "val": "V21_66"}' *
 - K 43.5675021 -71.466776 30.40 X '{"name": "VANBURAN RD", "crossing": "845460M"}' *
 - K 43.570309 -71.468409 30.60 X '{"name": "laconia sewer", "crossing": "926725M"}' *
 - K 43.571325 -71.468868 30.68 X '{"name": "nutters beach club", "crossing": "926726U"}' *
 - K 43.572248 -71.468742 30.74 X '{"name": "southdown marina", "crossing": "926727B"}' *
+- K 43.57593911791293 -71.46733291530954 31.00 MP '{"name": "C31", "survey": "1631+96", "val": "V21_67"}' *
 - K 43.576014 -71.467275 31.01 X '{"name": "southdown beach club", "crossing": "926728H"}' *
 - K 43.57838 -71.4665845 31.15 X '{"name": "Bay reach beach", "crossing": "926729P"}' *
 - K 43.582584 -71.46863 31.48 X '{"name": "dock access", "crossing": "926730J"}' *
 - K 43.584066 -71.470099 31.62 X '{"name": "long bay marina", "crossing": "926731R"}' *
 - K 43.58645 -71.471948 31.82 X '{"name": "long bay beach", "crossing": "926732X"}' *
+- K 43.589566721665996 -71.47246814596835 32.00 MP '{"name": "C32", "survey": "1684+61", "val": "V21_68"}' *
 - K - - 32.72 X '{"name": "BIRCH HAVEN LANE", "crossing": "845461U"}' *
+- K 43.599444895595646 -71.46291505622241 33.00 MP '{"name": "C33", "survey": "1737+44", "val": "V21_69"}' *
 - K 43.600205 -71.459425 33.18 X '{"name": "Channel Marine", "crossing": "926733E"}' *
 - K 43.603288 -71.456638 33.44 X '{"name": "thurstons marine", "crossing": "926734L"}' *
 - K 43.6040816 -71.4565721 33.50 X '{"name": "ENDICOTT ST NORTH", "crossing": "845462B"}' *
@@ -170,15 +174,19 @@
 - K 43.6083546 -71.4598687 33.84 X '{}' *
 - K 43.6090057 -71.4604814 33.90 X '{"name": "PATIO GARDEN XING", "crossing": "845466D"}' *
 - K - - 33.94 X '{"name": "CENTENARY AVE", "crossing": "845467K"}' *
+- K 43.61017560592094 -71.46207202705197 34.00 MP '{"name": "C34", "survey": "1790+26", "val": "V21_70"}' *
 - K 43.611469 -71.4636235 34.13 X '{"name": "CENTENARY AV", "crossing": "845483U"}' *
 - K 43.6131394 -71.4646843 34.27 X '{"name": "DOCK ACCESS", "crossing": "845484B"}' *
 - K - - 34.88 X '{"name": "WOODWINDS HILL", "crossing": "845485H"}' *
 - K - - 34.94 X '{"name": "SUNSET COVE", "crossing": "845486P"}' *
+- K 43.62264669265837 -71.47093621032249 35.00 MP '{"name": "C35", "survey": "1843+09", "val": "V21_71"}' *
 - K 43.622602 -71.470749 35.01 X '{"name": "scenic cove", "crossing": "926738N"}' *
 - K 43.6318297 -71.4798316 35.82 X '{"name": "NEAL SHORES RD", "crossing": "845487W"}' *
+- K 43.634027132912216 -71.48022072751343 36.00 MP '{"name": "C36", "survey": "1895+85", "val": "V21_72"}' *
 - K 43.6348899 -71.480687 36.04 X '{"name": "BEACH CLUB", "crossing": "845488D"}' *
 - K 43.639226 -71.484451 36.40 X '{"name": "Grouse point club", "crossing": "926740P"}' *
 - K 43.645867 -71.48751 36.95 X '{"name": "mile point drive", "crossing": "926741W"}' *
+- K 43.646697516704634 -71.48901201262353 37.00 MP '{"name": "C37", "survey": "1948+55", "val": "V21_73"}' *
 - K 43.647913 -71.491364 37.16 X '{"name": "18 mile point", "crossing": "926742D"}' *
 - K 43.6507276 -71.4979721 37.55 U '{"name": "DANIEL WEBSTER HY", "crossing": "845489K"}' *
 - K - - 37.60 S '{"offset": -1, "name": "Meredith"}' *
