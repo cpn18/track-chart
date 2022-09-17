@@ -21,8 +21,6 @@ def main():
 
     data_file = sys.argv[-1] != "-"
 
-    #print("border")
-    #trackchart.border(mychart)
     print("mainline")
     trackchart.mainline(mychart)
     print("mileposts")
@@ -31,17 +29,6 @@ def main():
     trackchart.bridges_and_crossings(mychart)
     print("stations")
     trackchart.stations(mychart)
-    print("elevation")
-    #trackchart.elevation(mychart)
-    print("curvature")
-    #trackchart.curvature(mychart)
-    if data_file:
-        print("accel")
-        trackchart.accel(mychart)
-    print("plot value")
-    #trackchart.plot_value(mychart, field="roll", scale=-5)
-    print("lidar-gage")
-    #trackchart.gage(mychart)
     print("townlines")
     trackchart.townlines(mychart)
     print("yardlimits")
@@ -52,9 +39,19 @@ def main():
     trackchart.sidings(mychart)
     print("title")
     trackchart.draw_title(mychart)
-    print("string chart")
-    #trackchart.string_chart_by_time(mychart)
-
+    if data_file:
+        print("elevation")
+        #trackchart.elevation(mychart)
+        print("curvature")
+        #trackchart.curvature(mychart)
+        print("accel")
+        trackchart.accel(mychart, ax=True, ay=True, az=True)
+        print("plot value")
+        trackchart.plot_value(mychart, field="roll", scale=-5)
+        print("lidar-gage")
+        trackchart.gage(mychart)
+        print("string chart")
+        trackchart.string_chart_by_time(mychart)
 
     filename = "images/whitemtn_%s_%s.png" % (sys.argv[-3], sys.argv[-2])
     mychart['image'].save(filename)
