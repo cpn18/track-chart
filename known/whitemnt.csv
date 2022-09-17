@@ -137,12 +137,14 @@
 - K 43.5284945 -71.4724886 27.54 X '{"name": "Pleasant St"}' *
 - K - - 27.59 S '{"offset": -1, "name": "Laconia"}' *
 - K 43.5324109 -71.4687126 27.87 X '{"name": "Messer St Lower"}' *
+- K - - 28.00 MP '{"name": "C28", "survey": "1473+64", "val": "V21_64"}' *
 - K 43.534808 -71.467765 28.02 O '{"name": "Jewett Brook"}' *
 - K 43.5372216 -71.467085 28.25 X '{"name": "Messer St Upper"}' *
 - K - - 28.47 X '{"name": "Irving Oil Co", "crossing": "845456X"}' *
 - K 43.5427162 -71.466152 28.65 X '{"name": "Moulton St", "crossing": "918965Y"}' *
 - K - - 28.66 X '{"name": "Bridge St", "crossing": "845457E"}' *
 - K 43.547562 -71.463516 28.99 X '{"name": "Elm St", "crossing": "845458L"}' *
+- K - - 29.00 MP '{"name": "C29", "survey": "1526+44", "val": "V21_65"}' *
 - K - - 29.04 S '{"offset": 1, "name": "Lakeport"}' *
 - K 43.548883 -71.462111 29.05 X '{"name": "Lakeport Landing", "crossing": "926722S"}' *
 - K - - 29.58 X '{"name": "Appleton St", "crossing": "845459T"}' *
@@ -227,7 +229,8 @@
 - K 43.732055 -71.67159 49.39 O '{"name": "Glove Hollow Brook"}' *
 - K - - 49.48 X '{"name": "Farm"}' *
 - K 43.733989 -71.672556 49.54 O '{"name": "brook"}' *
-- K 43.752642 -71.6864 51.00 MP '{"name": "C51"}' *
+- K - - 50.00 MP '{"name": "C50", "survey": "2634+87", "val": "V21_86"}' *
+- K - - 51.00 MP '{"name": "C51", "survey": "2686+00", "val": "V21_88"}' *
 - K - - 51.07 X '{"name": "DPW"}' *
 - K 43.756251 -71.686605 51.30 X '{"name": "Ped", "crossing": "926761H"}' *
 - K 43.75633994722857 -71.68666868412811 51.26 S '{"offset": 1, "name": "Plymouth"}' *
