@@ -32,7 +32,7 @@ function imu_stream(viewport, imagedata) {
 	var att = JSON.parse(event.data);
 	// console.log(att);
 	document.getElementById("imu_status").innerText = "ON";
-	document.getElementById("yaw").innerText = Math.round(att.yaw);
+	// document.getElementById("yaw").innerText = Math.round(att.yaw);
 	document.getElementById("pitch").innerText = Math.round(att.pitch);
 	document.getElementById("roll").innerText = Math.round(att.roll);
 	document.getElementById("temp").innerText = Math.round(att.temp);
@@ -64,8 +64,8 @@ function imu_stream(viewport, imagedata) {
 	draw_line(viewport, imagedata, x1, y1, x2, y2, [0,0,255,255]);
 
 	// Yaw
-	yx = (canvas.width + att.yaw) / 2;
-	draw_line(viewport, imagedata, yx, cy-10, yx, cy+10, [0,255,0,255]);
+	// yx = (canvas.width + att.yaw) / 2;
+	// draw_line(viewport, imagedata, yx, cy-10, yx, cy+10, [0,255,0,255]);
 
 	// ACC X
 	ax = cx + 2*att.acc_x
