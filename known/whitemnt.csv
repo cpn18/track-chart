@@ -239,39 +239,39 @@
 - K 43.75974917011926, -71.68680538860855 51.50 X '{"name": "Samaha Dr", "crossing": "926767Y"}' *
 - K 43.759913287081424 -71.6868333951551 51.52 X '{"name": "Bridge St", "crossing": "845516E"}' *
 - K 43.764054490315495 -71.6869923500891 51.77 X '{"name": "Five Points (ped)", "crossing": "845517L"}' *
-- K 43.767648264191024 -71.68622807290141 52.03 X '{"name": "Old Main St", "crossing": "845518T"}' *
-- K 43.76882472411806 -71.6852847587648 52.13 X '{"name": "Foster St", "crossing": "845519A"}' *
-- K - - 52.26 MP '{"name": "P1"}' *
-- K 43.781317 -71.671961 53.26 MP '{"name": "P2"}' *
-- K 43.78424401507121 -71.66845982294001 53.51 X '{"name": "Livermore Falls", "crossing": "926764D"}' *
-- K 43.794094 -71.669658 54.26 MP '{"name": "P3"}' *
-- K - - 54.80 X '{"name": "farm", "crossing": "845524W"}' *
-- K - - 55.08 X '{"name": "farm", "crossing": "845525D"}' *
-- K 43.807154 -71.665 55.26 MP '{"name": "P4"}' *
-- K 43.81046522447002 -71.66415268788931 55.51 X '{"name": "Blair Rd", "crossing": "845526K"}' *
-- K 43.820263 -71.658304 56.26 MP '{"name": "P5"}' *
-- K - - 56.86 X '{"name": "Beebe River", "crossing": "845527S"}' *
-- K - - 57.12 X '{"name": "farm", "crossing": "845529F"}' *
-- K 43.833367 -71.651239 57.26 MP '{"name": "P6"}' *
-- K 43.847355 -71.646977 58.26 MP '{"name": "P7"}' *
-- K 43.85063164911812 -71.64819140792781 58.89 X '{"name": "Campton Village Rd", "crossing": "845553V"}' *
-- K 43.8532122564536 -71.64985411419319 58.97 X '{"name": "Campton Depot LLC", "crossing": "926765K"}' *
-- K 43.855264944768564 -71.65116391132916 59.05 X '{"name": "Owl St", "crossing": "845534C"}' *
-- K - - 59.26 MP '{"name": "P8"}' *
-- K 43.864589537263114 -71.6580147046728 60.08 X '{"name": "Campton Country Club"}' *
-- K 43.86724365908216 -71.65918369922171 60.13 X '{"name": "Campton Country Club"}' *
-- K - - 60.26 MP '{"name": "P9"}' *
-- K 43.87524371955013 -71.66219570729581 60.43 X '{"name": "Lyford\'s Siding", "crossing": "845539L"}' *
-- K 43.876471770798766 -71.66324267973195 60.51 X '{"name": "McGongle\'s", "crossing": "926768F"}' *
-- K 43.87700309608216 -71.66374812294379 60.53 X '{"name": "Helgerson\'s", "crossing": "926769M"}' *
-- K 43.880219033454814 -71.66700059897524 60.80 X '{"name": "Maxie\'s Way", "crossing": "845540F"}' *
-- K - - 61.26 MP '{"name": "P10"}' *
-- K 43.88747517189512 -71.67225495900647 61.38 X '{"name": "Rand\'s", "crossing": "845542U"}' *
-- K 43.88994183847607 -71.67377051391921 61.53 X '{"name": "Old Route 3", "crossing": "845543B"}' *
-- K - - 61.85 X '{"name": "Farm", "crossing": "845544H"}' *
-- K - - 62.26 MP '{"name": "P11"}' *
-- K - - 62.30 X '{"name": "Farm"}' *
-- K - - 62.44 X '{"name": "Farm", "crossing": "926771N"}' *
-- K 43.90914399169642 -71.6842097079285 63.11 X '{"name": "Avery McGee Rd", "crossing": "845546W"}' *
-- K - - 63.26 MP '{"name": "P12"}' *
-- K 43.917641858842074, -71.68455695658396 63.44 X '{"name": "Cross Rd", "crossing": "845547D"}' *
+- K 43.767648264191024 -71.68622807290141 52.03 X '{"name": "Old Main St", "crossing": "845518T", "mileage_offset": 51.26}' *
+- K 43.76882472411806 -71.6852847587648 52.13 X '{"name": "Foster St", "crossing": "845519A", "mileage_offset": 51.26}' *
+- K - - 52.26 MP '{"name": "P1", "mileage_offset": 51.26}' *
+- K 43.781317 -71.671961 53.26 MP '{"name": "P2", "mileage_offset": 51.26}' *
+- K 43.78424401507121 -71.66845982294001 53.51 X '{"name": "Livermore Falls", "crossing": "926764D", "mileage_offset": 51.26}' *
+- K 43.794094 -71.669658 54.26 MP '{"name": "P3", "mileage_offset": 51.26}' *
+- K - - 54.80 X '{"name": "farm", "crossing": "845524W", "mileage_offset": 51.26}' *
+- K - - 55.08 X '{"name": "farm", "crossing": "845525D", "mileage_offset": 51.26}' *
+- K 43.807154 -71.665 55.26 MP '{"name": "P4", "mileage_offset": 51.26}' *
+- K 43.81046522447002 -71.66415268788931 55.51 X '{"name": "Blair Rd", "crossing": "845526K", "mileage_offset": 51.26}' *
+- K 43.820263 -71.658304 56.26 MP '{"name": "P5", "mileage_offset": 51.26}' *
+- K - - 56.86 X '{"name": "Beebe River", "crossing": "845527S", "mileage_offset": 51.26}' *
+- K - - 57.12 X '{"name": "farm", "crossing": "845529F", "mileage_offset": 51.26}' *
+- K 43.833367 -71.651239 57.26 MP '{"name": "P6", "mileage_offset": 51.26}' *
+- K 43.847355 -71.646977 58.26 MP '{"name": "P7", "mileage_offset": 51.26}' *
+- K 43.85063164911812 -71.64819140792781 58.89 X '{"name": "Campton Village Rd", "crossing": "845553V", "mileage_offset": 51.26}' *
+- K 43.8532122564536 -71.64985411419319 58.97 X '{"name": "Campton Depot LLC", "crossing": "926765K", "mileage_offset": 51.26}' *
+- K 43.855264944768564 -71.65116391132916 59.05 X '{"name": "Owl St", "crossing": "845534C", "mileage_offset": 51.26}' *
+- K - - 59.26 MP '{"name": "P8", "mileage_offset": 51.26}' *
+- K 43.864589537263114 -71.6580147046728 60.08 X '{"name": "Campton Country Club", "mileage_offset": 51.26}' *
+- K 43.86724365908216 -71.65918369922171 60.13 X '{"name": "Campton Country Club", "mileage_offset": 51.26}' *
+- K - - 60.26 MP '{"name": "P9", "mileage_offset": 51.26}' *
+- K 43.87524371955013 -71.66219570729581 60.43 X '{"name": "Lyford\'s Siding", "crossing": "845539L", "mileage_offset": 51.26}' *
+- K 43.876471770798766 -71.66324267973195 60.51 X '{"name": "McGongle\'s", "crossing": "926768F", "mileage_offset": 51.26}' *
+- K 43.87700309608216 -71.66374812294379 60.53 X '{"name": "Helgerson\'s", "crossing": "926769M", "mileage_offset": 51.26}' *
+- K 43.880219033454814 -71.66700059897524 60.80 X '{"name": "Maxie\'s Way", "crossing": "845540F", "mileage_offset": 51.26}' *
+- K - - 61.26 MP '{"name": "P10", "mileage_offset": 51.26}' *
+- K 43.88747517189512 -71.67225495900647 61.38 X '{"name": "Rand\'s", "crossing": "845542U", "mileage_offset": 51.26}' *
+- K 43.88994183847607 -71.67377051391921 61.53 X '{"name": "Old Route 3", "crossing": "845543B", "mileage_offset": 51.26}' *
+- K - - 61.85 X '{"name": "Farm", "crossing": "845544H", "mileage_offset": 51.26}' *
+- K - - 62.26 MP '{"name": "P11", "mileage_offset": 51.26}' *
+- K - - 62.30 X '{"name": "Farm", "mileage_offset": 51.26}' *
+- K - - 62.44 X '{"name": "Farm", "crossing": "926771N", "mileage_offset": 51.26}' *
+- K 43.90914399169642 -71.6842097079285 63.11 X '{"name": "Avery McGee Rd", "crossing": "845546W", "mileage_offset": 51.26}' *
+- K - - 63.26 MP '{"name": "P12", "mileage_offset": 51.26}' *
+- K 43.917641858842074, -71.68455695658396 63.44 X '{"name": "Cross Rd", "crossing": "845547D", "mileage_offset": 51.26}' *

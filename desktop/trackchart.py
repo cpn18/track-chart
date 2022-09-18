@@ -1,16 +1,12 @@
 """
 Track chart drawing methods
 """
-import sys
 import os
 import math
 import datetime
 from PIL import Image, ImageDraw, ImageOps
 import geo
-import csv
-import json
 import gps_to_mileage
-import dateutil.parser as dp
 import lidar_util
 import class_i as aar
 
@@ -70,11 +66,14 @@ def mile_to_pixel(tc, m):
     (first, last, pixel_per_mile) = tc['mileposts']
     return int(1.5*margin+m*pixel_per_mile+0.5)
 
-def mileage_to_string(m):
+def mileage_to_string(obj):
     """
     Format a mileage
     """
-    return "%0.2f" % float(m)
+    m = float(obj['mileage'])
+    if 'mileage_offset' in obj['metadata']:
+        m -= obj['metadata']['mileage_offset']
+    return "%0.2f" % m
 
 def bearing_delta(b1, b2):
     """
@@ -275,7 +274,7 @@ def bridges_and_crossings(tc, xing_type=None):
             text += " (" + metadata['crossing'] + ")"
 
         if len(text) > 0:
-            description = ("%s %s" % (mileage_to_string(mileage), text)).strip()
+            description = ("%s %s" % (mileage_to_string(obj), text)).strip()
             (w, x_size, y_size) = rotated_text(draw, description, 90)
             im.paste(w, (int(x-y_size/2), int(y-1.5*margin-x_size)))
 
@@ -377,7 +376,7 @@ def stations(tc):
         (x_size, y_size) = draw.textsize(text)
         draw.text((int(x-x_size/2), int(y1)), text, fill=COLORS['black'])
         y1 += y_size
-        m_str = mileage_to_string(mileage)
+        m_str = mileage_to_string(obj)
         (x_size, y_size) = draw.textsize(m_str)
         draw.text((int(x-x_size/2), int(y1)), m_str, fill=COLORS['black'])
 
@@ -411,7 +410,7 @@ def yardlimits(tc):
         x = mile_to_pixel(tc, mileage-first)
 
         (x_size1, y_size1) = draw.textsize(label)
-        m_str = mileage_to_string(mileage)
+        m_str = mileage_to_string(obj)
         (x_size2, y_size2) = draw.textsize(m_str)
 
         if metadata['offset'] > 0:
@@ -488,7 +487,7 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
 
     data = []
     used = 0
-    for line_no, obj in pirail.read(tc['data_file'], classes=['TPV'], args={
+    for _line_no, obj in pirail.read(tc['data_file'], classes=['TPV'], args={
             'start-mileage': first,
             'end-mileage': last,
         }):
@@ -596,7 +595,7 @@ def string_chart_by_time(tc):
     skip = False
     lastm = None
     speed = 0
-    for line_no, obj in pirail.read(tc['data_file'], classes=['TPV'], args={
+    for _line_no, obj in pirail.read(tc['data_file'], classes=['TPV'], args={
             'start-mileage': first,
             'end-mileage': last,
         }):
@@ -771,7 +770,7 @@ def plot_value(tc, field="acc_z", scale=1):
 
     # Read from file
     data_sum = data_count = 0
-    for line_no, obj in pirail.read(tc['data_file'], classes=["ATT"]):
+    for _line_no, obj in pirail.read(tc['data_file'], classes=["ATT"]):
         data_sum += obj[field]
         data_count += 1
     # Normalize data by subtracting the average
@@ -779,7 +778,7 @@ def plot_value(tc, field="acc_z", scale=1):
 
     speed = eps = 0
     # Read from file again
-    for line_no, obj in pirail.read(tc['data_file'], classes=["TPV", "ATT"], args={
+    for _line_no, obj in pirail.read(tc['data_file'], classes=["TPV", "ATT"], args={
             'start-mileage': first,
             'end-mileage': last,
         }):
@@ -864,7 +863,7 @@ def accel(tc, scale=1, ax=False, ay=False, az=False, gx=False, gy=False, gz=Fals
     accel_file.write("mileage acc_x acc_y acc_z gyro_x gyro_y gyro_z\n")
 
     # Read from file
-    for line_no, obj in pirail.read(tc['data_file'], args={
+    for _line_no, obj in pirail.read(tc['data_file'], args={
             'start-mileage': first,
             'end-mileage': last,
         }):
@@ -964,7 +963,7 @@ def gage(tc):
     ghost = [0] * 360
     total_slope = total_slope_count = 0
     # Read from file
-    for line_no, obj in pirail.read(tc['data_file']):
+    for _line_no, obj in pirail.read(tc['data_file']):
         if obj['class'] not in ["LIDAR", "L"]:
             continue
         mileage = obj['mileage']
@@ -976,7 +975,7 @@ def gage(tc):
 
         new_data = lidar_util.convert_to_xy(data, offset=2.1528056371157285)
 
-        gage,slope,p1,p2 = lidar_util.calc_gage(new_data)
+        gage,slope,_p1,_p2 = lidar_util.calc_gage(new_data)
 
         if not(aar.min_gauge <= gage <= aar.max_gauge):
             #print(mileage, gage)
