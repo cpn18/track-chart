@@ -18,7 +18,7 @@ ANGLE_OFFSET = 0
 TOTAL_SLOPE = 0
 TOTAL_SLOPE_COUNT = 0
 
-def calc_gage(data):
+def calc_gauge(data):
     min_dist_left = min_dist_right = 999999
     min_dist_left_i = min_dist_right_i = -1
     for i in range(110, 115):
@@ -70,7 +70,7 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
     
     # Draw Data
     new_data = [(0,0,0)] * len(data)
-    plate_error = gage_error = False
+    plate_error = gauge_error = False
     for angle in range(0,len(data)):
         x = data[angle] * math.sin(math.radians(angle+ANGLE_OFFSET))
         y = data[angle] * math.cos(math.radians(angle+ANGLE_OFFSET))
@@ -118,17 +118,17 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
     draw.text((min_x+5,min_y+5), "PLATE F", fill=plate_c)
 
     # Calculate Gage
-    gage,slope,left_i,right_i = calc_gage(new_data)
+    gauge,slope,left_i,right_i = calc_gauge(new_data)
 
     TOTAL_SLOPE += slope
     TOTAL_SLOPE_COUNT += 1
 
-    if gage < 56.0 or gage > 57.75:
-        gage_c = (255,0,0)
-        #print("%s %s: Exception: Gage = %0.2f, slice=%d" % (latitude,longitude,gage, slice))
-        gage_error = True
+    if gauge < 56.0 or gauge > 57.75:
+        gauge_c = (255,0,0)
+        #print("%s %s: Exception: Gage = %0.2f, slice=%d" % (latitude,longitude,gauge, slice))
+        gauge_error = True
     else:
-        gage_c = (0,0,0)
+        gauge_c = (0,0,0)
     draw.text((5,5), "UTC: %s" % timestamp, fill=(0,0,0))
     draw.text((5,15), "LAT: %0.6f" % latitude, fill=(0,0,0))
     draw.text((5,25), "LONG: %0.6f" % longitude, fill=(0,0,0))
@@ -137,15 +137,15 @@ def plot(data, timestamp, latitude, longitude, mileage, speed, slice):
         draw.text((5,45), "SPEED: %0.1f mph" % speed, fill=(0,0,0))
     else:
         draw.text((5,45), "SPEED: %d mph" % int(speed), fill=(0,0,0))
-    if gage == 0:
+    if gauge == 0:
         draw.text((5,55), "GAGE: *ERROR*", fill=(255,0,0))
     else:
-        draw.text((5,55), "GAGE: %0.2f in" % gage, fill=gage_c)
+        draw.text((5,55), "GAGE: %0.2f in" % gauge, fill=gauge_c)
 
     if OUTPUT:
         image.save("slices/slice_%08d.png" % slice)
     
-    return {'gage_error': gage_error, 'plate_error': plate_error, 'gage': gage}
+    return {'gauge_error': gauge_error, 'plate_error': plate_error, 'gauge': gauge}
 
 def main(filename):
     G = gps_to_mileage.Gps2Miles("../known/negs.csv")
@@ -188,17 +188,17 @@ def main(filename):
                     data = eval(data.replace('*', ''))
                     report = plot(data, timestamp, latitude, longitude, mileage, speed, slice)
                     slice += 1
-                    if report['gage_error'] or report['plate_error']:
+                    if report['gauge_error'] or report['plate_error']:
                         count += 1
                         if OUTPUT:
                             if last_lat != latitude or last_lon != longitude:
-                                print("%d %0.6f %0.6f %0.2f %0.2f %s" % (slice, latitude, longitude, mileage, report['gage'], report['plate_error']))
+                                print("%d %0.6f %0.6f %0.2f %0.2f %s" % (slice, latitude, longitude, mileage, report['gauge'], report['plate_error']))
                                 k.write('<Placemark>\n')
                                 k.write('<name>Point %d</name>\n' % slice)
                                 k.write('<description>\n')
                                 k.write('Mileage = %0.2f\n' % mileage)
-                                if report['gage_error']:
-                                    k.write('Gage = %0.f in\n' % report['gage'])
+                                if report['gauge_error']:
+                                    k.write('Gage = %0.f in\n' % report['gauge'])
                                 if report['plate_error']:
                                     k.write('Plate F obstruction')
                                 k.write('</description>\n')

@@ -50,8 +50,8 @@ def main():
         trackchart.accel(mychart)
         print("plot value")
         trackchart.plot_value(mychart, field="acc_z", scale=1)
-        #print("lidar-gage")
-        #trackchart.gage(mychart)
+        #print("lidar-gauge")
+        #trackchart.draw_gauge(mychart)
         print("string chart")
         #trackchart.string_chart_by_time(mychart)
 

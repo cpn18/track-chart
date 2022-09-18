@@ -1,7 +1,6 @@
 """
 Track chart drawing methods
 """
-import os
 import math
 import datetime
 from PIL import Image, ImageDraw, ImageOps
@@ -43,112 +42,113 @@ def new(args):
             'G': gps_to_mileage.Gps2Miles(known_file),
     }
 
-def is_newer(file1, file2):
-    stat1 = os.stat(file1)
-    stat2 = os.stat(file2)
-    return stat1.st_atime > stat2.st_atime
-
-def draw_title(tc, title="PiRail"):
-    im = tc['image']
-    margin = tc['margin']
-    draw = ImageDraw.Draw(im)
-    (x_size, y_size) = draw.textsize(title)
-    x = margin
-    y = im.size[1] - y_size - 1
-    draw.text((x, y), title, fill=COLORS['black'])
+def draw_title(track_chart, title="PiRail"):
+    """
+    Draw the title
+    """
+    image = track_chart['image']
+    margin = track_chart['margin']
+    draw = ImageDraw.Draw(image)
+    (_x_size, y_size) = draw.textsize(title)
+    xpixel = margin
+    ypixel = image.size[1] - y_size - 1
+    draw.text((xpixel, ypixel), title, fill=COLORS['black'])
     del draw
 
-def mile_to_pixel(tc, m):
+def mile_to_pixel(track_chart, mileage):
     """
     Convert mileage to pixel value
     """
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    return int(1.5*margin+m*pixel_per_mile+0.5)
+    margin = track_chart['margin']
+    (_first, _last, pixel_per_mile) = track_chart['mileposts']
+    return int(1.5*margin+mileage*pixel_per_mile+0.5)
 
 def mileage_to_string(obj):
     """
     Format a mileage
     """
-    m = float(obj['mileage'])
+    mileage = float(obj['mileage'])
     if 'mileage_offset' in obj['metadata']:
-        m -= obj['metadata']['mileage_offset']
-    return "%0.2f" % m
+        mileage -= obj['metadata']['mileage_offset']
+    return "%0.2f" % mileage
 
-def bearing_delta(b1, b2):
+def bearing_delta(bearing1, bearing2):
     """
     Calculate diffence in bearings
     """
-    delta = (b2 - b1)
+    delta = (bearing2 - bearing1)
     if delta > 180:
         delta -= 360
     elif delta < -180:
         delta += 360
     return delta
 
-def rotated_text(draw, t, degrees):
+def rotated_text(draw, text, degrees):
     """
     Rotate Text
     """
-    (x_size, y_size) = draw.textsize(t)
-    txt = Image.new("L", (x_size+2, y_size+2), "black")
-    d = ImageDraw.Draw(txt)
-    d.text((1, 1), t, fill="white")
-    return (ImageOps.invert(txt.rotate(degrees, expand=True)), x_size, y_size)
+    (x_size, y_size) = draw.textsize(text)
+    txt_image = Image.new("L", (x_size+2, y_size+2), "black")
+    drawable = ImageDraw.Draw(txt_image)
+    drawable.text((1, 1), text, fill="white")
+    return (ImageOps.invert(txt_image.rotate(degrees, expand=True)), x_size, y_size)
 
-def survey_station(im, draw, x, margin, metadata):
+def survey_station(image, draw, xpixel, margin, metadata):
     """
     Draw Survey Station Text
     """
     if 'survey' in metadata:
-        survey_station = metadata['survey']
-        (w, x_size, y_size) = rotated_text(draw, survey_station, 90)
-        im.paste(w, ((int(x-y_size/2), im.size[1]-margin-x_size)))
+        survey = metadata['survey']
+        (survey_image, x_size, y_size) = rotated_text(draw, survey, 90)
+        image.paste(survey_image, ((int(xpixel-y_size/2), image.size[1]-margin-x_size)))
 
-def border(tc):
+def border(track_chart):
     """
     Draw a page border
     """
-    im = tc['image']
-    margin = tc['margin']
-    draw = ImageDraw.Draw(im)
-    draw.line((margin, margin, im.size[0]-margin, margin),fill=COLORS['black'])
-    draw.line((im.size[0]-margin, margin, im.size[0]-margin, im.size[1]-margin),fill=COLORS['black'])
-    draw.line((im.size[0]-margin, im.size[1]-margin, margin, im.size[1]-margin),fill=COLORS['black'])
-    draw.line((margin, im.size[1]-margin, margin, margin),fill=COLORS['black'])
+    image = track_chart['image']
+    margin = track_chart['margin']
+    draw = ImageDraw.Draw(image)
+    draw.line((margin, margin, image.size[0]-margin, margin),fill=COLORS['black'])
+    draw.line((image.size[0]-margin, margin, image.size[0]-margin, image.size[1]-margin),fill=COLORS['black'])
+    draw.line((image.size[0]-margin, image.size[1]-margin, margin, image.size[1]-margin),fill=COLORS['black'])
+    draw.line((margin, image.size[1]-margin, margin, margin),fill=COLORS['black'])
     del draw
 
-def milepost_symbol(draw, x, y_size, margin, name, alt_name):
+def milepost_symbol(draw, xpixel, y_size, margin, obj):
     """
     Draw a milepost symbol
     """
-    # Vertical
-    draw.line((x, 2*margin, x, y_size*0.5),fill=COLORS['black'])
-    draw.line((x, y_size*0.75, x, y_size),fill=COLORS['black'])
-    # Diamond
-    draw.line((x, margin, x+0.5*margin, 1.5*margin),fill=COLORS['black'])
-    draw.line((x+0.5*margin, 1.5*margin, x, 2*margin),fill=COLORS['black'])
-    draw.line((x, 2*margin, x-0.5*margin, 1.5*margin),fill=COLORS['black'])
-    draw.line((x-0.5*margin, 1.5*margin, x, margin),fill=COLORS['black'])
-    # Labels
-    draw.text((x+0.5*margin, margin), name,fill=COLORS['black'])
-    if alt_name is not None:
-        draw.text((x-0.5*margin-draw.textsize(alt_name)[0], margin), alt_name,fill=COLORS['black'])
+    name = obj['metadata']['name']
+    alt_name = obj['metadata'].get('alt_name', None)
 
-def mileposts(tc, from_file=False, mod=1):
+    # Vertical
+    draw.line((xpixel, 2*margin, xpixel, y_size*0.5),fill=COLORS['black'])
+    draw.line((xpixel, y_size*0.75, xpixel, y_size),fill=COLORS['black'])
+    # Diamond
+    draw.line((xpixel, margin, xpixel+0.5*margin, 1.5*margin),fill=COLORS['black'])
+    draw.line((xpixel+0.5*margin, 1.5*margin, xpixel, 2*margin),fill=COLORS['black'])
+    draw.line((xpixel, 2*margin, xpixel-0.5*margin, 1.5*margin),fill=COLORS['black'])
+    draw.line((xpixel-0.5*margin, 1.5*margin, xpixel, margin),fill=COLORS['black'])
+    # Labels
+    draw.text((xpixel+0.5*margin, margin), name,fill=COLORS['black'])
+    if alt_name is not None:
+        draw.text((xpixel-0.5*margin-draw.textsize(alt_name)[0], margin), alt_name,fill=COLORS['black'])
+
+def mileposts(track_chart, from_file=False, mod=1):
     """
     Draw mileposts
     """
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
 
-    draw = ImageDraw.Draw(im)
+    draw = ImageDraw.Draw(image)
 
     mp_list = []
     if from_file:
         # Read Mileposts from file
-        for obj in tc['G'].get_points(ktype='K', kclass='MP'):
+        for obj in track_chart['G'].get_points(ktype='K', kclass='MP'):
             mp_list.append(obj)
     else:
         # Create Milepost Listing
@@ -165,7 +165,7 @@ def mileposts(tc, from_file=False, mod=1):
     post_count = 0
     for obj in mp_list:
         mileage = obj['mileage']
-        if not (first <= mileage <= last):
+        if not first <= mileage <= last:
             continue
 
         post_count += 1
@@ -173,34 +173,33 @@ def mileposts(tc, from_file=False, mod=1):
         if post_count % mod != 0:
             continue
 
-        x = mile_to_pixel(tc, mileage-first)
+        xpixel = mile_to_pixel(track_chart, mileage-first)
 
         milepost_symbol(
             draw,
-            x,
-            (im.size[1]-margin),
+            xpixel,
+            (image.size[1]-margin),
             margin,
-            obj['metadata']['name'],
-            obj['metadata'].get('alt_name', None)
+            obj
         )
 
         # Survey Station
-        survey_station(im, draw, x, margin, obj['metadata'])
+        survey_station(image, draw, xpixel, margin, obj['metadata'])
 
     del draw
 
-def mainline(tc):
+def mainline(track_chart):
     """
     Draw mainline
     """
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
-    y = (im.size[1]-margin)*0.625
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
+    ypixel = (image.size[1]-margin)*0.625
     start = end = None
 
-    for obj in tc['G'].get_points(ktype='K', kclass='E'):
+    for obj in track_chart['G'].get_points(ktype='K', kclass='E'):
         mileage = obj['mileage']
 
         if start is None or mileage < start:
@@ -213,28 +212,28 @@ def mainline(tc):
     if end is None or end > last:
         end = last
 
-    x1 = max(margin, mile_to_pixel(tc, start-first))
-    x2 = min(im.size[0] - margin, mile_to_pixel(tc, end-first))
-    draw.line((x1, y, x2, y), fill=COLORS['black'])
+    xpixel1 = max(margin, mile_to_pixel(track_chart, start-first))
+    xpixel2 = min(image.size[0] - margin, mile_to_pixel(track_chart, end-first))
+    draw.line((xpixel1, ypixel, xpixel2, ypixel), fill=COLORS['black'])
 
     del draw
 
-def bridges_and_crossings(tc, xing_type=None):
+def bridges_and_crossings(track_chart, xing_type=None):
     """
     Draw bridges and crossings
     """
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    y = int((im.size[1]-margin)*0.625)
-    for obj in tc['G'].get_points(ktype='K'):
+    ypixel = int((image.size[1]-margin)*0.625)
+    for obj in track_chart['G'].get_points(ktype='K'):
         mileage = obj['mileage']
         xtype = obj['class']
         metadata = obj['metadata']
 
-        if not (first <= mileage <= last) or xtype not in ['U', 'O', 'X']:
+        if not first <= mileage <= last or xtype not in ['U', 'O', 'X']:
             continue
 
         if xing_type is not None and xtype != xing_type:
@@ -246,19 +245,19 @@ def bridges_and_crossings(tc, xing_type=None):
             offset /= last - first
 
         # Get X based on mileage
-        x = mile_to_pixel(tc, mileage-first)
+        xpixel = mile_to_pixel(track_chart, mileage-first)
 
         if xtype == 'U':
             # Draw underpass
-            draw.line((x-5, y, x+5, y), fill=COLORS['white'])
-            draw.line((x-offset, y-margin, x+offset, y+margin), fill=COLORS['black'])
+            draw.line((xpixel-5, ypixel, xpixel+5, ypixel), fill=COLORS['white'])
+            draw.line((xpixel-offset, ypixel-margin, xpixel+offset, ypixel+margin), fill=COLORS['black'])
         elif xtype == 'O':
             # Draw overpass
-            draw.line((x-offset, y-margin, x, y-5), fill=COLORS['black'])
-            draw.line((x, y+5, x+offset, y+margin), fill=COLORS['black'])
+            draw.line((xpixel-offset, ypixel-margin, xpixel, ypixel-5), fill=COLORS['black'])
+            draw.line((xpixel, ypixel+5, xpixel+offset, ypixel+margin), fill=COLORS['black'])
         elif xtype == 'X':
             # Draw road
-            draw.line((x-offset, y-margin, x+offset, y+margin), fill=COLORS['black'])
+            draw.line((xpixel-offset, ypixel-margin, xpixel+offset, ypixel+margin), fill=COLORS['black'])
 
         # Draw description
         if 'name' in metadata:
@@ -275,70 +274,68 @@ def bridges_and_crossings(tc, xing_type=None):
 
         if len(text) > 0:
             description = ("%s %s" % (mileage_to_string(obj), text)).strip()
-            (w, x_size, y_size) = rotated_text(draw, description, 90)
-            im.paste(w, (int(x-y_size/2), int(y-1.5*margin-x_size)))
+            (text_image, x_size, y_size) = rotated_text(draw, description, 90)
+            image.paste(text_image, (int(xpixel-y_size/2), int(ypixel-1.5*margin-x_size)))
 
         # Survey Station
-        survey_station(im, draw, x, margin, metadata)
+        survey_station(image, draw, xpixel, margin, metadata)
 
     del draw
 
-def townlines(tc):
+def townlines(track_chart):
     """
     Draw townlines
     """
-    box_size = 10
-    offset = 2
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    y = int((im.size[1]-margin)*0.5)
-    for obj in tc['G'].get_points(ktype='K', kclass='TL'):
+    ypixel = int((image.size[1]-margin)*0.5)
+    for obj in track_chart['G'].get_points(ktype='K', kclass='TL'):
         mileage = obj['mileage']
         metadata = obj['metadata']
-        if not (first <= mileage <= last):
+        if not first <= mileage <= last:
             continue
 
-        x = mile_to_pixel(tc, mileage-first)
+        xpixel = mile_to_pixel(track_chart, mileage-first)
 
         # Town 1
         description = metadata['name'].split("/")[0]
-        (w, x_size1, y_size1) = rotated_text(draw, description, 90)
-        im.paste(w, (int(x-y_size1-3), int(y-(x_size1/2))))
+        (text_image, x_size1, y_size1) = rotated_text(draw, description, 90)
+        image.paste(text_image, (int(xpixel-y_size1-3), int(ypixel-(x_size1/2))))
         # Town 2
         description = metadata['name'].split("/")[1]
-        (w, x_size2, y_size2) = rotated_text(draw, description, 90)
-        im.paste(w, (int(x), int(y-(x_size2/2))))
+        (text_image, x_size2, _y_size2) = rotated_text(draw, description, 90)
+        image.paste(text_image, (int(xpixel), int(ypixel-(x_size2/2))))
         # Dashed Town Line
         if x_size2 > x_size1:
             x_size1 = x_size2
         x_size1 = int(math.ceil(x_size1/10.0)*10)
-        for y1 in range(int(y-x_size1/2), int(y+x_size1/2), 10):
-            draw.line((x, y1, x, y1+2),fill=COLORS['black'])
-            draw.line((x, y1+7, x, y1+10),fill=COLORS['black'])
+        for ypixel1 in range(int(ypixel-x_size1/2), int(ypixel+x_size1/2), 10):
+            draw.line((xpixel, ypixel1, xpixel, ypixel1+2),fill=COLORS['black'])
+            draw.line((xpixel, ypixel1+7, xpixel, ypixel1+10),fill=COLORS['black'])
     del draw
 
-def stations(tc):
+def stations(track_chart):
     """
     Draw Stations
     """
     box_size = 10
     offset = 2
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    y = int((im.size[1]-margin)*0.625)
-    for obj in tc['G'].get_points(ktype='K', kclass='S'):
+    ypixel = int((image.size[1]-margin)*0.625)
+    for obj in track_chart['G'].get_points(ktype='K', kclass='S'):
         mileage = obj['mileage']
         metadata = obj['metadata']
-        if not(first <= mileage <= last):
+        if not first <= mileage <= last:
             continue
 
-        x = mile_to_pixel(tc, mileage-first)
+        xpixel = mile_to_pixel(track_chart, mileage-first)
         #print(obj)
         if 'offset' in metadata:
             offset = metadata['offset']
@@ -354,11 +351,11 @@ def stations(tc):
                 offset = -(2+pixel_per_mile*0.01*abs(offset)+1.5*box_size)
 
             # Draw symbol
-            draw.polygon((x-box_size/2, y-offset,
-                          x-box_size/2, y-offset-box_size,
-                          x, y-offset-1.5*box_size,
-                          x+box_size/2, y-offset-box_size,
-                          x+box_size/2, y-offset
+            draw.polygon((xpixel-box_size/2, ypixel-offset,
+                          xpixel-box_size/2, ypixel-offset-box_size,
+                          xpixel, ypixel-offset-1.5*box_size,
+                          xpixel+box_size/2, ypixel-offset-box_size,
+                          xpixel+box_size/2, ypixel-offset
                          ), fill=COLORS['black'], outline=COLORS['black'])
 
         # Draw description
@@ -372,42 +369,42 @@ def stations(tc):
         if 'crossing' in metadata:
             text += " (" + metadata['crossing'] + ")"
 
-        y1 = int((im.size[1]-margin)*0.7)
+        ypixel1 = int((image.size[1]-margin)*0.7)
         (x_size, y_size) = draw.textsize(text)
-        draw.text((int(x-x_size/2), int(y1)), text, fill=COLORS['black'])
-        y1 += y_size
+        draw.text((int(xpixel-x_size/2), int(ypixel1)), text, fill=COLORS['black'])
+        ypixel1 += y_size
         m_str = mileage_to_string(obj)
         (x_size, y_size) = draw.textsize(m_str)
-        draw.text((int(x-x_size/2), int(y1)), m_str, fill=COLORS['black'])
+        draw.text((int(xpixel-x_size/2), int(ypixel1)), m_str, fill=COLORS['black'])
 
         # Survey Station
-        survey_station(im, draw, x, margin, metadata)
+        survey_station(image, draw, xpixel, margin, metadata)
 
     del draw
 
-def yardlimits(tc):
+def yardlimits(track_chart):
     """
     Draw Yardlimits
     """
     line_length = 10
     offset = 2
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    y = int((im.size[1]-margin)*0.625)
-    for obj in tc['G'].get_points(ktype='K', kclass='YL'):
+    ypixel = int((image.size[1]-margin)*0.625)
+    for obj in track_chart['G'].get_points(ktype='K', kclass='YL'):
         label = obj['class']
         mileage = obj['mileage']
         metadata = obj['metadata']
         if 'label' in metadata:
             label = metadata['label']
 
-        if not(first <= mileage <= last):
+        if not first <= mileage <= last:
             continue
 
-        x = mile_to_pixel(tc, mileage-first)
+        xpixel = mile_to_pixel(track_chart, mileage-first)
 
         (x_size1, y_size1) = draw.textsize(label)
         m_str = mileage_to_string(obj)
@@ -415,31 +412,29 @@ def yardlimits(tc):
 
         if metadata['offset'] > 0:
             # Above the mainline
-            draw.line((x, y-offset, x, y-offset-line_length),fill=COLORS['black'])
-            y1 = y-metadata['offset']-line_length-y_size1-y_size2
+            draw.line((xpixel, ypixel-offset, xpixel, ypixel-offset-line_length),fill=COLORS['black'])
+            ypixel1 = ypixel-metadata['offset']-line_length-y_size1-y_size2
         else:
             # Below the mainline
-            draw.line((x, y+offset, x, y+offset+line_length),fill=COLORS['black'])
-            y1 = y+metadata['offset']+line_length
+            draw.line((xpixel, ypixel+offset, xpixel, ypixel+offset+line_length),fill=COLORS['black'])
+            ypixel1 = ypixel+metadata['offset']+line_length
 
         # Draw description
-        draw.text((int(x-x_size1/2), int(y1)), label,fill=COLORS['black'])
-        draw.text((int(x-x_size2/2), int(y1+y_size1)), m_str,fill=COLORS['black'])
+        draw.text((int(xpixel-x_size1/2), int(ypixel1)), label,fill=COLORS['black'])
+        draw.text((int(xpixel-x_size2/2), int(ypixel1+y_size1)), m_str,fill=COLORS['black'])
     del draw
 
-def controlpoints(tc):
+def controlpoints(track_chart):
     """
     Draw Control Points
     """
-    line_length = 10
-    offset = 2
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    y = int((im.size[1]-margin)*0.625)
-    for obj in tc['G'].get_points(ktype='K'):
+    ypixel = int((image.size[1]-margin)*0.625)
+    for obj in track_chart['G'].get_points(ktype='K'):
         label = obj['class']
         if label not in ['CRF', 'CRT', 'CLF', 'CLT']:
             continue
@@ -448,46 +443,48 @@ def controlpoints(tc):
 
         #print(obj)
 
-        if not(first <= mileage <= last):
+        if not first <= mileage <= last:
             continue
 
-        x = mile_to_pixel(tc, mileage-first)
-        y_start = y
+        xpixel = mile_to_pixel(track_chart, mileage-first)
+        y_start = ypixel
         y_size = 0.01 * pixel_per_mile
         start_offset = metadata['start']
         end_offset = metadata['end']
 
         if start_offset > 0:
             # above the mainline
-            y_start = y - start_offset*y_size
+            y_start = ypixel - start_offset*y_size
         elif start_offset < 0:
             # below the mainline
-            y_start = y - start_offset*y_size
+            y_start = ypixel - start_offset*y_size
 
         if label[2] == 'F':
             if label[1] == 'R':
                 y_end = y_start - end_offset*y_size
-                x_end = x + abs(end_offset)*y_size
+                x_end = xpixel + abs(end_offset)*y_size
             else:
                 y_end = y_start - end_offset*y_size
-                x_end = x + abs(end_offset)*y_size
+                x_end = xpixel + abs(end_offset)*y_size
         else:
             if label[1] == 'R':
                 y_end = y_start - end_offset*y_size
-                x_end = x - abs(end_offset)*y_size
+                x_end = xpixel - abs(end_offset)*y_size
             else:
                 y_end = y_start - end_offset*y_size
-                x_end = x - abs(end_offset)*y_size
+                x_end = xpixel - abs(end_offset)*y_size
 
-        draw.line((x, y_start, x_end, y_end),fill=COLORS['black'])
+        draw.line((xpixel, y_start, x_end, y_end),fill=COLORS['black'])
     del draw
 
-def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45, write_file=True):
-    (first, last, pixel_per_mile) = tc['mileposts']
+def smooth_data(track_chart, mileage_threshold=0.01, write_file=True):
+    """
+    Smooth Data
+    """
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
 
     data = []
-    used = 0
-    for _line_no, obj in pirail.read(tc['data_file'], classes=['TPV'], args={
+    for _line_no, obj in pirail.read(track_chart['data_file'], classes=['TPV'], args={
             'start-mileage': first,
             'end-mileage': last,
         }):
@@ -501,7 +498,7 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
     data = sorted(data, key=lambda k: k['mileage'], reverse=False)
 
     # smooth, looking at all measurements +/-
-    smooth_data = []
+    smoothed_data = []
     for i in range(0, len(data)):
         lat = [data[i]['lat']]
         lon = [data[i]['lon']]
@@ -522,10 +519,10 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
             alt.append(data[j]['alt'])
             j += 1
         # Average
-        new_lat = avg_3_of_5(lat)
-        new_lon = avg_3_of_5(lon)
-        new_alt = avg_3_of_5(alt)
-        mileage, certainty = tc['G'].find_mileage(new_lat, new_lon)
+        new_lat = pirail.avg_3_of_5(lat)
+        new_lon = pirail.avg_3_of_5(lon)
+        new_alt = pirail.avg_3_of_5(alt)
+        mileage, certainty = track_chart['G'].find_mileage(new_lat, new_lon)
         obj = {
             'class': data[i]['class'],
             'speed': data[i]['speed'],
@@ -539,35 +536,35 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
         }
 
         if i == 0:
-            smooth_data.append(obj)
+            smoothed_data.append(obj)
             last_obj = obj
         else:
-            d = geo.great_circle(last_obj['lat'], last_obj['lon'],
+            distance = geo.great_circle(last_obj['lat'], last_obj['lon'],
                                  obj['lat'], obj['lon'])
-            b = geo.bearing(last_obj['lat'], last_obj['lon'],
+            bearing = geo.bearing(last_obj['lat'], last_obj['lon'],
                             obj['lat'], obj['lon'])
 
-            if d > mileage_threshold:
-                #print("Inserted: %f @ %d" % (d,b))
-                smooth_data.append(obj)
+            if distance > mileage_threshold:
+                #print("Inserted: %f @ %d" % (distance,bearing))
+                smoothed_data.append(obj)
                 last_obj = obj
 
     # Ensure we're still sorted
-    smooth_data = sorted(smooth_data, key=lambda k: k['mileage'], reverse=False)
+    smoothed_data = sorted(smoothed_data, key=lambda k: k['mileage'], reverse=False)
 
-    for i in range(1,len(smooth_data)):
-        b = geo.bearing(smooth_data[i-1]['lat'], smooth_data[i-1]['lon'],
-                        smooth_data[i]['lat'], smooth_data[i]['lon'])
-        smooth_data[i]['track'] = b
-    if len(smooth_data) > 2:
-        smooth_data[0]['track'] = smooth_data[1]['track']
+    for i in range(1,len(smoothed_data)):
+        bearing = geo.bearing(smoothed_data[i-1]['lat'], smoothed_data[i-1]['lon'],
+                        smoothed_data[i]['lat'], smoothed_data[i]['lon'])
+        smoothed_data[i]['track'] = bearing
+    if len(smoothed_data) > 2:
+        smoothed_data[0]['track'] = smoothed_data[1]['track']
 
     # save result
     if write_file:
-        with open("smoothdata_tmp.csv", "w") as f:
-            f.write("Mileage,Latitude,Longitude,Altitude,Track\n")
-            for obj in smooth_data:
-                f.write("%f %f %f %f %f\n" % (
+        with open("smoothdata_tmp.csv", "w") as smoothfile:
+            smoothfile.write("Mileage,Latitude,Longitude,Altitude,Track\n")
+            for obj in smoothed_data:
+                smoothfile.write("%f %f %f %f %f\n" % (
                         obj['mileage'],
                         obj['lat'],
                         obj['lon'],
@@ -575,27 +572,26 @@ def smooth_data(tc, input_data=None, mileage_threshold=0.01, track_threshold=45,
                         obj['track'],
                         ))
 
-    #print("Smooth=%d" % len(smooth_data))
-    return smooth_data
+    #print("Smooth=%d" % len(smoothed_data))
+    return smoothed_data
 
-def string_chart_by_time(tc):
+def string_chart_by_time(track_chart):
     """
     Draw a string chart
     x = mileage
     y = time
     """
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
     mintime = None
     maxtime = None
     timedata = []
-    skip = False
     lastm = None
     speed = 0
-    for _line_no, obj in pirail.read(tc['data_file'], classes=['TPV'], args={
+    for _line_no, obj in pirail.read(track_chart['data_file'], classes=['TPV'], args={
             'start-mileage': first,
             'end-mileage': last,
         }):
@@ -622,8 +618,8 @@ def string_chart_by_time(tc):
         mileage = obj['mileage']
         objtime = obj['time']
         speed = obj['speed'] * MS_TO_MPH
-        x = mile_to_pixel(tc, mileage-first)
-        y = (im.size[1]-2*margin) * (objtime - mintime).total_seconds() / (maxtime-mintime).total_seconds() + margin
+        xpixel = mile_to_pixel(track_chart, mileage-first)
+        ypixel = (image.size[1]-2*margin) * (objtime - mintime).total_seconds() / (maxtime-mintime).total_seconds() + margin
 
         if lasttime is None:
             timediff = 0
@@ -640,37 +636,37 @@ def string_chart_by_time(tc):
             color=COLORS['blue']
 
         if lastx is None or timediff > TIME_THRESHOLD:
-            draw.point((x, y), fill=color)
+            draw.point((xpixel, ypixel), fill=color)
         else:
-            draw.line((lastx, lasty, x, y), fill=color, width=STRING_WIDTH)
+            draw.line((lastx, lasty, xpixel, ypixel), fill=color, width=STRING_WIDTH)
 
-        lastx = x
-        lasty = y
+        lastx = xpixel
+        lasty = ypixel
         lasttime = objtime
         lastm = mileage
 
     if mintime is not None:
         for hour in range(mintime.hour, maxtime.hour+1):
             objtime = datetime.datetime(mintime.year, mintime.month, mintime.day, hour, 0, 0)
-            x = 10
-            y = (im.size[1]-2*margin) * (objtime - mintime).total_seconds() / (maxtime-mintime).total_seconds() + margin
-            draw.text((x, y), "%d:00Z" % hour, fill=COLORS['blue'])
+            xpixel = 10
+            ypixel = (image.size[1]-2*margin) * (objtime - mintime).total_seconds() / (maxtime-mintime).total_seconds() + margin
+            draw.text((xpixel, ypixel), "%d:00Z" % hour, fill=COLORS['blue'])
 
     del draw
 
-def elevation(tc):
+def elevation(track_chart):
     """
     Draw Elevation profile
     """
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, _last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    y = int((im.size[1]-margin))
+    ypixel = int((image.size[1]-margin))
     y_range = 200
 
-    edata = smooth_data(tc, mileage_threshold=0.01)
+    edata = smooth_data(track_chart, mileage_threshold=0.01)
 
     # Check for empty list
     if len(edata) == 0:
@@ -682,95 +678,79 @@ def elevation(tc):
         emax = max(emax, edata[i]['alt'])
 
     # baseline
-    #draw.text((int(1.5*margin), im.size[1]-margin), "Base = %d" % emin)
-    #draw.line((margin, im.size[1]-margin, im.size[0]-margin, im.size[1]-margin))
+    #draw.text((int(1.5*margin), image.size[1]-margin), "Base = %d" % emin)
+    #draw.line((margin, image.size[1]-margin, image.size[0]-margin, image.size[1]-margin))
 
     # loop over the list
     min_display = max_display = False
     for j in range(1, len(edata)):
-        x1 = mile_to_pixel(tc, edata[j-1]['mileage']-first)
-        x2 = mile_to_pixel(tc, edata[j]['mileage']-first)
-        y1 = y - (edata[j-1]['alt'] - emin) * (y_range/emax)
-        y2 = y - (edata[j]['alt'] - emin) * (y_range/emax)
-        draw.line((x1, y1, x2, y2),fill=COLORS['black'])
+        xpixel1 = mile_to_pixel(track_chart, edata[j-1]['mileage']-first)
+        xpixel2 = mile_to_pixel(track_chart, edata[j]['mileage']-first)
+        ypixel1 = ypixel - (edata[j-1]['alt'] - emin) * (y_range/emax)
+        ypixel2 = ypixel - (edata[j]['alt'] - emin) * (y_range/emax)
+        draw.line((xpixel1, ypixel1, xpixel2, ypixel2),fill=COLORS['black'])
         if edata[j]['alt'] == emax and not max_display:
             txt = "%dft" % emax
             (x_size, y_size) = draw.textsize(txt)
-            draw.text((int(x2-x_size/2), y2-y_size), txt, fill=COLORS['black'])
+            draw.text((int(xpixel2-x_size/2), ypixel2-y_size), txt, fill=COLORS['black'])
             max_display = True
         elif edata[j]['alt'] == emin and not min_display:
             txt = "%dft" % emin
             (x_size, y_size) = draw.textsize(txt)
-            draw.text((int(x2-x_size/2), y2), txt, fill=COLORS['black'])
+            draw.text((int(xpixel2-x_size/2), ypixel2), txt, fill=COLORS['black'])
             min_display = True
 
     del draw
 
-def avg_3_of_5(data):
-    if len(data) == 0:
-        retval = 0
-    if len(data) < 5:
-        retval = sum(data) / len(data)
-    else:
-        retval = (sum(data) - min(data) - max(data)) / (len(data) - 2)
-    return retval
-
-def curvature(tc):
+def curvature(track_chart):
     """
     Draw Curvature
     """
-    bearing_threshold = 0
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, _last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    ypixel = int((image.size[1]-margin)*0.80)
 
-    y = int((im.size[1]-margin)*0.80)
-
-    tangent_length = pixel_per_mile*0.02
-
-    cdata = smooth_data(tc, mileage_threshold=0.010)
+    cdata = smooth_data(track_chart, mileage_threshold=0.010)
 
     # Check for empty list
     if len(cdata) == 0:
         return
 
     # loop over the list
-    last_x = mile_to_pixel(tc, cdata[0]['mileage']-first)
-    last_y = y
-    last_i = 0
+    last_x = mile_to_pixel(track_chart, cdata[0]['mileage']-first)
+    last_y = ypixel
     for i in range(1, len(cdata)):
         bdiff = bearing_delta(cdata[i-1]['track'], cdata[i]['track'])
         if abs(bdiff) > 45:
             continue
-        x = mile_to_pixel(tc, cdata[i]['mileage']-first)
-        yval = y - bdiff
-        #print(cdata[i]['mileage'],cdata[last_i]['track'], cdata[i]['track'],bdiff)
-        draw.line((last_x,last_y,x,yval),fill=COLORS['black'])
-        draw.point((x, y), fill=COLORS['black'])
-        last_x = x
+        xpixel = mile_to_pixel(track_chart, cdata[i]['mileage']-first)
+        yval = ypixel - bdiff
+        draw.line((last_x,last_y,xpixel,yval),fill=COLORS['black'])
+        draw.point((xpixel, ypixel), fill=COLORS['black'])
+        last_x = xpixel
         last_y = yval
-        last_i = i
 
     del draw
 
-def plot_value(tc, field="acc_z", scale=1):
+def plot_value(track_chart, field="acc_z", scale=1):
     """
     Draw Random Data
     """
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    yz = int((im.size[1]-margin)*0.26)
-    data = [None] * im.size[0]
-    draw.text((margin, yz), field.upper(), fill=COLORS['black'])
+    yzpixel = int((image.size[1]-margin)*0.26)
+    data = [None] * image.size[0]
+    draw.text((margin, yzpixel), field.upper(), fill=COLORS['black'])
 
     # Read from file
     data_sum = data_count = 0
-    for _line_no, obj in pirail.read(tc['data_file'], classes=["ATT"]):
+    for _line_no, obj in pirail.read(track_chart['data_file'], classes=["ATT"]):
         data_sum += obj[field]
         data_count += 1
     # Normalize data by subtracting the average
@@ -778,12 +758,12 @@ def plot_value(tc, field="acc_z", scale=1):
 
     speed = eps = 0
     # Read from file again
-    for _line_no, obj in pirail.read(tc['data_file'], classes=["TPV", "ATT"], args={
+    for _line_no, obj in pirail.read(track_chart['data_file'], classes=["TPV", "ATT"], args={
             'start-mileage': first,
             'end-mileage': last,
         }):
         mileage = obj['mileage']
-        x = mile_to_pixel(tc, mileage-first)
+        xpixel = mile_to_pixel(track_chart, mileage-first)
         if obj['class'] == "TPV":
             speed = obj['speed']
             eps = obj['eps']
@@ -793,195 +773,192 @@ def plot_value(tc, field="acc_z", scale=1):
             else:
                 data_point = obj[field] - data_avg
                 # Look for maximum magnitude
-                if data[x] is None or abs(data_point) > abs(data[x]):
-                    data[x] = data_point
+                if data[xpixel] is None or abs(data_point) > abs(data[xpixel]):
+                    data[xpixel] = data_point
 
     # Plot the data
     last_x = None
-    for x in range(margin, im.size[0]-2*margin):
-        draw.point((x,yz), fill=COLORS['black'])
-        if data[x] is None:
+    for xpixel in range(margin, image.size[0]-2*margin):
+        draw.point((xpixel,yzpixel), fill=COLORS['black'])
+        if data[xpixel] is None:
             continue
-        y = yz-scale*data[x]
+        ypixel = yzpixel-scale*data[xpixel]
         if last_x is None:
-            draw.point((x,y), fill=COLORS['red'])
+            draw.point((xpixel,ypixel), fill=COLORS['red'])
         else:
-            draw.line((x,y,last_x,last_y), fill=COLORS['red'])
-        last_x = x
-        last_y = y
+            draw.line((xpixel,ypixel,last_x,last_y), fill=COLORS['red'])
+        last_x = xpixel
+        last_y = ypixel
 
     del draw
 
-def accel(tc, scale=1, ax=False, ay=False, az=False, gx=False, gy=False, gz=False, s=False):
+def accel(track_chart, scale=1, draw=None):
     """
     Draw Acceleration Data
     """
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    yx = int((im.size[1]-margin)*0.10)
-    yy = int((im.size[1]-margin)*0.18)
-    yz = int((im.size[1]-margin)*0.26)
-    ygx = int((im.size[1]-margin)*0.34)
-    ygy = int((im.size[1]-margin)*0.42)
-    ygz = int((im.size[1]-margin)*0.50)
-    ys = int((im.size[1]-margin)*0.58)
+    yxpixel = int((image.size[1]-margin)*0.10)
+    yypixel = int((image.size[1]-margin)*0.18)
+    yzpixel = int((image.size[1]-margin)*0.26)
+    ygxpixel = int((image.size[1]-margin)*0.34)
+    ygypixel = int((image.size[1]-margin)*0.42)
+    ygzpixel = int((image.size[1]-margin)*0.50)
+    yspixel = int((image.size[1]-margin)*0.58)
 
-    ACCxp = [0] * im.size[0]
-    ACCyp = [0] * im.size[0]
-    ACCzp = [0] * im.size[0]
-    GYRxp = [0] * im.size[0]
-    GYRyp = [0] * im.size[0]
-    GYRzp = [0] * im.size[0]
+    acc_xp = [0] * image.size[0]
+    acc_yp = [0] * image.size[0]
+    acc_zp = [0] * image.size[0]
+    gyro_xp = [0] * image.size[0]
+    gyro_yp = [0] * image.size[0]
+    gyro_zp = [0] * image.size[0]
 
-    if ax:
-        draw.text((margin, yx), "AX", fill=COLORS['red'])
-    if ay:
-        draw.text((margin, yy), "AY", fill=COLORS['blue'])
-    if az:
-        draw.text((margin, yz), "AZ", fill=COLORS['green'])
-    if gx:
-        draw.text((margin, ygx), "GX", fill=COLORS['red'])
-    if gy:
-        draw.text((margin, ygy), "GY", fill=COLORS['blue'])
-    if gz:
-        draw.text((margin, ygz), "GZ", fill=COLORS['green'])
-    if s:
-        draw.text((margin, ys), "S", fill=COLORS['black'])
+    # default is plot acc_z and gryo_y
+    if draw is None:
+        draw = ['acc_z', 'gyro_y']
 
-    accel_threshold = 0.00
+    if 'acc_x' in draw:
+        draw.text((margin, yxpixel), "ACC_X", fill=COLORS['red'])
+    if 'acc_y' in draw:
+        draw.text((margin, yypixel), "ACC_Y", fill=COLORS['blue'])
+    if 'acc_z' in draw:
+        draw.text((margin, yzpixel), "ACC_Z", fill=COLORS['green'])
+    if 'gyro_x' in draw:
+        draw.text((margin, ygxpixel), "GYRO_X", fill=COLORS['red'])
+    if 'gyro_y' in draw:
+        draw.text((margin, ygypixel), "GYRO_Y", fill=COLORS['blue'])
+    if 'gypo_z' in draw:
+        draw.text((margin, ygzpixel), "GYRO_Z", fill=COLORS['green'])
+    if 'speed' in draw:
+        draw.text((margin, yspixel), "SPEED", fill=COLORS['black'])
 
     mileage = None
 
     speed = 0
 
-    last_x = None
+    with open("accel.csv", "w") as accel_file:
+        accel_file.write("mileage acc_x acc_y acc_z gyro_x gyro_y gyro_z\n")
 
-    accel_file = open("accel.csv", "w")
-    accel_file.write("mileage acc_x acc_y acc_z gyro_x gyro_y gyro_z\n")
+        # Read from file
+        for _line_no, obj in pirail.read(track_chart['data_file'], args={
+                'start-mileage': first,
+                'end-mileage': last,
+            }):
+            #print(obj)
+            mileage = obj['mileage']
 
-    # Read from file
-    for _line_no, obj in pirail.read(tc['data_file'], args={
-            'start-mileage': first,
-            'end-mileage': last,
-        }):
-        #print(obj)
-        mileage = obj['mileage']
+            xpixel = mile_to_pixel(track_chart, mileage-first)
 
-        x = mile_to_pixel(tc, mileage-first)
+            if obj['class'] == "G" or obj['class'] == "TPV":
+                # Speed
+                speed = obj.get('speed', 0)
+                if 'speed' in draw:
+                    draw.point((xpixel, yspixel-speed), fill=COLORS['black'])
+            elif obj['class'] in ["A", "ATT"]:
+                if speed == 100:
+                    if 'speed' in draw:
+                        draw.point((xpixel, yxpixel), fill=COLORS['black'])
+                        draw.point((xpixel, yypixel), fill=COLORS['black'])
+                        draw.point((xpixel, yzpixel), fill=COLORS['black'])
+                else:
+                    acc_x = (obj['acc_x'])
+                    if abs(acc_x) > acc_xp[xpixel]:
+                        acc_xp[xpixel] = acc_x
+                    acc_y = (obj['acc_y'])
+                    if abs(acc_y) > acc_yp[xpixel]:
+                        acc_yp[xpixel] = acc_y
+                    acc_z = (obj['acc_z'] - 9.80665)
+                    if abs(acc_z) > acc_zp[xpixel]:
+                        acc_zp[xpixel] = acc_z
+                    gyro_x = (obj['gyro_x'])
+                    if abs(gyro_x) > gyro_xp[xpixel]:
+                        gyro_xp[xpixel] = gyro_x
+                    gyro_y = (obj['gyro_y'])
+                    if abs(gyro_y) > gyro_yp[xpixel]:
+                        gyro_yp[xpixel] = gyro_y
+                    gyro_z = (obj['gyro_z'])
+                    if abs(gyro_z) > gyro_zp[xpixel]:
+                        gyro_zp[xpixel] = gyro_z
+                    accel_file.write("%f %f %f %f %f %f %f %f %f\n" %( obj['mileage'], obj['lat'], obj['lon'], obj['acc_x'], obj['acc_y'], obj['acc_z'], obj['gyro_x'], obj['gyro_y'], obj['gyro_z']))
 
-        if obj['class'] == "G" or obj['class'] == "TPV":
-            # Speed
-            speed = obj.get('speed', 0)
-            if s:
-                draw.point((x, ys-speed), fill=COLORS['black'])
-        elif obj['class'] in ["A", "ATT"]:
-            if speed == 100:
-                if s:
-                    draw.point((x, yx), fill=COLORS['black'])
-                    draw.point((x, yy), fill=COLORS['black'])
-                    draw.point((x, yz), fill=COLORS['black'])
-            else:
-                ACCx = (obj['acc_x'])
-                if abs(ACCx) > ACCxp[x]:
-                    ACCxp[x] = ACCx
-                ACCy = (obj['acc_y'])
-                if abs(ACCy) > ACCyp[x]:
-                    ACCyp[x] = ACCy
-                ACCz = (obj['acc_z'] - 9.80665)
-                if abs(ACCz) > ACCzp[x]:
-                    ACCzp[x] = ACCz
-                GYRx = (obj['gyro_x'])
-                if abs(GYRx) > GYRxp[x]:
-                    GYRxp[x] = GYRx
-                GYRy = (obj['gyro_y'])
-                if abs(GYRy) > GYRyp[x]:
-                    GYRyp[x] = GYRy
-                GYRz = (obj['gyro_z'])
-                if abs(GYRz) > GYRzp[x]:
-                    GYRzp[x] = GYRz
-                accel_file.write("%f %f %f %f %f %f %f %f %f\n" %( obj['mileage'], obj['lat'], obj['lon'], obj['acc_x'], obj['acc_y'], obj['acc_z'], obj['gyro_x'], obj['gyro_y'], obj['gyro_z']))
+        for xpixel in range(margin, len(acc_xp)-2*margin):
+            if 'acc_x' in draw:
+                draw.line((xpixel,yxpixel-scale*acc_xp[xpixel],xpixel-1,yxpixel-scale*acc_xp[xpixel-1]),fill=COLORS['red'])
+            if 'acc_y' in draw:
+                draw.line((xpixel,yypixel-scale*acc_yp[xpixel],xpixel-1,yypixel-scale*acc_yp[xpixel-1]),fill=COLORS['blue'])
+            if 'acc_z' in draw:
+                draw.line((xpixel,yzpixel-scale*acc_zp[xpixel],xpixel-1,yzpixel-scale*acc_zp[xpixel-1]),fill=COLORS['green'])
+            if 'gyro_x' in draw:
+                draw.line((xpixel,ygxpixel-scale*gyro_xp[xpixel],xpixel-1,ygxpixel-scale*gyro_xp[xpixel-1]),fill=COLORS['red'])
+            if 'gyro_y' in draw:
+                draw.line((xpixel,ygypixel-scale*gyro_yp[xpixel],xpixel-1,ygypixel-scale*gyro_yp[xpixel-1]),fill=COLORS['blue'])
+            if 'gypo_z' in draw:
+                draw.line((xpixel,ygzpixel-scale*gyro_zp[xpixel],xpixel-1,ygzpixel-scale*gyro_zp[xpixel-1]),fill=COLORS['green'])
 
-    for x in range(margin, len(ACCxp)-2*margin):
-        if ax:
-            draw.line((x,yx-scale*ACCxp[x],x-1,yx-scale*ACCxp[x-1]),fill=COLORS['red'])
-        if ay:
-            draw.line((x,yy-scale*ACCyp[x],x-1,yy-scale*ACCyp[x-1]),fill=COLORS['blue'])
-        if az:
-            draw.line((x,yz-scale*ACCzp[x],x-1,yz-scale*ACCzp[x-1]),fill=COLORS['green'])
-        if gx:
-            draw.line((x,ygx-scale*GYRxp[x],x-1,ygx-scale*GYRxp[x-1]),fill=COLORS['red'])
-        if gy:
-            draw.line((x,ygy-scale*GYRyp[x],x-1,ygy-scale*GYRyp[x-1]),fill=COLORS['blue'])
-        if gz:
-            draw.line((x,ygz-scale*GYRzp[x],x-1,ygz-scale*GYRzp[x-1]),fill=COLORS['green'])
-
-    accel_file.close()
     del draw
 
-def sidings(tc):
+def sidings(track_chart):
     """
     Draw Siding
     """
-    line_length = 10
-    offset = 2
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    y = int((im.size[1]-margin)*0.625)
-    for obj in tc['G'].get_points(ktype='K', kclass='ST'):
+    ypixel = int((image.size[1]-margin)*0.625)
+    for obj in track_chart['G'].get_points(ktype='K', kclass='ST'):
         mileage = obj['mileage']
-        if not (first <= mileage <= last):
+        if not first <= mileage <= last:
             continue
 
         metadata = obj['metadata']
 
-        start_x = mile_to_pixel(tc,mileage - first)
-        end_x = mile_to_pixel(tc,metadata['end'] - first)
-        y1 = y - pixel_per_mile * 0.01 * int(metadata['offset'])
-        draw.line((start_x, y1, end_x, y1),fill=COLORS['black'])
+        start_x = mile_to_pixel(track_chart,mileage - first)
+        end_x = mile_to_pixel(track_chart,metadata['end'] - first)
+        ypixel1 = ypixel - pixel_per_mile * 0.01 * int(metadata['offset'])
+        draw.line((start_x, ypixel1, end_x, ypixel1),fill=COLORS['black'])
 
     del draw
 
-def gage(tc):
+def draw_gauge(track_chart):
     """
     Draw Gage
     """
-    im = tc['image']
-    margin = tc['margin']
-    (first, last, pixel_per_mile) = tc['mileposts']
-    draw = ImageDraw.Draw(im)
+    image = track_chart['image']
+    margin = track_chart['margin']
+    (first, last, _pixel_per_mile) = track_chart['mileposts']
+    draw = ImageDraw.Draw(image)
 
-    y = int((im.size[1]-margin)*0.34)
-    draw.text((margin, y), aar.full_name, fill=COLORS['black'])
+    ypixel = int((image.size[1]-margin)*0.34)
+    draw.text((margin, ypixel), aar.full_name, fill=COLORS['black'])
 
     data = [0] * 360
     ghost = [0] * 360
     total_slope = total_slope_count = 0
     # Read from file
-    for _line_no, obj in pirail.read(tc['data_file']):
+    for _line_no, obj in pirail.read(track_chart['data_file']):
         if obj['class'] not in ["LIDAR", "L"]:
             continue
         mileage = obj['mileage']
-        if not(first <= mileage <= last):
+        if not first <= mileage <= last:
             continue
-        x = mile_to_pixel(tc, mileage-first)
+        xpixel = mile_to_pixel(track_chart, mileage-first)
 
         lidar_util.process_scan(obj['lidar'], data, ghost)
 
         new_data = lidar_util.convert_to_xy(data, offset=2.1528056371157285)
 
-        gage,slope,_p1,_p2 = lidar_util.calc_gage(new_data)
+        gauge,slope,_p1,_p2 = lidar_util.calc_gauge(new_data)
 
-        if not(aar.min_gauge <= gage <= aar.max_gauge):
-            #print(mileage, gage)
-            draw.point((x,y+(gage-aar.standard_gauge)*2),fill=COLORS['red'])
+        if not aar.min_gauge <= gauge <= aar.max_gauge:
+            #print(mileage, gauge)
+            draw.point((xpixel,ypixel+(gauge-aar.standard_gauge)*2),fill=COLORS['red'])
         else:
-            #draw.point((x,y), fill=COLORS['black'])
+            #draw.point((xpixel,ypixel), fill=COLORS['black'])
             pass
         total_slope += slope
         total_slope_count += 1

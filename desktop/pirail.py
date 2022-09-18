@@ -77,15 +77,15 @@ def read(filename, handlers=None, classes=None, args=None):
     end_longitude = args.get("end-longitude", None)
 
     if filename.startswith("http://"):
-        r = requests.get(filename, stream=True)
-        f = r.iter_lines()
+        response = requests.get(filename, stream=True)
+        input_data = response.iter_lines()
         needs_closed=False
     else:
-        f = my_open(filename)
+        input_data = my_open(filename)
         needs_closed=True
 
     count = 0
-    for line in f:
+    for line in input_data:
         count += 1
 
         # Convert from bytes to str
@@ -95,7 +95,8 @@ def read(filename, handlers=None, classes=None, args=None):
         # Handle event-stream
         if line.startswith('event: pirail'):
             continue
-        elif line.startswith('data: '):
+
+        if line.startswith('data: '):
             line = line.split(' ', 1)[1]
 
         # Skip Blank Lines
@@ -108,7 +109,7 @@ def read(filename, handlers=None, classes=None, args=None):
         except Exception as ex:
             print("Line: %s" % line)
             print("ERROR: line=%d, %s" % (count, ex))
-            raise Exception
+            raise Exception from ex
 
         # Check Class
         if classes is not None:
@@ -150,7 +151,7 @@ def read(filename, handlers=None, classes=None, args=None):
             yield (count, obj)
 
     if needs_closed:
-        f.close()
+        input_data.close()
 
 def write(filename, data):
     """
@@ -176,6 +177,18 @@ def vector_to_coordinates(angle, distance):
     x_coord = distance * math.sin(math.radians(angle))
     y_coord = distance * math.cos(math.radians(angle))
     return (x_coord, y_coord)
+
+def avg_3_of_5(data):
+    """
+    Average of five data points, discard the high and low points
+    """
+    if len(data) == 0:
+        retval = 0
+    if len(data) < 5:
+        retval = sum(data) / len(data)
+    else:
+        retval = (sum(data) - min(data) - max(data)) / (len(data) - 2)
+    return retval
 
 if __name__ == "__main__":
     # Unit Tests

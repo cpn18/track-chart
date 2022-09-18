@@ -20,7 +20,7 @@ def convert_to_xy(data, offset=0):
         new_data[angle] = (data[angle], x, y)
     return new_data
 
-def calc_gage(data):
+def calc_gauge(data):
     min_dist_left = min_dist_right = 999999
     min_dist_left_i = min_dist_right_i = -1
     for i in LOW_RANGE:
