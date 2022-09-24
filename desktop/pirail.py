@@ -6,6 +6,7 @@ import json
 import datetime
 import sys
 import math
+import wave
 import requests
 
 # Number of Satellites
@@ -170,6 +171,18 @@ def parse_time(time_string):
     """
     return datetime.datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%fZ")
 
+def parse_time_in_seconds(time_string):
+    """
+    Parse GPS time string to seconds
+    """
+    return float((parse_time(time_string) - datetime.datetime.fromtimestamp(0)).total_seconds())
+
+def format_time(time_value):
+    """
+    Format GPS time string from datetime
+    """
+    return time_value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
 def vector_to_coordinates(angle, distance):
     """
     Convert vector to 2D coordinates
@@ -189,6 +202,38 @@ def avg_3_of_5(data):
     else:
         retval = (sum(data) - min(data) - max(data)) / (len(data) - 2)
     return retval
+
+def read_wav_file(obj):
+    """
+    Read a WAV Files, Return a JSON Object
+    """
+    result = {
+        "time": obj['time'],
+        "framerate": 0,
+        "left": [],
+        "right": [],
+        "ts": [],
+    }
+    timestamp = obj['time'].split('.')[0].replace('-','').replace('T','').replace(':','')[0:12]
+    with wave.open(timestamp + "_left.wav", "rb") as left_channel:
+        with wave.open(timestamp + "_right.wav", "rb") as right_channel:
+            xl = []
+            xr = []
+            ts = []
+            tc = 0
+            params = left_channel.getparams()
+            params = right_channel.getparams()
+            result['framerate'] = params.framerate
+            Fs = 1.0 / result['framerate']
+            for _i in range(params.nframes):
+                xl.append(int.from_bytes(left_channel.readframes(1), "little", signed=True))
+                xr.append(int.from_bytes(right_channel.readframes(1), "little", signed=True))
+                ts.append(tc)
+                tc += Fs
+            result['left'] = xl
+            result['right'] = xr
+            result['ts'] = ts
+    return result
 
 if __name__ == "__main__":
     # Unit Tests
