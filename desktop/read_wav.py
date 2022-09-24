@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import sys
-import wave
 import matplotlib.pyplot as plt
 import numpy as np
+import pirail
 
 
 TIME_ADJUST = True
@@ -11,28 +11,15 @@ CROSS_RATIO = 0.75
 
 UPSCALE = 1.0
 
-def read_wav(filename):
-    xl = []
-    xr = []
-    ts = []
-    with wave.open(filename, "rb") as wf:
-        params = wf.getparams()
-        Fr = params.framerate
-        Fs = 1.0/Fr
-        tc = 0
-        for i in range(params.nframes):
-            data = wf.readframes(1)
-            value = int.from_bytes(data, "little", signed=True)
-            xl.append(value)
-            ts.append(tc)
-            tc += Fs
+def read_wav(timestamp):
+    data = pirail.read_wav_file({"time": timestamp})
+    Fr = data['framerate']
+    Fs = 1.0 / Fr
+    tc = 0
 
-    with wave.open(filename.replace("_left","_right"), "rb") as wf:
-        params = wf.getparams()
-        for i in range(params.nframes):
-            data = wf.readframes(1)
-            value = int.from_bytes(data, "little", signed=True)
-            xr.append(value)
+    xl = data['left']
+    xr = data['right']
+    ts = data['ts']
 
     if TIME_ADJUST:
         mindiff=None
