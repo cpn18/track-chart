@@ -792,7 +792,7 @@ def plot_value(track_chart, field="acc_z", scale=1):
 
     del draw
 
-def accel(track_chart, scale=1, draw=None):
+def accel(track_chart, scale=1, drawables=None):
     """
     Draw Acceleration Data
     """
@@ -817,22 +817,22 @@ def accel(track_chart, scale=1, draw=None):
     gyro_zp = [0] * image.size[0]
 
     # default is plot acc_z and gryo_y
-    if draw is None:
-        draw = ['acc_z', 'gyro_y']
+    if drawables is None:
+        drawables = ['acc_z', 'gyro_y']
 
-    if 'acc_x' in draw:
+    if 'acc_x' in drawables:
         draw.text((margin, yxpixel), "ACC_X", fill=COLORS['red'])
-    if 'acc_y' in draw:
+    if 'acc_y' in drawables:
         draw.text((margin, yypixel), "ACC_Y", fill=COLORS['blue'])
-    if 'acc_z' in draw:
+    if 'acc_z' in drawables:
         draw.text((margin, yzpixel), "ACC_Z", fill=COLORS['green'])
-    if 'gyro_x' in draw:
+    if 'gyro_x' in drawables:
         draw.text((margin, ygxpixel), "GYRO_X", fill=COLORS['red'])
-    if 'gyro_y' in draw:
+    if 'gyro_y' in drawables:
         draw.text((margin, ygypixel), "GYRO_Y", fill=COLORS['blue'])
-    if 'gypo_z' in draw:
+    if 'gypo_z' in drawables:
         draw.text((margin, ygzpixel), "GYRO_Z", fill=COLORS['green'])
-    if 'speed' in draw:
+    if 'speed' in drawables:
         draw.text((margin, yspixel), "SPEED", fill=COLORS['black'])
 
     mileage = None
@@ -855,11 +855,11 @@ def accel(track_chart, scale=1, draw=None):
             if obj['class'] == "G" or obj['class'] == "TPV":
                 # Speed
                 speed = obj.get('speed', 0)
-                if 'speed' in draw:
+                if 'speed' in drawables:
                     draw.point((xpixel, yspixel-speed), fill=COLORS['black'])
             elif obj['class'] in ["A", "ATT"]:
                 if speed == 100:
-                    if 'speed' in draw:
+                    if 'speed' in drawables:
                         draw.point((xpixel, yxpixel), fill=COLORS['black'])
                         draw.point((xpixel, yypixel), fill=COLORS['black'])
                         draw.point((xpixel, yzpixel), fill=COLORS['black'])
@@ -885,17 +885,17 @@ def accel(track_chart, scale=1, draw=None):
                     accel_file.write("%f %f %f %f %f %f %f %f %f\n" %( obj['mileage'], obj['lat'], obj['lon'], obj['acc_x'], obj['acc_y'], obj['acc_z'], obj['gyro_x'], obj['gyro_y'], obj['gyro_z']))
 
         for xpixel in range(margin, len(acc_xp)-2*margin):
-            if 'acc_x' in draw:
+            if 'acc_x' in drawables:
                 draw.line((xpixel,yxpixel-scale*acc_xp[xpixel],xpixel-1,yxpixel-scale*acc_xp[xpixel-1]),fill=COLORS['red'])
-            if 'acc_y' in draw:
+            if 'acc_y' in drawables:
                 draw.line((xpixel,yypixel-scale*acc_yp[xpixel],xpixel-1,yypixel-scale*acc_yp[xpixel-1]),fill=COLORS['blue'])
-            if 'acc_z' in draw:
+            if 'acc_z' in drawables:
                 draw.line((xpixel,yzpixel-scale*acc_zp[xpixel],xpixel-1,yzpixel-scale*acc_zp[xpixel-1]),fill=COLORS['green'])
-            if 'gyro_x' in draw:
+            if 'gyro_x' in drawables:
                 draw.line((xpixel,ygxpixel-scale*gyro_xp[xpixel],xpixel-1,ygxpixel-scale*gyro_xp[xpixel-1]),fill=COLORS['red'])
-            if 'gyro_y' in draw:
+            if 'gyro_y' in drawables:
                 draw.line((xpixel,ygypixel-scale*gyro_yp[xpixel],xpixel-1,ygypixel-scale*gyro_yp[xpixel-1]),fill=COLORS['blue'])
-            if 'gypo_z' in draw:
+            if 'gypo_z' in drawables:
                 draw.line((xpixel,ygzpixel-scale*gyro_zp[xpixel],xpixel-1,ygzpixel-scale*gyro_zp[xpixel-1]),fill=COLORS['green'])
 
     del draw

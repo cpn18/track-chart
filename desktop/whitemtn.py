@@ -45,7 +45,7 @@ def main():
         print("curvature")
         #trackchart.curvature(mychart)
         print("accel")
-        trackchart.accel(mychart, ['ACC_X', 'ACC_Y', 'ACC_Z'])
+        trackchart.accel(mychart, drawables=['ACC_X', 'ACC_Y', 'ACC_Z'])
         print("plot value")
         trackchart.plot_value(mychart, field="roll", scale=-5)
         print("lidar-gauge")
