@@ -31,16 +31,21 @@ def add_mileage_and_gps(json_file, known_file, output_file):
             if len(last_tpv) != 0:
                 if obj['time'] == last_tpv['time']:
                     continue
+
+                # Ensure that altitude is set to something
+                if not 'alt' in obj:
+                    try:
+                        obj['alt'] = last_tpv['alt']
+                    except KeyError:
+                        obj['alt'] = last_tpv['alt'] = 0
+
                 time_start = pirail.parse_time_in_seconds(obj['time'])
                 time_delta = time_start - pirail.parse_time_in_seconds(last_tpv['time'])
                 if len(acclist) > 0:
                     delta_mileage = (obj['mileage'] - last_tpv['mileage'])
                     delta_lat = (obj['lat'] - last_tpv['lat'])
                     delta_lon = (obj['lon'] - last_tpv['lon'])
-                    try:
-                        delta_alt = (obj['alt'] - last_tpv['alt'])
-                    except KeyError:
-                        delta_alt = 0
+                    delta_alt = (obj['alt'] - last_tpv['alt'])
                     #print ("delta_lat", delta_lat)
                     #print ("delta_lon", delta_lon)
                     #print ("time_delta", time_delta.total_seconds())
