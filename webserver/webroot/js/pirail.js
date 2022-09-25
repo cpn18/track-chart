@@ -1,7 +1,7 @@
 myChart = null;
 
 function plot_data(chartname, result) {
-  let windowsize = 0.5; // miles
+  let windowsize = 0.01; // miles
 
   // Find an average reading over the window to normallize the data
   avgresult = []
