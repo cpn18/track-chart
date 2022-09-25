@@ -27,7 +27,7 @@ Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
         <div class="header">
             <img src="../static/PiRail_color.png" alt="PiRail Logo">
             <div class="header-right">
-                <a class="active" href="unh2022.html">Home</a>
+                <a class="active" href="index_stream.html">Home</a>
                 <a href="about.html">About</a>
                 <a href="info.html">Info</a>
             </div>
@@ -88,8 +88,10 @@ function submit_handler()
     success: function(data, textStatus, jqXHR) {
       console.log(data);
       document.getElementById('min_acc_z').innerHTML = data.acc_z.min.acc_z.toFixed(4);
+      document.getElementById('min_acc_z_mile').innerHTML = data.acc_z.min.mileage.toFixed(2);
       document.getElementById('avg_acc_z').innerHTML = data.acc_z.avg.toFixed(4);
       document.getElementById('max_acc_z').innerHTML = data.acc_z.max.acc_z.toFixed(4);
+      document.getElementById('max_acc_z_mile').innerHTML = data.acc_z.max.mileage.toFixed(2);
       document.getElementById('mean_acc_z').innerHTML = data.acc_z.mean.acc_z.toFixed(4);
       document.getElementById('nf_label').innerHTML = "NoiseFloor("+document.getElementById('percentile').value*100+"%)";
       document.getElementById('nf_acc_z').innerHTML = data.acc_z.noise_floor.acc_z.toFixed(4);
@@ -118,6 +120,13 @@ function submit_handler()
                         <td id="max_acc_z"></td>
                         <td id="mean_acc_z"></td>
                         <td id="nf_acc_z"></td>
+                </tr>
+                <tr>
+                        <td id="min_acc_z_mile"></td>
+                        <td></td>
+                        <td id="max_acc_z_mile"></td>
+                        <td></td>
+                        <td></td>
                 </tr>
             </table>
         </div>
