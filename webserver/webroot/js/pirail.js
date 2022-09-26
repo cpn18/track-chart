@@ -87,6 +87,30 @@ function plot_data(chartname, result) {
     }]
   };
 
+  // Options
+  const options = {
+    //maintainAspectRatio: false,
+    //bezierCurve : false,
+    events: [],
+    plugins: {
+      zoom: {
+        pan: {
+          enabled: true,
+        },
+        zoom: {
+          mode:'x',
+          wheel: {
+            enabled: true,
+            speed: 0.2,
+          },
+          pinch: { // Help to zoom in mobile
+            enabled: true
+          }
+        }
+      }
+    }
+  }
+
   // Plot the chart
   const ctx = document.getElementById(chartname).getContext('2d');
   if (myChart != null) {
@@ -95,5 +119,6 @@ function plot_data(chartname, result) {
   myChart = new Chart(ctx, {
     type: 'scatter',
     data: data,
+    options: options,
   })
 }
