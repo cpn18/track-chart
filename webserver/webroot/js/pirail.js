@@ -4,6 +4,7 @@ function plot_data(chartname, result) {
   let windowsize = 0.01; // miles
 
   // Find an average reading over the window to normallize the data
+  // TODO: This only works with data sorted low-to-high
   avgresult = []
   for (let i = 0; i < result.length; i++) {
     mlow = result[i].mileage - windowsize/2;
