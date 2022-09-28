@@ -75,7 +75,7 @@ def get_file_listing(self, groups, _qsdict):
     Data Listing API
     GET /data/
     """
-    content_type = MIME_MAP['.html'] 
+    content_type = MIME_MAP['.html']
     output = "<html><body><ul>\n"
     pathname = os.path.normpath(DATAROOT)
     for root, dirnames, filenames in os.walk(pathname):
@@ -248,6 +248,8 @@ def get_acoustic(self, groups, qsdict):
             args['end-longitude'] = float(value)
 
         classes = "LPCM"
+        xform_function = DATA_XFORM['default']
+
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
         return
