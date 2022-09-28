@@ -247,7 +247,7 @@ def get_acoustic(self, groups, qsdict):
         if value is not None:
             args['end-longitude'] = float(value)
 
-        classes = "LPCM"
+        classes = ["LPCM", "TPV"]
         xform_function = DATA_XFORM['default']
 
     except ValueError as ex:
@@ -262,13 +262,24 @@ def get_acoustic(self, groups, qsdict):
     else:
         self.send_header("Content-type", "application/json")
 
+    lpcm_obj = {}
     for line_no, obj in pirail.read(pathname, classes=classes, args=args):
+        # Try to add end_mileage
+        if obj["class"] == "TPV":
+            lpcm_obj["end_mileage"] = obj['mileage']
+            continue
+
+        # Output the last record
+        if 'left' in lpcm_obj:
+            if stream:
+                output = "event: pirail\ndata: %s\n\n" % json.dumps(xform_function(lpcm_obj, qsdict))
+                self.wfile.write(output.encode('utf-8'))
+            else:
+                data.append(xform_function(lpcm_obj, qsdict))
+
+        # Read the new record
         obj.update(pirail.read_wav_file(obj))
-        if stream:
-            output = "event: pirail\ndata: %s\n\n" % json.dumps(xform_function(obj, qsdict))
-            self.wfile.write(output.encode('utf-8'))
-        else:
-            data.append(xform_function(obj, qsdict))
+        lpcm_obj = obj
 
     if not stream:
         # Sort the data
