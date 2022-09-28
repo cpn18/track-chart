@@ -1,6 +1,7 @@
 """
 PiRail Common Utilities
 """
+import os
 import gzip
 import json
 import datetime
@@ -59,6 +60,11 @@ def read(filename, handlers=None, classes=None, args=None):
     handler function, indexed by class.
     Otherwise, yields the result.
     """
+    datadir = os.environ.get('PIRAILDATA', None)
+
+    if datadir is not None:
+        filename = os.path.join(datadir, filename)
+
     my_open = open
     if filename.endswith(".gz"):
         my_open = gzip.open
@@ -158,6 +164,11 @@ def write(filename, data):
     """
     Write JSON to a file
     """
+    datadir = os.environ.get('PIRAILDATA', None)
+
+    if datadir is not None:
+        filename = os.path.join(datadir, filename)
+
     my_open = open
     if filename.endswith(".gz"):
         my_open = gzip.open
@@ -207,6 +218,8 @@ def read_wav_file(obj):
     """
     Read a WAV Files, Return a JSON Object
     """
+    datadir = os.environ.get('PIRAILDATA', None)
+
     result = {
         "time": obj['time'],
         "framerate": 0,
@@ -215,6 +228,8 @@ def read_wav_file(obj):
         "ts": [],
     }
     timestamp = obj['time'].split('.')[0].replace('-','').replace('T','').replace(':','')[0:12]
+    if datadir is not None:
+        timestamp = os.path.join(datadir, timestamp)
     with wave.open(timestamp + "_left.wav", "rb") as left_channel:
         with wave.open(timestamp + "_right.wav", "rb") as right_channel:
             xl = []
