@@ -220,6 +220,10 @@ def read_wav_file(obj):
     """
     datadir = os.environ.get('PIRAILDATA', None)
 
+    timestamp = obj['time'].split('.')[0].replace('-','').replace('T','').replace(':','')[0:12]
+    if datadir is not None:
+        timestamp = os.path.join(datadir, timestamp)
+
     result = {
         "time": obj['time'],
         "framerate": 0,
@@ -227,9 +231,7 @@ def read_wav_file(obj):
         "right": [],
         "ts": [],
     }
-    timestamp = obj['time'].split('.')[0].replace('-','').replace('T','').replace(':','')[0:12]
-    if datadir is not None:
-        timestamp = os.path.join(datadir, timestamp)
+
     with wave.open(timestamp + "_left.wav", "rb") as left_channel:
         with wave.open(timestamp + "_right.wav", "rb") as right_channel:
             xl = []

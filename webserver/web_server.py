@@ -28,7 +28,10 @@ class MyHandler(BaseHTTPRequestHandler):
         for match in application.MATCHES:
             groups = match['pattern'].match(self.command + " " + url.path)
             if groups is not None:
-                match['handler'](self, groups, qsdict)
+                try:
+                    match['handler'](self, groups, qsdict)
+                except BrokenPipeError as ex:
+                    print("ERROR: %s" % ex)
                 break
         else:
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
