@@ -441,7 +441,7 @@ MATCHES = [
     },
     # This one must be last
     {
-         "pattern": re.compile(r"GET /(?P<pathname>.+)"),
+         "pattern": re.compile(r"GET /(?P<pathname>.*)"),
          "handler": get_any,
     },
 ]
