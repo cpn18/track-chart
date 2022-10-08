@@ -107,7 +107,7 @@ dataStream.addEventListener("pirail", function(event) {
       document.getElementById('max_acc_z_mile').innerHTML = data.acc_z.max.mileage.toFixed(2);
       document.getElementById('mean_acc_z').innerHTML = data.acc_z.mean.acc_z.toFixed(4);
       document.getElementById('nf_label').innerHTML = "NoiseFloor("+document.getElementById('percentile').value*100+"%)";
-      document.getElementById('nf_acc_z').innerHTML = data.acc_z.noise_floor.acc_z.toFixed(4);
+      document.getElementById('nf_acc_z').innerHTML = "&plusmn;" + data.acc_z.noise_floor.acc_z.toFixed(4);
     },
   });
 
