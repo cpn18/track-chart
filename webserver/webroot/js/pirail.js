@@ -3,6 +3,11 @@ myChart = null;
 function plot_data(chartname, result) {
   let windowsize = 0.01; // miles
 
+  // subtract 1G
+  for (let i = 0; i < result.length; i++) {
+	  result[i].acc_z -= 9.81;
+  }
+
   // Find an average reading over the window to normallize the data
   // TODO: This only works with data sorted low-to-high
   avgresult = []
@@ -121,4 +126,17 @@ function plot_data(chartname, result) {
     data: data,
     options: options,
   })
+}
+
+function acc_z_stats(data, textStatus, jqXHR) {
+  let unit = " m/s<sup>2</sup>";
+  console.log(data);
+  document.getElementById('min_acc_z').innerHTML = data.acc_z.min.acc_z.toFixed(4) + unit;
+  document.getElementById('min_acc_z_mile').innerHTML = data.acc_z.min.mileage.toFixed(2);
+  document.getElementById('avg_acc_z').innerHTML = data.acc_z.avg.toFixed(4) + unit;
+  document.getElementById('max_acc_z').innerHTML = data.acc_z.max.acc_z.toFixed(4) + unit;
+  document.getElementById('max_acc_z_mile').innerHTML = data.acc_z.max.mileage.toFixed(2);
+  document.getElementById('mean_acc_z').innerHTML = data.acc_z.mean.acc_z.toFixed(4) + unit;
+  document.getElementById('nf_label').innerHTML = "NoiseFloor("+document.getElementById('percentile').value*100+"%)";
+  document.getElementById('nf_acc_z').innerHTML = "&plusmn;" + data.acc_z.noise_floor.acc_z.toFixed(4) + unit;
 }

@@ -85,17 +85,7 @@ function submit_handler()
     dataType: "json",
     headers: {"Accept": "application/json"},
     url: url,
-    success: function(data, textStatus, jqXHR) {
-      console.log(data);
-      document.getElementById('min_acc_z').innerHTML = data.acc_z.min.acc_z.toFixed(4);
-      document.getElementById('min_acc_z_mile').innerHTML = data.acc_z.min.mileage.toFixed(2);
-      document.getElementById('avg_acc_z').innerHTML = data.acc_z.avg.toFixed(4);
-      document.getElementById('max_acc_z').innerHTML = data.acc_z.max.acc_z.toFixed(4);
-      document.getElementById('max_acc_z_mile').innerHTML = data.acc_z.max.mileage.toFixed(2);
-      document.getElementById('mean_acc_z').innerHTML = data.acc_z.mean.acc_z.toFixed(4);
-      document.getElementById('nf_label').innerHTML = "NoiseFloor("+document.getElementById('percentile').value*100+"%)";
-      document.getElementById('nf_acc_z').innerHTML = data.acc_z.noise_floor.acc_z.toFixed(4);
-    },
+    success: acc_z_stats,
   });
 }
             </script>
