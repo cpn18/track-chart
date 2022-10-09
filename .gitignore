@@ -100,6 +100,7 @@ ENV/
 # mypy
 .mypy_cache/
 
+webserver/PIRAIL/
 data/
 desktop/images/
 desktop/slices/

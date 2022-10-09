@@ -3,6 +3,7 @@ PiRail Common Utilities
 """
 import os
 import gzip
+import re
 import json
 import datetime
 import sys
@@ -60,10 +61,9 @@ def read(filename, handlers=None, classes=None, args=None):
     handler function, indexed by class.
     Otherwise, yields the result.
     """
-    datadir = os.environ.get('PIRAILDATA', None)
 
-    if datadir is not None:
-        filename = os.path.join(datadir, filename)
+    # Search for the file
+    filename = list_files(filename=filename)
 
     my_open = open
     if filename.endswith(".gz"):
@@ -164,11 +164,6 @@ def write(filename, data):
     """
     Write JSON to a file
     """
-    datadir = os.environ.get('PIRAILDATA', None)
-
-    if datadir is not None:
-        filename = os.path.join(datadir, filename)
-
     my_open = open
     if filename.endswith(".gz"):
         my_open = gzip.open
@@ -218,11 +213,10 @@ def read_wav_file(obj):
     """
     Read a WAV Files, Return a JSON Object
     """
-    datadir = os.environ.get('PIRAILDATA', None)
-
     timestamp = obj['time'].split('.')[0].replace('-','').replace('T','').replace(':','')[0:12]
-    if datadir is not None:
-        timestamp = os.path.join(datadir, timestamp)
+
+    left_file = list_files(filename=timestamp + "_left.wav")
+    right_file = left_file.replace("left", "right")
 
     result = {
         "time": obj['time'],
@@ -232,8 +226,8 @@ def read_wav_file(obj):
         "ts": [],
     }
 
-    with wave.open(timestamp + "_left.wav", "rb") as left_channel:
-        with wave.open(timestamp + "_right.wav", "rb") as right_channel:
+    with wave.open(left_file, "rb") as left_channel:
+        with wave.open(right_file, "rb") as right_channel:
             xl = []
             xr = []
             ts = []
@@ -252,6 +246,46 @@ def read_wav_file(obj):
             result['ts'] = ts
     return result
 
+def list_files(filename=None, regex=None):
+    """
+    Find a file using the PIRAILDATA search path
+    
+    The assumption is that each directory in the PIRAILDATA
+    search path is a "PIRAIL" directory, and contains
+    subdirectories in the YYYYmmdd format.
+
+    If filename is set, try to find that exact file
+    If regex is set, find matching files
+    If neither, list all files
+    """
+    files = []
+    for pirail_dir in os.environ.get('PIRAILDATA', '').split(':'):
+        if not os.path.isdir(pirail_dir):
+            continue
+        for s in os.listdir(pirail_dir):
+            if re.search(r'\d{8}', s) is None:
+                continue
+            subdir = os.path.join(pirail_dir, s)
+            if not os.path.isdir(subdir):
+                continue
+            for f in os.listdir(subdir):
+                name = os.path.join(subdir, f)
+                if not os.path.isfile(name):
+                    continue
+                if filename is not None:
+                    if f == filename:
+                        return name
+                elif regex is None or re.search(regex, name) is not None:
+                    files.append(name)
+
+    if filename is not None:
+        return filename
+    else:
+        return files
+
 if __name__ == "__main__":
     # Unit Tests
-    print(parse_cmd_line_args())
+    #print(parse_cmd_line_args())
+    #print(list_files(regex=r'.*json$'))
+    #print(list_files())
+    print(list_files(filename="web_stdout_20220821190311.log"))

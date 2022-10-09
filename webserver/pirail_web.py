@@ -15,9 +15,6 @@ from http import HTTPStatus
 # Directory for web content (html, css, js, etc.)
 WEBROOT = "webroot"
 
-# Directory for data (json)
-DATAROOT = os.environ.get('PIRAILDATA', "data")
-
 # Default sort method (set to None for no sorting)
 SORTBY = "mileage"
 
@@ -77,8 +74,7 @@ def get_file_listing(self, groups, _qsdict):
     """
     content_type = MIME_MAP['.html']
     output = "<html><body><ul>\n"
-    pathname = os.path.normpath(DATAROOT)
-    for root, dirnames, filenames in os.walk(pathname):
+    for filenames in pirail.list_files(regex=r'.*json$'):
         for filename in filenames:
             output += "<li><a href=\"/data/" + \
                       filename + "\">" + filename + "</a>\n"
@@ -111,7 +107,7 @@ def get_file(self, groups, qsdict):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
         else:
-            pathname = os.path.normpath(os.path.join(DATAROOT, filename))
+            pathname = pirail.list_files(filename=filename)
             if not os.path.isfile(pathname):
                 self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
                 return
@@ -310,7 +306,7 @@ def get_stats(self, groups, qsdict):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
         else:
-            pathname = os.path.normpath(os.path.join(DATAROOT, filename))
+            pathname = pirail.list_files(filename=filename)
             if not os.path.isfile(pathname):
                 self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
                 return
