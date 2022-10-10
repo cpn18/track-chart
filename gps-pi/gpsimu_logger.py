@@ -208,11 +208,8 @@ def gpsimu_logger(output_directory):
     with open(os.path.join(output_directory,timestamp+"_gps.csv"), "w") as gps_output, \
         open(os.path.join(output_directory,timestamp+"_imu.csv"), "w") as imu_output:
 
-        gps_output.write("%s %s %s *\n" % (config['time'], "VERSION", json.dumps({"class": "VERSION", "version": util.DATA_API})))
-        gps_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
-
-        imu_output.write("%s %s %s *\n" % (config['time'], "VERSION", {"class": "VERSION", "version": util.DATA_API}))
-        imu_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
+        util.write_header(gps_output, config)
+        util.write_header(imu_output, config)
 
         while not util.DONE:
             # GPS

@@ -88,8 +88,7 @@ def lpcm_logger(output_directory):
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
     with open(os.path.join(output_directory,timestamp+"_lpcm.csv"), "w") as lpcm_output:
-        lpcm_output.write("%s %s %s *\n" % (config['time'], "VERSION", json.dumps({"class": "VERSION", "version": util.DATA_API})))
-        lpcm_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
+        util.write_header(lpcm_output, config)
         while not util.DONE:
             try:
                 timestamp = datetime.datetime.now()
