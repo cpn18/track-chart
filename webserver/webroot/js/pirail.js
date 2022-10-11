@@ -1,7 +1,6 @@
 myChart = null;
 
-function plot_data(chartname, result) {
-  let windowsize = 0.01; // miles
+function plot_data(chartname, result, windowsize) {
 
   // subtract 1G
   for (let i = 0; i < result.length; i++) {
