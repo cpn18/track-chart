@@ -3,8 +3,9 @@
 export PYTHONPATH=../desktop
 
 # Check for external storage - WORKAROUND
-if [ -d "/run/media/jminer/FreeAgent Drive" ]; then
-    export PIRAILDATA="/run/media/jminer/FreeAgent Drive/PIRAIL/20210725"
+external_storage="/run/media/jminer/FreeAgent Drive/PIRAIL/20210725"
+if [ -d "${external_storage}" ]; then
+    export PIRAILDATA="${external_storage}"
 fi
 
 python web_server.py 8080
