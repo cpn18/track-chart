@@ -96,7 +96,7 @@ function plot_data(chartname, result) {
   const options = {
     //maintainAspectRatio: false,
     //bezierCurve : false,
-    events: [],
+    //events: [],
     plugins: {
       zoom: {
         pan: {
