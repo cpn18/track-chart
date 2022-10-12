@@ -1,0 +1,19 @@
+The GIT respository does not include the data files.
+
+You can get the wrr_20211016_westbound.json file from
+the "Sample Data" directory in the UNH Capstone 2023 directory:
+
+https://drive.google.com/drive/folders/19CUF746Ex-H-uH54zxhxy8JhtKGV_HN9?usp=sharing
+
+There are two options:
+
+1) Copy the file into the track-charts/webserver/PIRAIL/20211016 directory
+
+2) Copy the file somewhere else on your system, and edit the
+   launch.sh script to set the PIRAILDATA environment variable to
+   the directory where you put it.
+
+NOTE: The PIRAILDATA environment variable is a colon separated
+      list of top level directories, which contain a number of
+      subdirectories in the "YYYYmmdd" format.
+
