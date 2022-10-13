@@ -2,6 +2,7 @@
 """
 Generate a tabular report based on acc_z data
 """
+import numpy
 import pirail
 
 # How many to report
@@ -50,6 +51,7 @@ def report_by_acc_z(filename):
 
     # Sort by deltaZ
     processed = sorted(processed, key=lambda k: k['deltaz'], reverse=False)
+    max_value = processed[-1]['deltaz']
 
     # Output the top ten
     top_ten = sorted(processed[-LIMIT:], key=lambda k: k['mileage'], reverse=False)
@@ -59,7 +61,7 @@ def report_by_acc_z(filename):
             obj['mileage'],
             obj['lat'],
             obj['lon'],
-            obj['deltaz']
+            obj['deltaz'] / max_value,
         ))
 
 def report_by_jerk(filename):
@@ -78,6 +80,8 @@ def report_by_jerk(filename):
     # Sort by jerk
     data = sorted(data, key=lambda k: k['jerkz'], reverse=False)
 
+    max_value = data[-1]['jerkz']
+
     # Output the top ten
     top_ten = sorted(data[-LIMIT:], key=lambda k: k['mileage'], reverse=False)
     print("Mileage Latitude Longitude jerkZ")
@@ -86,9 +90,41 @@ def report_by_jerk(filename):
             obj['mileage'],
             obj['lat'],
             obj['lon'],
-            obj['jerkz']
+            obj['jerkz'] / max_value,
+        ))
+
+def report_by_stddev(filename):
+    window = 0.01 # Miles
+    data = []
+    y = []
+    for _lineno, obj in pirail.read(filename, classes="ATT"):
+        data.append(obj)
+        y.append(obj['acc_z'])
+
+    stddev = numpy.std(y)
+    mean = numpy.mean(y)
+
+    # Loop over the dataset
+    for i in range(len(data)):
+        data[i]['sigma'] = abs(data[i]['acc_z'] - mean) / stddev
+
+    # Sort by sigma
+    data = sorted(data, key=lambda k: k['sigma'], reverse=False)
+
+    max_value = data[-1]['sigma']
+
+    # Output the top ten
+    top_ten = sorted(data[-LIMIT:], key=lambda k: k['mileage'], reverse=False)
+    print("Mileage Latitude Longitude sigma")
+    for obj in top_ten:
+        print("%0.3f %02.6f %03.6f - - %f" % (
+            obj['mileage'],
+            obj['lat'],
+            obj['lon'],
+            obj['sigma'] / max_value,
         ))
 
 if __name__ == "__main__":
     report_by_acc_z("wrr_20211016_westbound.json")
     report_by_jerk("wrr_20211016_westbound.json")
+    report_by_stddev("wrr_20211016_westbound.json")

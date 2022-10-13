@@ -6,6 +6,7 @@ import os
 import json
 import re
 import sys
+import numpy
 
 import pirail
 
@@ -363,17 +364,24 @@ def get_stats(self, groups, qsdict):
     # Sort the data
     data = sorted(data, key=lambda k: k['acc_z'], reverse=False)
 
-    sum_acc_z = 0
+    data_acc_z = []
     for obj in data:
-        sum_acc_z += obj['acc_z']
+        data_acc_z.append(obj['acc_z'])
+
+    average = numpy.average(data_acc_z)
+    data_acc_z_abs = []
+    for obj in data:
+        data_acc_z_abs.append(abs(obj['acc_z'] - average))
+    data_acc_z_abs = sorted(data_acc_z_abs)
 
     result = {
         "acc_z": {
             "min": data[0],
             "max": data[-1],
-            "mean": data[int(len(data)/2)],
-            "avg": sum_acc_z / len(data),
-            "noise_floor": data[int(len(data)*percentile)],
+            "median": data[int(len(data)/2)],
+            "avg": average,
+            "stddev": numpy.std(data_acc_z),
+            "noise_floor": data_acc_z_abs[int(len(data_acc_z_abs)*percentile)],
         },
     }
 
