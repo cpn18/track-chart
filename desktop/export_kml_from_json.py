@@ -24,7 +24,7 @@ with open(output, "w") as kml:
     kml.write('<LineString>\n')
     kml.write('<coordinates>\n')
 
-    for line_no, obj in pirail.read(sys.argv[1], classes=['TPV']):
+    for line_no, obj in pirail.read(sys.argv[-1], classes=['TPV']):
         kml.write("%f,%f,%f\n" % (
             obj['lon'],
             obj['lat'],
