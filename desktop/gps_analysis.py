@@ -7,12 +7,14 @@ import math
 import statistics
 import json
 
+import geo
 import pirail
 
 def main(filename):
     used=count=0
 
-    print("Time Latitude Longitude Used Count")
+    last_tpv = None
+    print("Time Latitude Longitude Used Count Delta")
     for line_no, obj in pirail.read(filename, classes=['SKY', 'TPV']):
         if obj['class'] == "SKY":
             used=count=0
@@ -26,7 +28,12 @@ def main(filename):
             if 'num_used' in obj:
                 used = obj['num_used']
             if 'lat' in obj and 'lon' in obj:
-                print("%s %f %f %d %d" % (obj['time'], obj['lat'], obj['lon'], used, count))
+                if last_tpv is None:
+                    delta = 0
+                else:
+                    delta = geo.great_circle(last_tpv['lat'],last_tpv['lon'],obj['lat'],obj['lon'])
+                print("%s %f %f %d %d %f" % (obj['time'], obj['lat'], obj['lon'], used, count, delta))
+                last_tpv = obj
 
 if len(sys.argv) < 2:
     print("USAGE: %s [args] data_file.json" % sys.argv[0])
