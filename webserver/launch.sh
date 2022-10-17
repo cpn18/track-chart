@@ -8,4 +8,4 @@ if [ -d "${external_storage}" ]; then
     export PIRAILDATA="${external_storage}"
 fi
 
-python web_server.py 8080
+python3 web_server.py 8080
