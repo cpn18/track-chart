@@ -258,15 +258,16 @@ class Gps2Miles:
         for i in range(0, len(self.points)):
             point = self.points[i]
             if 'lat' in point and 'lon' in point and 'mileage' in point:
-                mileage = self.find_mileage(point['lat'],
+                mileage, certainty = self.find_mileage(point['lat'],
                                       point['lon'],
                                       ignore=True)
                 if abs(mileage - point['mileage']) > 0.01:
                     retval = False
                     if update:
                         self.points[i]['mileage'] = round(mileage, 2)
-            else:
-                print(point)
+                        self.points[i]['certainty'] = certainty
+                    else:
+                        print(point, mileage, certainty)
 
         return retval
 
@@ -281,7 +282,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     G = Gps2Miles(filename)
-    #print(G.sanity_check(update=True))
+    print(G.sanity_check(update=False))
     G.export()
     print(G.find_mileage(lat, lon, ignore=True))
     print(G.find_survey(lat, lon, ignore=True))
