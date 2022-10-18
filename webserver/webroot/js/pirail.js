@@ -3,21 +3,19 @@ myChart = null;
 function plot_data(chartname, result, windowsize) {
 
   // Find an average reading over the window to normallize the data
-  // TODO: This only works with data sorted low-to-high
-  avgresult = []
+  avgresult = [];
+  halfwindow = windowsize / 2;
   for (let i = 0; i < result.length; i++) {
-    mlow = result[i].mileage - windowsize/2;
-    mhigh = result[i].mileage + windowsize/2;
     msum = 0;
     mcnt = 0;
     j = i;
-    while ( j >= 0 && result[j].mileage >= mlow ) {
+    while (j >= 0 && Math.abs(result[i].mileage - result[j].mileage) < halfwindow) {
       msum += result[j].acc_z;
       mcnt += 1;
       j -= 1;
     }
     j = i + 1;
-    while ( j < result.length && result[j].mileage <= mhigh) {
+    while ( j < result.length && Math.abs(result[i].mileage - result[j].mileage) < halfwindow) {
       msum += result[j].acc_z;
       mcnt += 1;
       j += 1;
@@ -54,18 +52,16 @@ function plot_data(chartname, result, windowsize) {
   // Calculate the average acc_z using a sliding window
   avalues = [];
   for (let i = 0; i < allvalues.length; i++) {
-    mlow = allvalues[i]['x'] - windowsize/2;
-    mhigh = allvalues[i]['x'] + windowsize/2;
     msum = 0;
     mcnt = 0;
     j = i;
-    while ( j >= 0 && allvalues[j]['x'] >= mlow ) {
+    while ( j >= 0 && Math.abs(allvalues[i]['x'] - allvalues[j]['x']) < halfwindow ) {
       msum += allvalues[j]['y'];
       mcnt += 1;
       j -= 1;
     }
     j = i + 1;
-    while ( j < allvalues.length && allvalues[j]['x'] <= mhigh) {
+    while ( j < allvalues.length && Math.abs(allvalues[i]['x'] - allvalues[j]['x']) < halfwindow) {
       msum += allvalues[j]['y'];
       mcnt += 1;
       j += 1;
