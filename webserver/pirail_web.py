@@ -229,7 +229,7 @@ def get_acoustic(self, groups, qsdict):
 
         value = qsdict.get("end-time",[None])[0]
         if value is not None:
-            args['end-time'] = float(value)
+            args['end-time'] = value
 
         value = qsdict.get("start-latitude",[None])[0]
         if value is not None:
