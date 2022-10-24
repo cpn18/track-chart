@@ -16,7 +16,7 @@ from http import HTTPStatus
 WEBROOT = "webroot"
 
 # Directory for data (json)
-DATAROOT = os.environ.get('PIRAILDATA', "data")
+DATAROOT = os.environ.get('PIRAILDATA', pirail.DEFAULT_DIRECTORY)
 
 # Default sort method (set to None for no sorting)
 SORTBY = "mileage"
@@ -210,8 +210,7 @@ def get_acoustic(self, groups, qsdict):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
         else:
-            pathname = os.path.normpath(os.path.join(DATAROOT, filename))
-            if not os.path.isfile(pathname):
+            if not os.path.isfile(os.path.normpath(os.path.join(DATAROOT, filename))):
                 self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
                 return
 
@@ -263,7 +262,7 @@ def get_acoustic(self, groups, qsdict):
         self.send_header("Content-type", "application/json")
 
     lpcm_obj = {}
-    for line_no, obj in pirail.read(pathname, classes=classes, args=args):
+    for line_no, obj in pirail.read(filename, classes=classes, args=args):
         # Try to add end_mileage
         if obj["class"] == "TPV":
             lpcm_obj["end_mileage"] = obj['mileage']

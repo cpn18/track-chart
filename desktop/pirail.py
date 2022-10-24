@@ -13,6 +13,9 @@ import requests
 # Number of Satellites
 GPS_THRESHOLD = 10
 
+# Default Directory
+DEFAULT_DIRECTORY = "data"
+
 def string_to_val(string):
     """ Convert a string to a value """
     try:
@@ -60,7 +63,7 @@ def read(filename, handlers=None, classes=None, args=None):
     handler function, indexed by class.
     Otherwise, yields the result.
     """
-    datadir = os.environ.get('PIRAILDATA', None)
+    datadir = os.environ.get('PIRAILDATA', DEFAULT_DIRECTORY)
 
     if datadir is not None:
         filename = os.path.join(datadir, filename)
@@ -164,7 +167,7 @@ def write(filename, data):
     """
     Write JSON to a file
     """
-    datadir = os.environ.get('PIRAILDATA', None)
+    datadir = os.environ.get('PIRAILDATA', DEFAULT_DIRECTORY)
 
     if datadir is not None:
         filename = os.path.join(datadir, filename)
@@ -218,7 +221,7 @@ def read_wav_file(obj):
     """
     Read a WAV Files, Return a JSON Object
     """
-    datadir = os.environ.get('PIRAILDATA', None)
+    datadir = os.environ.get('PIRAILDATA', DEFAULT_DIRECTORY)
 
     timestamp = obj['time'].split('.')[0].replace('-','').replace('T','').replace(':','')[0:12]
     if datadir is not None:
