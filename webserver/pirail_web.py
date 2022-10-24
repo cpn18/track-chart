@@ -226,7 +226,7 @@ def get_acoustic(self, groups, qsdict):
 
         value = qsdict.get("end-time",[None])[0]
         if value is not None:
-            args['end-time'] = float(value)
+            args['end-time'] = value
 
         value = qsdict.get("start-latitude",[None])[0]
         if value is not None:
@@ -275,7 +275,15 @@ def get_acoustic(self, groups, qsdict):
                 data.append(xform_function(lpcm_obj, qsdict))
 
         # Read the new record
-        obj.update(pirail.read_wav_file(obj))
+        try:
+            obj.update(pirail.read_wav_file(obj))
+        except FileNotFoundError:
+            obj.update({
+                "framerate": -1,
+                "left": [],
+                "right": [],
+                "ts": [],
+            })
         lpcm_obj = obj
 
     if not stream:
