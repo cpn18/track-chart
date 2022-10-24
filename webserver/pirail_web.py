@@ -111,8 +111,7 @@ def get_file(self, groups, qsdict):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
         else:
-            pathname = os.path.normpath(os.path.join(DATAROOT, filename))
-            if not os.path.isfile(pathname):
+            if not os.path.isfile(os.path.normpath(os.path.join(DATAROOT, filename))):
                 self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
                 return
 
@@ -167,7 +166,7 @@ def get_file(self, groups, qsdict):
     else:
         self.send_header("Content-type", "application/json")
 
-    for line_no, obj in pirail.read(pathname, classes=classes, args=args):
+    for line_no, obj in pirail.read(filename, classes=classes, args=args):
         if stream:
             output = "event: pirail\ndata: %s\n\n" % json.dumps(xform_function(obj, qsdict))
             self.wfile.write(output.encode('utf-8'))
@@ -317,8 +316,7 @@ def get_stats(self, groups, qsdict):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
         else:
-            pathname = os.path.normpath(os.path.join(DATAROOT, filename))
-            if not os.path.isfile(pathname):
+            if not os.path.isfile(os.path.normpath(os.path.join(DATAROOT, filename))):
                 self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
                 return
 
@@ -368,7 +366,7 @@ def get_stats(self, groups, qsdict):
     self.send_response(HTTPStatus.OK)
     self.send_header("Content-type", "application/json")
 
-    for line_no, obj in pirail.read(pathname, classes=classes, args=args):
+    for line_no, obj in pirail.read(filename, classes=classes, args=args):
         data.append(xform_function(obj, qsdict))
 
     # Sort the data
