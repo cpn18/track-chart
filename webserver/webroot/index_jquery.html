@@ -75,6 +75,9 @@ function submit_handler()
     success: function(data, textStatus, jqXHR) {
       plot_data('myChart', data, document.getElementById('window').value);
     },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert("Connection Error: " + xhr.status);
+    },
   });
 
   var url = "pirail_stats_fetch.php" +

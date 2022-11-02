@@ -74,8 +74,8 @@ dataStream.onopen = function() {
     console.log("connection opened");
 };
 
-dataStream.onerror = function() {
-    console.log("connection error");
+dataStream.onerror = function(err) {
+    alert("Connection Error");
     dataStream.close();
 };
 
