@@ -97,14 +97,16 @@ def lpcm_logger(output_directory):
                     "class": "LPCM",
                     "time": timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 }
-                for channel in ["left", "right"]:
-                    capture_file = filename+"_"+channel+".wav"
-                    if os.path.isfile(os.path.join(output_directory, capture_file)):
-                        LPCM_DATA[channel] = capture_file
 
                 if os.system("./lpcm_collect.sh %s %s \"%s\"" % (output_directory, filename, config['lpcm']['arecord'])) != 0:
                     time.sleep(util.ERROR_DELAY)
                 else:
+                    # Check if output files exist
+                    for channel in ["left", "right", "stereo"]:
+                        capture_file = filename+"_"+channel+".wav"
+                        if os.path.isfile(os.path.join(output_directory, capture_file)):
+                            LPCM_DATA[channel] = capture_file
+
                     lpcm_output.write(
                         "%s %s %s *\n" % (
                             LPCM_DATA['time'],

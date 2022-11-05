@@ -209,9 +209,11 @@ def avg_3_of_5(data):
         retval = (sum(data) - min(data) - max(data)) / (len(data) - 2)
     return retval
 
-def read_wav_file(obj):
+def read_mono_wav_files(obj):
     """
     Read a WAV Files, Return a JSON Object
+
+    WARNING: This routine does not do any time code correction
     """
     timestamp = obj['time'].split('.')[0].replace('-','').replace('T','').replace(':','')[0:12]
 
@@ -237,14 +239,71 @@ def read_wav_file(obj):
             result['framerate'] = params.framerate
             Fs = 1.0 / result['framerate']
             for _i in range(params.nframes):
-                xl.append(int.from_bytes(left_channel.readframes(1), "little", signed=True))
-                xr.append(int.from_bytes(right_channel.readframes(1), "little", signed=True))
+                left_data = left_channel.readframes(1)
+                right_data = right_channel.readframes(1)
+                xl.append(int.from_bytes(
+                    left_data[0:params.sampwidth],
+                    "little",
+                    signed=True
+                ))
+                xr.append(int.from_bytes(
+                    right_data[0:params.sampwidth],
+                    "little",
+                    signed=True
+                ))
                 ts.append(tc)
                 tc += Fs
             result['left'] = xl
             result['right'] = xr
             result['ts'] = ts
     return result
+
+def read_stereo_wav_file(obj):
+    """
+    Read WAV Files, Return a JSON Object
+    """
+    timestamp = obj['time'].split('.')[0].replace('-','').replace('T','').replace(':','')[0:12]
+
+    stereo_file = list_files(filename=timestamp + "_stereo.wav")
+
+    result = {
+        "time": obj['time'],
+        "framerate": 0,
+        "left": [],
+        "right": [],
+        "ts": [],
+    }
+
+    with wave.open(stereo_file, "rb") as stereo_channel:
+        xl = []
+        xr = []
+        ts = []
+        tc = 0
+        params = stereo_channel.getparams()
+        result['framerate'] = params.framerate
+        Fs = 1.0 / result['framerate']
+        for _i in range(params.nframes):
+            stereo_data = stereo_channel.readframes(1)
+            xl.append(int.from_bytes(
+                stereo_data[0:params.sampwidth],
+                "little",
+                signed=True
+            ))
+            xr.append(int.from_bytes(
+                stereo_data[params.sampwidth:2*params.sampwidth],
+                "little",
+                signed=True
+            ))
+            ts.append(tc)
+            tc += Fs
+        result['left'] = xl
+        result['right'] = xr
+        result['ts'] = ts
+    return result
+
+def read_wav_file(obj):
+    """ For backward compatibility """
+    return read_mono_wav_files(obj)
 
 def list_files(filename=None, regex=None):
     """
