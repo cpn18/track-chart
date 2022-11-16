@@ -36,7 +36,7 @@ Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
         <h1>PiRail Data Viewer</h1>
 	<h2>Query Parameters</h2>
 <label for="file">Data Source:</label>
-<input type=text id="file" value="wrr_20211016_westbound.json">
+<select id="file"></select>
 <br>
 <label for="startmileage">Start Mileage:</label>
 <input type="number" min="0" step="0.01" id="startmileage" size="20" name="startmileage" value="0">
@@ -58,13 +58,20 @@ Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
             </div>
 
             <script>
+$(document).ready(function() {
+    $("#file").append($('<option>',{
+    "value": "wrr_20211016_westbound.json",
+    "text": "wrr_20211016_westbound.json"
+  }));
+});
+
 function submit_handler()
 {
   var url = "pirail_data_fetch.php" +
     "?classes=ATT&xform=thin" +
-    "&start-mileage=" + document.getElementById('startmileage').value +
-    "&end-mileage=" + document.getElementById('endmileage').value +
-    "&file=" + document.getElementById('file').value;
+    "&start-mileage=" + $("#startmileage").val() +
+    "&end-mileage=" + $("#endmileage").val() +
+    "&file=" + $("#file").val();
   console.log(url);
 
   streamdata = [];
@@ -83,7 +90,7 @@ dataStream.addEventListener("pirail", function(event) {
     obj = JSON.parse(event.data);
     //console.log(obj);
     if (obj.done) {
-        plot_data('myChart', streamdata, document.getElementById('window').value);
+        plot_data('myChart', streamdata, $("#window").val());
         dataStream.close();
     } else {
         streamdata.push(obj);
@@ -91,10 +98,10 @@ dataStream.addEventListener("pirail", function(event) {
   });
 
   var url = "pirail_stats_fetch.php" +
-    "?start-mileage=" + document.getElementById('startmileage').value +
-    "&end-mileage=" + document.getElementById('endmileage').value +
-    "&percentile=" + document.getElementById('percentile').value +
-    "&file=" + document.getElementById('file').value;
+    "?start-mileage=" + $("#startmileage").val() +
+    "&end-mileage=" + $("#endmileage").val() +
+    "&percentile=" + $("#percentile").val() +
+    "&file=" + $("#file").val();
   console.log(url);
   $.ajax({
     type: "GET",
