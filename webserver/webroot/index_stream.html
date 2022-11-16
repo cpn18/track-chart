@@ -59,10 +59,13 @@ Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
 
             <script>
 $(document).ready(function() {
-    $("#file").append($('<option>',{
-    "value": "wrr_20211016_westbound.json",
-    "text": "wrr_20211016_westbound.json"
-  }));
+  var items = ["wrr_20211016_westbound.json"];
+  $.each(items, function(i, item) {
+      $("#file").append($('<option>',{
+      "value": item,
+      "text": item
+    }));
+  });
 });
 
 function submit_handler()
