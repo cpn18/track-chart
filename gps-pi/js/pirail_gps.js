@@ -7,10 +7,10 @@ function mark()
 {
   $.ajax({
     datatype: "json",
-    url: "/mark?memo="+$('#memo').val(),
+    url: "/mark?memo="+$("#memo").val(),
     success: function(obj) {
-      $('#msg').text(obj.message);
-      $('#memo').val('');
+      $("#msg").text(obj.message);
+      $("#memo").val('');
     }
   });
 }
@@ -19,16 +19,16 @@ function hold()
 {
   $.ajax({
     datatype: "json",
-    url: "/hold?memo="+$('#memo').val(),
+    url: "/hold?memo="+$("#memo").val(),
     success: function(obj) {
-      $('#msg').text(obj.message);
-      $('#memo').val('');
+      $("#msg").text(obj.message);
+      $("#memo").val('');
     }
   });
 }
 
 function gps_setup(viewport) {
-	var canvas = document.getElementById(viewport);
+	var canvas = $("#"+viewport);
 	var context = canvas.getContext("2d");
 	return context.createImageData(canvas.width, canvas.height);
 }
@@ -39,21 +39,21 @@ function gps_stream(viewport, imagedata) {
     console.log(gpsStream.readyState);
     console.log(gpsStream.url);
 
-    var canvas = document.getElementById(viewport);
+    var canvas = $("#"+viewport);
     var context = canvas.getContext("2d"); 
 
     gpsStream.onopen = function() {
       console.log("connection opened");
-      document.getElementById('msg').innerHTML = "&nbsp;";
-      document.getElementById("mode").innerText = "...";
-      document.getElementById("gps_count").innerText = "";
+      $("#msg").html("&nbsp;");
+      $("#mode").text("...");
+      $("#gps_count").text("");
     };
 
     gpsStream.onerror = function() {
       console.log("connection error");
-      document.getElementById('msg').innerHTML = "&#x274C;Connecton Error";
-      document.getElementById("mode").innerText = "OFF";
-      document.getElementById("gps_count").innerText = "";
+      $("#msg").html("&#x274C;Connecton Error");
+      $("#mode").text("OFF");
+      $("#gps_count").text("");
     };
 
     gpsStream.addEventListener("tpv", function(event) {
@@ -62,43 +62,43 @@ function gps_stream(viewport, imagedata) {
         // console.log(tpv);
 
 	if (tpv.time) {
-	    document.getElementById("gpstime").innerHTML = tpv.time.replace('T', '<br>');
+	    $("#gpstime").html(tpv.time.replace('T', '<br>');
 	}
 	if (tpv.ept) {
-	    document.getElementById("ept").innerHTML = "&plusmn;"+tpv.ept+"s";
+	    $("#ept").html("&plusmn;"+tpv.ept+"s");
 	}
 	if (tpv.lat) {
-	    document.getElementById("lat").innerHTML = tpv.lat.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;";
+	    $("#lat").html(tpv.lat.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;");
 	}
 	if (tpv.epv) {
-	    document.getElementById("epy").innerHTML = "&plusmn;"+Math.round(tpv.epy*m_to_ft)+"ft";
+	    $("#epy").html("&plusmn;"+Math.round(tpv.epy*m_to_ft)+"ft");
 	}
 	if (tpv.lon) {
-	    document.getElementById("lon").innerHTML = tpv.lon.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;";
+	    $("#lon").html(tpv.lon.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;");
 	}
 	if (tpv.epx) {
-	    document.getElementById("epx").innerHTML = "&plusmn;"+Math.round(tpv.epx*m_to_ft)+"ft";
+	    $("#epx").html("&plusmn;"+Math.round(tpv.epx*m_to_ft)+"ft");
 	}
 	if (tpv.alt) {
-	    document.getElementById("alt").innerHTML = tpv.alt.toLocaleString('en-US',{minimumFractionDigits:1, maximumFractionDigits: 1})+"&rsquo;";
+	    $("#alt").html(tpv.alt.toLocaleString('en-US',{minimumFractionDigits:1, maximumFractionDigits: 1})+"&rsquo;");
 	}
 	if (tpv.epv) {
-	    document.getElementById("epv").innerHTML = "&plusmn;"+Math.round(tpv.epv*m_to_ft)+"ft";
+	    $("#epv").html("&plusmn;"+Math.round(tpv.epv*m_to_ft)+"ft");
 	}
 	if (tpv.speed) {
-	    document.getElementById("speed").innerText = Math.round(tpv.speed*ms_to_mph);
+	    $("#speed").text(Math.round(tpv.speed*ms_to_mph));
 	}
 	if (tpv.eps) {
-	    document.getElementById("eps").innerHTML = "&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph";
+	    $("#eps").html("&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph");
 	}
 	if (tpv.mode) {
-	    document.getElementById("mode").innerText = tpv.mode + "D ";
+	    $("#mode").text(tpv.mode + "D ");
 	}
 	if (tpv.hold) {
 	    if (tpv.hold == -1) {
-	        document.getElementById("hold").innerText = "OFF";
+	        $("#hold").text("OFF");
 	    } else {
-	        document.getElementById("hold").innerText = tpv.hold;
+	        $("#hold").text(tpv.hold);
 	    }
 	}
     });
@@ -144,7 +144,7 @@ function gps_stream(viewport, imagedata) {
 
 	    draw_line(viewport, imagedata, 0.5*canvas.width, 0.5*canvas.height, x, y, color);
 	}
-	document.getElementById("gps_count").innerText = used + "/" + sky.satellites.length;
+	$("#gps_count").text(used + "/" + sky.satellites.length);
 	context.putImageData(imagedata, 0, 0);
     });
 }

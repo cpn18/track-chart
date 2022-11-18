@@ -6,18 +6,18 @@ function lpcm_stream()
 
   lpcmStream.onopen = function() {
     console.log("lpcm connection opened");
-    document.getElementById('msg').innerHTML = "&nbsp;";
-    document.getElementById('lpcm_status').innerText = "...";
+    $("#msg").html("&nbsp;");
+    $("#lpcm_status").text("...");
   };
 
   lpcmStream.onerror = function() {
     console.log("lpcm connection error");
-    document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
-    document.getElementById('lpcm_status').innerText = "OFF";
+    $("#msg").html("&#x274C;Connection Error");
+    $("#lpcm_status").text("OFF");
   };
 
   lpcmStream.addEventListener("lpcm", function(event) {
     var lpcm = JSON.parse(event.data)
-    document.getElementById('lpcm_status').innerText = "ON";
+    $("#lpcm_status").text("ON");
   });
 }

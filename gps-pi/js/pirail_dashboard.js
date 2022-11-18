@@ -46,24 +46,24 @@ function dashboard() {
 
     gpsStream.onopen = function() {
 	console.log("gps connection opened");
-        document.getElementById("mode").innerText = "...";
-        document.getElementById("gps_count").innerText = "";
+        $("#mode").text("...");
+        $("#gps_count").text("");
 	};
 
     gpsStream.onerror = function() {
       console.log("gps connection error");
-        document.getElementById("msg").innerHTML = "&nbsp;";
-        document.getElementById("mode").innerText = "OFF";
-        document.getElementById("gps_count").innerText = "";
+        $("#msg").html("&nbsp;");
+        $("#mode").text("OFF");
+        $("#gps_count").text("");
     };
 
     gpsStream.addEventListener("tpv", function(event) {
         // console.log(event);
 	var tpv = JSON.parse(event.data);
         // console.log(tpv);
-	document.getElementById("gpstime").innerHTML = tpv.time.replace('T', '<br>');
-	document.getElementById("ept").innerText = "+/-"+tpv.ept+"s";
-	document.getElementById("mode").innerText = tpv.mode + "D ";
+	$("#gpstime").html(tpv.time.replace('T', '<br>'));
+	$("#ept").text("+/-"+tpv.ept+"s");
+	$("#mode").text(tpv.mode + "D ");
     });
 
     gpsStream.addEventListener("sky", function(event) {
@@ -76,83 +76,83 @@ function dashboard() {
 	        used ++;
 	    }
 	}
-	document.getElementById("gps_count").innerText = used + "/" + sky.satellites.length;
+	$("#gps_count").text(used + "/" + sky.satellites.length);
     });
 
     imuStream.onopen = function() {
 	console.log("imu connection opened");
-        document.getElementById("imu_status").innerText = "...";
+        $("#imu_status").text("...");
 	};
 
     imuStream.onerror = function() {
       console.log("imu connection error");
-      document.getElementById("msg").innerHTML = "&nbsp;";
-      document.getElementById("imu_status").innerText = "OFF";
+      $("#msg").html("&nbsp;");
+      $("#imu_status").text("OFF");
     };
 
     imuStream.addEventListener("att", function(event) {
         // console.log(event);
 	var att = JSON.parse(event.data);
 	// console.log(att);
-	document.getElementById("imu_status").innerText = "ON";
-	document.getElementById("temp").innerText = Math.round(att.temp);
-	document.getElementById("time").innerText = att.time.replace('T', ' ');
+	$("#imu_status").text("ON");
+	$("#temp").text(Math.round(att.temp));
+	$("#time").text(att.time.replace('T', ' '));
     });
 
     lidarStream.onopen = function() {
 	console.log("lidar connection opened");
-        document.getElementById("lidar_status").innerText = "...";
+        $("#lidar_status").text("...");
 	};
 
     lidarStream.onerror = function() {
       console.log("lidar connection error");
-      document.getElementById("msg").innerHTML = "&nbsp;";
-      document.getElementById("lidar_status").innerText = "OFF";
+      $("#msg").html("&nbsp;");
+      $("#lidar_status").text("OFF");
     };
 
     lidarStream.addEventListener("lidar", function(event) {
         // console.log(event);
 	var lidar = JSON.parse(event.data);
 	// console.log(lidar);
-	document.getElementById("lidar_status").innerText = "ON";
+	$("#lidar_status").text("ON");
     });
 
     lpcmStream.onopen = function() {
 	console.log("lpcm connection opened");
-        document.getElementById("lpcm_status").innerText = "...";
+        $("#lpcm_status").text("...");
 	};
 
     lpcmStream.onerror = function() {
       console.log("lpcm connection error");
-      document.getElementById("msg").innerHTML = "&nbsp;";
-      document.getElementById("lpcm_status").innerText = "OFF";
+      $("#msg").html("&nbsp;");
+      $("#lpcm_status").text("OFF");
     };
 
     lpcmStream.addEventListener("lpcm", function(event) {
         // console.log(event);
 	var lpcm = JSON.parse(event.data);
 	// console.log(lpcm);
-	document.getElementById("lpcm_status").innerText = "ON";
+	$("#lpcm_status").text("ON");
     });
 
     sysStream.onopen = function() {
 	console.log("sys connection opened");
-        document.getElementById("used").innerText = "...";
+        $("#used").text("...");
 	};
 
     sysStream.onerror = function() {
       console.log("sys connection error");
-      document.getElementById("msg").innerHTML = "&nbsp;";
-      document.getElementById("used").innerText = "...";
+      $("#msg").html("&nbsp;");
+      $("#used").text("...");
     };
 
     sysStream.addEventListener("sys", function(event) {
         // console.log(event);
 	var sys = JSON.parse(event.data);
 	// console.log(lpcm);
-	document.getElementById("used").innerText = sys.used_percent;
-	document.getElementById("sw_version").innerText = sys.sw_version;
+	$("#used").text(sys.used_percent);
+	$("#sw_version").text(sys.sw_version);
     });
 
-  document.getElementById("msg").innerHTML = "&nbsp;";
+  $("#msg").html("&nbsp;");
 }

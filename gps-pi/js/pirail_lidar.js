@@ -9,14 +9,14 @@ function lidar_stream(name, imagedata)
 
   lidarStream.onopen = function() {
     console.log("lidar connection opened");
-    document.getElementById('msg').innerHTML = "&nbsp;";
-    document.getElementById('lidar_status').innerText = "...";
+    $("#msg").html("&nbsp;");
+    $("#lidar_status").text("...");
   };
 
   lidarStream.onerror = function() {
     console.log("lidar connection error");
-    document.getElementById('msg').innerHTML = "&#x274C;Connection Error";
-    document.getElementById('lidar_status').innerText = "OFF";
+    $("#msg").html("&#x274C;Connection Error");
+    $("#lidar_status").text("OFF");
   };
 
   lidarStream.addEventListener("lidar", function(event) {
@@ -24,19 +24,19 @@ function lidar_stream(name, imagedata)
     // console.log(lidar);
     if (lidar.scan != undefined ) {
       lidar_update(name, imagedata, lidar);
-      document.getElementById('lidar_status').innerText = "ON";
+      $("#lidar_status").text("ON");
     }
   });
 }
 
 function lidar_setup(name) {
-	var canvas = document.getElementById(name);
+	var canvas = $("#"+name);
 	var context = canvas.getContext("2d");
 	return context.createImageData(canvas.width, canvas.height);
 }
 
 function lidar_update(name, imagedata, obj) {
-	var canvas = document.getElementById(name);
+	var canvas = $("#"+name);
 	var context = canvas.getContext("2d");
 	var last_x = 0;
 	var last_y = 0;

@@ -2,7 +2,7 @@ var deg_to_rad = 0.0174533;
 
 function fade_points(name, imagedata, decay)
 {
-	var canvas = document.getElementById(name);
+	var canvas = $("#"+name);
 
 	// Fade the existing data
 	//
@@ -18,7 +18,7 @@ function fade_points(name, imagedata, decay)
 }
 
 function draw_point(name, imagedata, x, y, color) {
-	var canvas = document.getElementById(name);
+	var canvas = $("#"+name);
 
 	// need to be integers
 	x = Math.round(x);
