@@ -7,10 +7,10 @@ function mark()
 {
   $.ajax({
     datatype: "json",
-    url: "/mark?memo="+$("#memo").val(),
+    url: "/mark?memo="+$('#memo').val(),
     success: function(obj) {
-      $("#msg").text(obj.message);
-      $("#memo").val('');
+      $('#msg').text(obj.message);
+      $('#memo').val('');
     }
   });
 }
@@ -19,16 +19,16 @@ function hold()
 {
   $.ajax({
     datatype: "json",
-    url: "/hold?memo="+$("#memo").val(),
+    url: "/hold?memo="+$('#memo').val(),
     success: function(obj) {
-      $("#msg").text(obj.message);
-      $("#memo").val('');
+      $('#msg').text(obj.message);
+      $('#memo').val('');
     }
   });
 }
 
 function gps_setup(viewport) {
-	var canvas = $("#"+viewport);
+	var canvas = $("#"+viewport)[0];
 	var context = canvas.getContext("2d");
 	return context.createImageData(canvas.width, canvas.height);
 }
@@ -39,7 +39,7 @@ function gps_stream(viewport, imagedata) {
     console.log(gpsStream.readyState);
     console.log(gpsStream.url);
 
-    var canvas = $("#"+viewport);
+    var canvas = $("#"+viewport)[0];
     var context = canvas.getContext("2d"); 
 
     gpsStream.onopen = function() {
@@ -62,7 +62,7 @@ function gps_stream(viewport, imagedata) {
         // console.log(tpv);
 
 	if (tpv.time) {
-	    $("#gpstime").html(tpv.time.replace('T', '<br>');
+	    $("#gpstime").html(tpv.time.replace('T', '<br>'));
 	}
 	if (tpv.ept) {
 	    $("#ept").html("&plusmn;"+tpv.ept+"s");
