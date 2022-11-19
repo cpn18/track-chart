@@ -30,13 +30,13 @@ function lidar_stream(name, imagedata)
 }
 
 function lidar_setup(name) {
-	var canvas = $("#"+name);
+	var canvas = $("#"+name)[0];
 	var context = canvas.getContext("2d");
 	return context.createImageData(canvas.width, canvas.height);
 }
 
 function lidar_update(name, imagedata, obj) {
-	var canvas = $("#"+name);
+	var canvas = $("#"+name)[0];
 	var context = canvas.getContext("2d");
 	var last_x = 0;
 	var last_y = 0;
