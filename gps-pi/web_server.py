@@ -23,7 +23,7 @@ DOCUMENT_MAP = {
     "/lpcm.html": "htdocs/lpcm.html",
     "/favicon.ico": "htdocs/favicon.ico",
     "/version.txt": "version.txt",
-    "/jquery.js": "js/jquery-3.6.0.min.js",
+    "/jquery.js": "js/jquery-3.6.1.js",
     "/pirail_setup.js": "js/pirail_setup.js",
     "/pirail_dashboard.js": "js/pirail_dashboard.js",
     "/pirail_gps.js": "js/pirail_gps.js",
