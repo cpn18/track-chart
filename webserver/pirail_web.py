@@ -73,13 +73,22 @@ def get_file_listing(self, groups, _qsdict):
     Data Listing API
     GET /data/
     """
-    content_type = MIME_MAP['.html']
-    output = "<html><body><ul>\n"
-    for filenames in pirail.list_files(regex=r'.*json$'):
-        for filename in filenames:
+    if self.headers['accept'] == "application/json":
+        content_type = "application/json"
+        array_of_files = []
+        for filename in pirail.list_files(regex=r'.*json$'):
+            basename = os.path.basename(filename)
+            array_of_files.append(basename)
+        output = json.dumps(array_of_files)
+    else:
+        content_type = MIME_MAP['.html']
+        output = "<html><body><ul>\n"
+        for filename in pirail.list_files(regex=r'.*json$'):
+            basename = os.path.basename(filename)
             output += "<li><a href=\"/data/" + \
-                      filename + "\">" + filename + "</a>\n"
-    output += "</ul></body></html>\n"
+                      basename + "\">" + basename + "</a>\n"
+        output += "</ul></body></html>\n"
+
     self.send_response(HTTPStatus.OK)
     self.send_header("Content-type", content_type)
     self.send_header("Content-length", str(len(output)))
