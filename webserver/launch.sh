@@ -1,14 +1,8 @@
 #!/bin/bash
-#
-# USAGE: launch.sh [directory]
 
 export PYTHONPATH=../desktop
 
-# Check for external storage
-external_storage=${1:-"/run/media/jminer/FreeAgent Drive/PIRAIL/20221015"}
-if [ -d "${external_storage}" ]; then
-    export PIRAILDATA="${PIRAILDATA:-${external_storage}}"
-fi
+# Check for external storage - WORKAROUND
+export PIRAILDATA="${HOME}/PIRAIL:${PWD}/PIRAIL"
 
-echo "Using PIRAILDATA = ${PIRAILDATA}"
-python3 web_server.py 8080
+python web_server.py 8080

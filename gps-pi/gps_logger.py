@@ -167,8 +167,7 @@ def gps_logger(output_directory):
     # Open the output file
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
     with open(os.path.join(output_directory,timestamp+"_gps.csv"), "w") as gps_output:
-        gps_output.write("%s %s %s *\n" % (config['time'], "VERSION", json.dumps({"class": "VERSION", "version": util.DATA_API})))
-        gps_output.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
+        util.write_header(gps_output, config)
 
         while not util.DONE:
             # GPS

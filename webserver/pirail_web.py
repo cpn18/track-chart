@@ -6,6 +6,7 @@ import os
 import json
 import re
 import sys
+import numpy
 
 import pirail
 
@@ -14,9 +15,6 @@ from http import HTTPStatus
 
 # Directory for web content (html, css, js, etc.)
 WEBROOT = "webroot"
-
-# Directory for data (json)
-DATAROOT = os.environ.get('PIRAILDATA', pirail.DEFAULT_DIRECTORY)
 
 # Default sort method (set to None for no sorting)
 SORTBY = "mileage"
@@ -77,11 +75,10 @@ def get_file_listing(self, groups, _qsdict):
     """
     content_type = MIME_MAP['.html']
     output = "<html><body><ul>\n"
-    pathname = os.path.normpath(DATAROOT)
-    for root, dirnames, filenames in os.walk(pathname):
-        for filename in filenames:
-            output += "<li><a href=\"/data/" + \
-                      filename + "\">" + filename + "</a>\n"
+    for filename in pirail.list_files(regex=r'.*json$'):
+        basename = os.path.basename(filename)
+        output += "<li><a href=\"/data/" + \
+            basename + "\">" + basename + "</a>\n"
     output += "</ul></body></html>\n"
     self.send_response(HTTPStatus.OK)
     self.send_header("Content-type", content_type)
@@ -111,7 +108,8 @@ def get_file(self, groups, qsdict):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
         else:
-            if not os.path.isfile(os.path.normpath(os.path.join(DATAROOT, filename))):
+            pathname = pirail.list_files(filename=filename)
+            if not os.path.isfile(pathname):
                 self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
                 return
 
@@ -166,7 +164,7 @@ def get_file(self, groups, qsdict):
     else:
         self.send_header("Content-type", "application/json")
 
-    for line_no, obj in pirail.read(filename, classes=classes, args=args):
+    for line_no, obj in pirail.read(pathname, classes=classes, args=args):
         if stream:
             output = "event: pirail\ndata: %s\n\n" % json.dumps(xform_function(obj, qsdict))
             self.wfile.write(output.encode('utf-8'))
@@ -209,7 +207,8 @@ def get_acoustic(self, groups, qsdict):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
         else:
-            if not os.path.isfile(os.path.normpath(os.path.join(DATAROOT, filename))):
+            pathname = os.path.normpath(os.path.join(DATAROOT, filename))
+            if not os.path.isfile(pathname):
                 self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
                 return
 
@@ -227,7 +226,7 @@ def get_acoustic(self, groups, qsdict):
 
         value = qsdict.get("end-time",[None])[0]
         if value is not None:
-            args['end-time'] = value
+            args['end-time'] = float(value)
 
         value = qsdict.get("start-latitude",[None])[0]
         if value is not None:
@@ -261,7 +260,7 @@ def get_acoustic(self, groups, qsdict):
         self.send_header("Content-type", "application/json")
 
     lpcm_obj = {}
-    for line_no, obj in pirail.read(filename, classes=classes, args=args):
+    for line_no, obj in pirail.read(pathname, classes=classes, args=args):
         # Try to add end_mileage
         if obj["class"] == "TPV":
             lpcm_obj["end_mileage"] = obj['mileage']
@@ -276,15 +275,7 @@ def get_acoustic(self, groups, qsdict):
                 data.append(xform_function(lpcm_obj, qsdict))
 
         # Read the new record
-        try:
-            obj.update(pirail.read_wav_file(obj))
-        except FileNotFoundError:
-            obj.update({
-                "framerate": -1,
-                "left": [],
-                "right": [],
-                "ts": [],
-            })
+        obj.update(pirail.read_wav_file(obj))
         lpcm_obj = obj
 
     if not stream:
@@ -316,7 +307,8 @@ def get_stats(self, groups, qsdict):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
         else:
-            if not os.path.isfile(os.path.normpath(os.path.join(DATAROOT, filename))):
+            pathname = pirail.list_files(filename=filename)
+            if not os.path.isfile(pathname):
                 self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
                 return
 
@@ -366,23 +358,30 @@ def get_stats(self, groups, qsdict):
     self.send_response(HTTPStatus.OK)
     self.send_header("Content-type", "application/json")
 
-    for line_no, obj in pirail.read(filename, classes=classes, args=args):
+    for line_no, obj in pirail.read(pathname, classes=classes, args=args):
         data.append(xform_function(obj, qsdict))
 
     # Sort the data
     data = sorted(data, key=lambda k: k['acc_z'], reverse=False)
 
-    sum_acc_z = 0
+    data_acc_z = []
     for obj in data:
-        sum_acc_z += obj['acc_z']
+        data_acc_z.append(obj['acc_z'])
+
+    average = numpy.average(data_acc_z)
+    data_acc_z_abs = []
+    for obj in data:
+        data_acc_z_abs.append(abs(obj['acc_z'] - average))
+    data_acc_z_abs = sorted(data_acc_z_abs)
 
     result = {
         "acc_z": {
             "min": data[0],
             "max": data[-1],
-            "mean": data[int(len(data)/2)],
-            "avg": sum_acc_z / len(data),
-            "noise_floor": data[int(len(data)*percentile)],
+            "median": data[int(len(data)/2)],
+            "avg": average,
+            "stddev": numpy.std(data_acc_z),
+            "noise_floor": data_acc_z_abs[int(len(data_acc_z_abs)*percentile)],
         },
     }
 

@@ -69,3 +69,8 @@ def web_server(host_name, port_number, server, handler):
             print("WARNING: %s" % ex)
     httpd.shutdown()
     httpd.server_close()
+
+def write_header(filehandle, config):
+    """ Common Routine to Output Configuation Information """
+    filehandle.write("%s %s %s *\n" % (config['time'], "VERSION", json.dumps({"class": "VERSION", "version": DATA_API})))
+    filehandle.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
