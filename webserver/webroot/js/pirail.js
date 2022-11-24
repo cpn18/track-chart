@@ -74,10 +74,11 @@ function plot_data(chartname, result, windowsize) {
   const data = {
     datasets: [{
       label: "ACC_Z",
+      backgroundColor: "rgba(220,0,0,1.0)",
       data: values,
     }, {
       label: "AVG_Z",
-      backgroundColor: "rgba(220,0,0)",
+      backgroundColor: "#9a7b4f",  // Tortilla
       data: avalues,
     }]
   };
