@@ -95,6 +95,21 @@ def get_file_listing(self, groups, _qsdict):
     self.end_headers()
     self.wfile.write(output.encode('utf-8'))
 
+def get_min_max(subset, field):
+    """ Find the minimum and maximum objects """
+    min_value = 99999
+    max_value = 0
+    sum_value = 0
+    for obj in subset:
+        sum_value += obj[field]
+        if obj[field] > max_value:
+            max_obj = obj
+            max_value = obj[field]
+        if obj[field] < min_value:
+            min_obj = obj
+            min_value = obj[field]
+    return (min_obj, sum_value / len(subset), max_obj)
+
 def get_file(self, groups, qsdict):
     """
     Data Fetching API
@@ -161,6 +176,11 @@ def get_file(self, groups, qsdict):
             args['end-longitude'] = float(value)
 
         classes = qsdict.get("classes", None)
+
+        width = qsdict.get("width", [None])[0]
+        if width is not None:
+            width = int(width)
+
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
         return
@@ -184,6 +204,18 @@ def get_file(self, groups, qsdict):
         # Sort the data
         if SORTBY is not None:
             data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
+
+        if width is not None:
+            thin = [0] * width
+            window = len(data) / width
+            for i in range(width):
+                subset = data[int(i*window):int((i+1)*window-1)]
+                min_data, avg_z, max_data = get_min_max(subset, 'acc_z')
+                if avg_z - min_data['acc_z'] > max_data['acc_z'] - avg_z:
+                    thin[i] = min_data
+                else:
+                    thin[i] = max_data
+            data = thin
 
         output = json.dumps(data, indent=4) + "\n"
 
