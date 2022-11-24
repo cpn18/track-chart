@@ -86,6 +86,7 @@ function submit_handler()
 {
   var url = "pirail_data_fetch.php" +
     "?classes=ATT&xform=thin" +
+    "&width=" + $(window).width() +
     "&start-mileage=" + $("#startmileage").val() +
     "&end-mileage=" + $("#endmileage").val() +
     "&file=" + $("#file").val();
