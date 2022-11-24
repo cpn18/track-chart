@@ -97,7 +97,7 @@ function submit_handler()
     headers: {"Accept": "application/json"},
     url: url,
     success: function(data, textStatus, jqXHR) {
-      plot_data('myChart', data, $("#window").val());
+      plot_data('myChart', data, $("#window").val(), "acc_z");
     },
     error: function(xhr, ajaxOptions, thrownError) {
       alert("Connection Error: " + xhr.status);

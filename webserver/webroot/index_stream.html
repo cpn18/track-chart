@@ -93,7 +93,7 @@ dataStream.addEventListener("pirail", function(event) {
     obj = JSON.parse(event.data);
     //console.log(obj);
     if (obj.done) {
-        plot_data('myChart', streamdata, $("#window").val());
+        plot_data('myChart', streamdata, $("#window").val(), "acc_z");
         dataStream.close();
     } else {
         streamdata.push(obj);

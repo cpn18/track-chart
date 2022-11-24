@@ -1,6 +1,6 @@
 myChart = null;
 
-function plot_data(chartname, result, windowsize) {
+function plot_data(chartname, result, windowsize, field) {
 
   // Find an average reading over the window to normallize the data
   avgresult = [];
@@ -10,13 +10,13 @@ function plot_data(chartname, result, windowsize) {
     mcnt = 0;
     j = i;
     while (j >= 0 && Math.abs(result[i].mileage - result[j].mileage) < halfwindow) {
-      msum += result[j].acc_z;
+      msum += result[j][field];
       mcnt += 1;
       j -= 1;
     }
     j = i + 1;
     while ( j < result.length && Math.abs(result[i].mileage - result[j].mileage) < halfwindow) {
-      msum += result[j].acc_z;
+      msum += result[j][field];
       mcnt += 1;
       j += 1;
     }
@@ -26,7 +26,7 @@ function plot_data(chartname, result, windowsize) {
   // calculate the noisefloor
   bins = [];
   for (let i = 0; i < result.length; i++) {
-    thispoint = Math.abs(result[i].acc_z - avgresult[i])
+    thispoint = Math.abs(result[i][field] - avgresult[i])
     bins.push(thispoint);
   }
 
@@ -42,11 +42,11 @@ function plot_data(chartname, result, windowsize) {
 
   // only plot above the noise floor
   for (let i = 0; i < result.length; i++) {
-    thispoint = Math.abs(result[i].acc_z - avgresult[i])
+    thispoint = Math.abs(result[i][field] - avgresult[i])
     if (thispoint > noisefloor) {
-      values.push({x: result[i].mileage, y: result[i].acc_z});
+      values.push({x: result[i].mileage, y: result[i][field]});
     }
-    allvalues.push({x: result[i].mileage, y: result[i].acc_z});
+    allvalues.push({x: result[i].mileage, y: result[i][field]});
   }
 
   // Calculate the average acc_z using a sliding window
@@ -73,11 +73,11 @@ function plot_data(chartname, result, windowsize) {
   // Setup JChart Data
   const data = {
     datasets: [{
-      label: "ACC_Z",
+      label: field.toUpperCase(),
       backgroundColor: "rgba(220,0,0,1.0)",
       data: values,
     }, {
-      label: "AVG_Z",
+      label: "AVG_"+field.toUpperCase(),
       backgroundColor: "#9a7b4f",  // Tortilla
       data: avalues,
     }]

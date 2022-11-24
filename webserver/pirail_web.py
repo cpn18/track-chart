@@ -36,30 +36,55 @@ def default(obj, _qsdict):
     """ Do not modify data """
     return obj
 
-def thin_acc_z(obj, _qsdict):
-    """ Sample Data Thinning """
-    if obj['class'] == "ATT":
-        return {
-            'class': obj['class'],
-            'time': obj['time'],
-            'mileage': obj['mileage'],
-            'acc_z': obj['acc_z'],
-        }
-    else:
-        return obj
+def thin_field(obj, qsdict, field):
+    """ Generic Data Thinning """
+    if isinstance(obj, dict):
+        if obj['class'] == "ATT":
+            return {
+                'class': obj['class'],
+                'time': obj['time'],
+                'mileage': obj['mileage'],
+                field: obj[field],
+            }
+    elif isinstance(obj, list):
+        width = qsdict.get("width", [None])[0]
+        if width is not None:
+            width = int(width)
+            thin = [0] * width
+            window = len(obj) / width
+            for i in range(width):
+                subset = obj[int(i*window):int((i+1)*window-1)]
+                min_data, avg_val, max_data = pirail.get_min_max(subset, field)
+                if avg_val - min_data[field] > max_data[field] - avg_val:
+                    thin[i] = thin_acc_z(min_data, qsdict)
+                else:
+                    thin[i] = thin_acc_z(max_data, qsdict)
+            obj = thin
 
-def thin_pitch_roll(obj, _qsdict):
+    return obj
+
+def thin_acc_z(obj, qsdict):
+    """ Thin Data on ACC Z """
+    return thin_field(obj, qsdict, 'acc_z')
+
+def thin_pitch_roll(obj, qsdict):
     """ Sample Data Thinning """
-    if obj['class'] == "ATT":
-        return {
-            'class': obj['class'],
-            'time': obj['time'],
-            'mileage': obj['mileage'],
-            'pitch': obj['pitch'],
-            'roll': obj['roll'],
-        }
-    else:
-        return obj
+    if isinstance(obj, dict):
+        if obj['class'] == "ATT":
+            return {
+                'class': obj['class'],
+                'time': obj['time'],
+                'mileage': obj['mileage'],
+                'pitch': obj['pitch'],
+                'roll': obj['roll'],
+            }
+    elif isinstance(obj, list):
+        thin = []
+        for item in obj:
+            thin.append(thin_pitch_roll(item, qsdict))
+        obj = thin
+
+    return obj
 
 # Dictionary of Data Transformations
 DATA_XFORM = {
@@ -94,21 +119,6 @@ def get_file_listing(self, groups, _qsdict):
     self.send_header("Content-length", str(len(output)))
     self.end_headers()
     self.wfile.write(output.encode('utf-8'))
-
-def get_min_max(subset, field):
-    """ Find the minimum and maximum objects """
-    min_value = 99999
-    max_value = 0
-    sum_value = 0
-    for obj in subset:
-        sum_value += obj[field]
-        if obj[field] > max_value:
-            max_obj = obj
-            max_value = obj[field]
-        if obj[field] < min_value:
-            min_obj = obj
-            min_value = obj[field]
-    return (min_obj, sum_value / len(subset), max_obj)
 
 def get_file(self, groups, qsdict):
     """
@@ -177,10 +187,6 @@ def get_file(self, groups, qsdict):
 
         classes = qsdict.get("classes", None)
 
-        width = qsdict.get("width", [None])[0]
-        if width is not None:
-            width = int(width)
-
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
         return
@@ -198,26 +204,14 @@ def get_file(self, groups, qsdict):
             output = "event: pirail\ndata: %s\n\n" % json.dumps(xform_function(obj, qsdict))
             self.wfile.write(output.encode('utf-8'))
         else:
-            data.append(xform_function(obj, qsdict))
+            data.append(obj)
 
     if not stream:
         # Sort the data
         if SORTBY is not None:
             data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
 
-        if width is not None:
-            thin = [0] * width
-            window = len(data) / width
-            for i in range(width):
-                subset = data[int(i*window):int((i+1)*window-1)]
-                min_data, avg_z, max_data = get_min_max(subset, 'acc_z')
-                if avg_z - min_data['acc_z'] > max_data['acc_z'] - avg_z:
-                    thin[i] = min_data
-                else:
-                    thin[i] = max_data
-            data = thin
-
-        output = json.dumps(data, indent=4) + "\n"
+        output = json.dumps(xform_function(data, qsdict), indent=4) + "\n"
 
         self.send_header("Content-length", str(len(output)))
         self.end_headers()

@@ -342,6 +342,29 @@ def list_files(filename=None, regex=None):
     else:
         return files
 
+def get_min_max(subset, field):
+    """ Find the minimum and maximum objects """
+    min_value = 99999
+    max_value = 0
+    sum_value = 0
+    sum_count = 0
+    for obj in subset:
+        if field in obj:
+            sum_value += obj[field]
+            sum_count += 1
+            if obj[field] > max_value:
+                max_obj = obj
+                max_value = obj[field]
+            if obj[field] < min_value:
+                min_obj = obj
+                min_value = obj[field]
+
+    # Protect against div by zero
+    if sum_count == 0:
+        return ({}, 0, {})
+
+    return (min_obj, sum_value / sum_count, max_obj)
+
 if __name__ == "__main__":
     # Unit Tests
     #print(parse_cmd_line_args())
