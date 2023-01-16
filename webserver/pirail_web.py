@@ -185,6 +185,91 @@ def get_file(self, groups, qsdict):
         output = "event: pirail\ndata: %s\n\n" % json.dumps({"done": True})
         self.wfile.write(output.encode('utf-8'))
 
+def get_poi(self, groups, qsdict):
+    """
+    Point of Interest Fetching API
+    GET pirail_poi.php
+    """
+
+    # Parse the query string and
+    # Build the Args Dictionary
+    args = {}
+    try:
+        if self.headers['accept'] == "application/json":
+            stream = False
+        elif self.headers['accept'] == "text/event-stream":
+            stream = True
+        else:
+            stream = qsdict.get("stream",["true"])[0].lower() == "true"
+
+        filename = qsdict.get("file", [None])[0]
+        if filename is None:
+            self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
+            return
+
+        pathname = pirail.list_files(filename=filename.replace(".json", "_poi.json"))
+        if not os.path.isfile(pathname):
+            self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
+            return
+
+        value = qsdict.get("start-mileage",[None])[0]
+        if value is not None:
+            args['start-mileage'] = float(value)
+
+        value = qsdict.get("end-mileage",[None])[0]
+        if value is not None:
+            args['end-mileage'] = float(value)
+
+        value = qsdict.get("start-latitude",[None])[0]
+        if value is not None:
+            args['start-latitude'] = float(value)
+
+        value = qsdict.get("end-latitude",[None])[0]
+        if value is not None:
+            args['end-latitude'] = float(value)
+
+        value = qsdict.get("start-longitude",[None])[0]
+        if value is not None:
+            args['start-longitude'] = float(value)
+
+        value = qsdict.get("end-longitude",[None])[0]
+        if value is not None:
+            args['end-longitude'] = float(value)
+
+        classes = "POI"
+    except ValueError as ex:
+        self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
+        return
+
+    data = []
+    self.send_response(HTTPStatus.OK)
+    if stream:
+        self.send_header("Content-type", "text/event-stream")
+        self.end_headers()
+    else:
+        self.send_header("Content-type", "application/json")
+
+    for line_no, obj in pirail.read(pathname, classes=classes, args=args):
+        if stream:
+            output = "event: poi\ndata: %s\n\n" % json.dumps(obj)
+            self.wfile.write(output.encode('utf-8'))
+        else:
+            data.append(obj)
+
+    if not stream:
+        # Sort the data
+        if SORTBY is not None:
+            data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
+
+        output = json.dumps(data, indent=4) + "\n"
+
+        self.send_header("Content-length", str(len(output)))
+        self.end_headers()
+        self.wfile.write(output.encode('utf-8'))
+    else:
+        output = "event: poi\ndata: %s\n\n" % json.dumps({"done": True})
+        self.wfile.write(output.encode('utf-8'))
+
 def get_acoustic(self, groups, qsdict):
     """
     Data Fetching API
@@ -437,6 +522,11 @@ MATCHES = [
     {
         "pattern": re.compile(r"GET /pirail_acoustic_fetch.php"),
         "handler": get_acoustic,
+    },
+    # Fakeout PHP handler
+    {
+        "pattern": re.compile(r"GET /pirail_poi.php"),
+        "handler": get_poi,
     },
     # Least specifc matches go last
     {

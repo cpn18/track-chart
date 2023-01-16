@@ -2,6 +2,8 @@
 """
 Generate a tabular report based on acc_z data
 """
+import sys
+import json
 import numpy
 import pirail
 
@@ -28,6 +30,7 @@ def stats(data):
         'max': acc_z_max,
         'deltaz': (acc_z_max - acc_z_min) / abs(pirail.parse_time_in_seconds(acc_z_max_time) - pirail.parse_time_in_seconds(acc_z_min_time)),
         'mileage': (data[0]['mileage'] + data[-1]['mileage'])/2.0,
+        'certainty': data[0]['certainty'] * data[-1]['certainty'],
         'lat': (data[0]['lat'] + data[-1]['lat'])/2.0,
         'lon': (data[0]['lon'] + data[-1]['lon'])/2.0,
     }
@@ -55,14 +58,23 @@ def report_by_acc_z(filename):
 
     # Output the top ten
     top_ten = sorted(processed[-LIMIT:], key=lambda k: k['mileage'], reverse=False)
-    print("Mileage Latitude Longitude deltaZ")
-    for obj in top_ten:
-        print("%0.3f %02.6f %03.6f %f" % (
-            obj['mileage'],
-            obj['lat'],
-            obj['lon'],
-            obj['deltaz'] / max_value,
-        ))
+    with open(filename.replace(".json", "_poi.json"), "w") as poi:
+        for obj in top_ten:
+            poi_obj = {
+                "class": "POI",
+                "label": "DeltaZ",
+                "mileage": obj['mileage'],
+                "lat": obj['lat'],
+                "lon": obj['lon'],
+                "metadata": {
+                    "certainty": obj['certainty'],
+                    "deltaz": obj['deltaz'] / max_value,
+                    "function": "report_by_acc_z",
+                    "window": window,
+                }
+            }
+            poi.write(json.dumps(poi_obj))
+            poi.write("\n")
 
 def report_by_jerk(filename):
     window = 0.01 # Miles
@@ -84,14 +96,24 @@ def report_by_jerk(filename):
 
     # Output the top ten
     top_ten = sorted(data[-LIMIT:], key=lambda k: k['mileage'], reverse=False)
-    print("Mileage Latitude Longitude jerkZ")
-    for obj in top_ten:
-        print("%0.3f %02.6f %03.6f - %f" % (
-            obj['mileage'],
-            obj['lat'],
-            obj['lon'],
-            obj['jerkz'] / max_value,
-        ))
+    with open(filename.replace(".json", "_poi.json"), "w") as poi:
+        for obj in top_ten:
+            poi_obj = {
+                "class": "POI",
+                "label": "JerkZ",
+                "mileage": obj['mileage'],
+                "lat": obj['lat'],
+                "lon": obj['lon'],
+                "metadata": {
+                    "certainty": obj['certainty'],
+                    "jerkz": obj['jerkz'] / max_value,
+                    "function": "report_by_jerk",
+                    "window": window,
+                }
+            }
+            poi.write(json.dumps(poi_obj))
+            poi.write("\n")
+
 
 def report_by_stddev(filename):
     window = 0.01 # Miles
@@ -115,14 +137,23 @@ def report_by_stddev(filename):
 
     # Output the top ten
     top_ten = sorted(data[-LIMIT:], key=lambda k: k['mileage'], reverse=False)
-    print("Mileage Latitude Longitude sigma")
-    for obj in top_ten:
-        print("%0.3f %02.6f %03.6f - - %f" % (
-            obj['mileage'],
-            obj['lat'],
-            obj['lon'],
-            obj['sigma'] / max_value,
-        ))
+    with open(filename.replace(".json", "_poi.json"), "w") as poi:
+        for obj in top_ten:
+            poi_obj = {
+                "class": "POI",
+                "label": "Sigma",
+                "mileage": obj['mileage'],
+                "lat": obj['lat'],
+                "lon": obj['lon'],
+                "metadata": {
+                    "certainty": obj['certainty'],
+                    "sigma": obj['sigma'] / max_value,
+                    "function": "report_by_stddev",
+                    "window": window,
+                }
+            }
+            poi.write(json.dumps(poi_obj))
+            poi.write("\n")
 
 if __name__ == "__main__":
     report_by_acc_z("wrr_20211016_westbound.json")
