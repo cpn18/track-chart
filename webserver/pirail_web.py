@@ -107,11 +107,11 @@ def get_file(self, groups, qsdict):
         if filename is None:
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
-        else:
-            pathname = pirail.list_files(filename=filename)
-            if not os.path.isfile(pathname):
-                self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
-                return
+
+        pathname = pirail.list_files(filename=filename)
+        if not os.path.isfile(pathname):
+            self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
+            return
 
         xform = qsdict.get("xform",["default"])[0].lower()
         if xform in DATA_XFORM:
@@ -291,11 +291,11 @@ def get_acoustic(self, groups, qsdict):
         if filename is None:
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
-        else:
-            pathname = os.path.normpath(os.path.join(DATAROOT, filename))
-            if not os.path.isfile(pathname):
-                self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
-                return
+
+        pathname = pirail.list_files(filename=filename)
+        if not os.path.isfile(pathname):
+            self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
+            return
 
         value = qsdict.get("start-mileage",[None])[0]
         if value is not None:
