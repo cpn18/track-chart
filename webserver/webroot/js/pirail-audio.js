@@ -1,8 +1,3 @@
-/*
- * UNH Capstone 2023
- *
- * Matthew Cusack, Luke Knedeisen, Joshua Knauer
- */
 myChart = null;
 
 function plot_data(chartname, result, windowsize) {
@@ -42,6 +37,7 @@ function plot_data(chartname, result, windowsize) {
     parseFloat(document.getElementById('percentile').value) * bins.length);
   noisefloor = bins[index];
   console.log("noisefloor =", index, "of", bins.length, "value=", noisefloor);
+
 
   // convert the JSON to arrays for JChart
   values = [];
@@ -149,16 +145,14 @@ function plot_acoustic_data(chartname, result, windowsize) {
   right_values = [];
 
   // populate left values
-  for (let i = 0; i < result[0].left.length ; i++) {
+  for (let i = 0; i < result[0].left.length; i++) {
     left_values.push({x: result[0].ts[i], y: result[0].left[i]})
   }
-  console.log("left populated");
+
   // populate right values
-  /*
-  for (let i = 0; i < result[0].right.length ; i++) {
+  for (let i = 0; i < result[0].right.length; i++) {
     right_values.push({x: result[0].ts[i], y: result[0].right[i]})
   }
-  */
 
   // Setup JChart Data
   const data = {

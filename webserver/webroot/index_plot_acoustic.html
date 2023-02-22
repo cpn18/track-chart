@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<!--
+UNH Capstone 2023 Project
+
+Luke Knedeisen
+-->
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>PiRail</title>
+        <link rel="icon" href="../static/redRail.ico">
+	<script src="js/chart-3.9.1.js"></script>
+        <script src="js/jquery-3.6.1.js"></script>
+        <script src="js/pirail.js"></script>
+
+        <link rel="stylesheet" href="../static/stylesheet.css">
+
+        <!-- Hammer.js is used for gesture recognition.-->
+	<script src="js/hammer-2.0.8.min.js"></script>
+
+        <!-- Zoom function-->
+	<script src="js/chartjs-plugin-zoom-1.2.1.min.js"></script>
+    </style>
+    </head>
+
+    <body>
+        <div class="header">
+            <img src="../static/PiRail_color.png" alt="PiRail Logo">
+            <div class="header-right">
+                <a class="active" href="index_stream.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="info.html">Info</a>
+            </div>
+        </div>
+
+        <div class="padding">
+        <h1>PiRail Data Viewer</h1>
+	<h2>Query Parameters</h2>
+<label for="file">Data Source:</label>
+<input type=text id="file" value="wrr_20221015_eastbound_with_mileage_sort_by_time.json">
+<br>
+<label for="starttime">Start Time:</label>
+<input type="text" min="0" step="0.01" id="starttime" size="20" name="starttime" value="2022-10-15T12:12:00">
+<br>
+<label for="endtime">End Time:</label>
+<input type="text" max="9999" step="0.01" id="endtime" size="20" name="endtime" value="2022-10-15T12:14:00">
+<br>
+<label for="window">Mileage Window:</label>
+<input type="number" min="0" max="1" step="0.001" id="window" size="20" name="window" value="0.01">
+<br>
+<label for="percentile">Percentile:</label>
+<input type="number" min="0" max="1" step="0.01" id="percentile" size="20" name="percentile" value="0.99">
+<br>
+<br>
+                <button onclick="submit_handler()" id="submit">Submit</button>
+
+            <div class = "chartbox">
+                <canvas id="myChart" width="0" height="500"></canvas>
+            </div>
+
+            <script>
+function submit_handler()
+{
+  var url = "pirail_acoustic_fetch.php" +
+    "?start-time=" + document.getElementById('starttime').value +
+    "&end-time=" + document.getElementById('endtime').value +
+    "&file=" + document.getElementById('file').value +
+    "&stream=false";
+  console.log(url);
+  $.ajax({
+    type: "GET",
+    dataType: "json",
+    headers: {"Accept": "application/json"},
+    url: url,
+    success: function(data, textStatus, jqXHR) {
+      plot_acoustic_data('myChart', data, document.getElementById('window').value);
+    },
+  }); 
+  /*var url = "pirail_data_fetch.php" +
+    "?classes=ATT&xform=thin" +
+    "&start-mileage=" + document.getElementById('startmileage').value +
+    "&end-mileage=" + document.getElementById('endmileage').value +
+    "&file=" + document.getElementById('file').value;
+  console.log(url);
+  $.ajax({
+    type: "GET",
+    dataType: "json",
+    headers: {"Accept": "application/json"},
+    url: url,
+    success: function(data, textStatus, jqXHR) {
+      plot_data('myChart', data, document.getElementById('window').value);
+    },
+  });
+
+  var url = "pirail_stats_fetch.php" +
+    "?start-mileage=" + document.getElementById('startmileage').value +
+    "&end-mileage=" + document.getElementById('endmileage').value +
+    "&percentile=" + document.getElementById('percentile').value +
+    "&file=" + document.getElementById('file').value;
+  console.log(url);
+  $.ajax({
+    type: "GET",
+    dataType: "json",
+    headers: {"Accept": "application/json"},
+    url: url,
+    success: acc_z_stats,
+  });*/
+}
+            </script>
+        </div>
+        <div id="stats">
+            <table>
+                <tr>
+                    <th colspan="6">
+                        ACC_Z Statistics
+                    </th>
+                </tr>
+                <tr>
+                        <th>Minimum</th>
+                        <th>Median</th>
+                        <th>Maximum</th>
+                        <th>Mean</th>
+                        <th>StdDev</th>
+                        <th id="nf_label">NoiseFloor</th>
+                </tr>
+                <tr>
+                        <td id="min_acc_z"></td>
+                        <td id="median_acc_z"></td>
+                        <td id="max_acc_z"></td>
+                        <td id="avg_acc_z"></td>
+                        <td id="stddev_acc_z"></td>
+                        <td id="nf_acc_z"></td>
+                </tr>
+                <tr>
+                        <td id="min_acc_z_mile"></td>
+                        <td id="median_acc_z_mile"></td>
+                        <td id="max_acc_z_mile"></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                </tr>
+            </table>
+        </div>
+    <br><br><br>
+    </body>
+
+    <footer>
+        <p>Research Project By Jon Miner</p>
+        <a target="_blank" rel="noreferrer noopener" href="https://www.facebook.com/PiRailNH/?ref=page_internal">
+            <img class="small" src="../static/facebook.png" alt="PiRail Facebook"></a>
+    </footer>
+</html>
