@@ -228,34 +228,37 @@ def read_mono_wav_files(obj):
         "ts": [],
     }
 
-    with wave.open(left_file, "rb") as left_channel:
-        with wave.open(right_file, "rb") as right_channel:
-            xl = []
-            xr = []
-            ts = []
-            tc = 0
-            params = left_channel.getparams()
-            params = right_channel.getparams()
-            result['framerate'] = params.framerate
-            Fs = 1.0 / result['framerate']
-            for _i in range(params.nframes):
-                left_data = left_channel.readframes(1)
-                right_data = right_channel.readframes(1)
-                xl.append(int.from_bytes(
-                    left_data[0:params.sampwidth],
-                    "little",
-                    signed=True
-                ))
-                xr.append(int.from_bytes(
-                    right_data[0:params.sampwidth],
-                    "little",
-                    signed=True
-                ))
-                ts.append(tc)
-                tc += Fs
-            result['left'] = xl
-            result['right'] = xr
-            result['ts'] = ts
+    try:
+        with wave.open(left_file, "rb") as left_channel:
+            with wave.open(right_file, "rb") as right_channel:
+                xl = []
+                xr = []
+                ts = []
+                tc = 0
+                params = left_channel.getparams()
+                params = right_channel.getparams()
+                result['framerate'] = params.framerate
+                Fs = 1.0 / result['framerate']
+                for _i in range(params.nframes):
+                    left_data = left_channel.readframes(1)
+                    right_data = right_channel.readframes(1)
+                    xl.append(int.from_bytes(
+                        left_data[0:params.sampwidth],
+                        "little",
+                        signed=True
+                    ))
+                    xr.append(int.from_bytes(
+                        right_data[0:params.sampwidth],
+                        "little",
+                        signed=True
+                    ))
+                    ts.append(tc)
+                    tc += Fs
+                result['left'] = xl
+                result['right'] = xr
+                result['ts'] = ts
+    except FileNotFoundError as ex:
+        result['error'] = str(ex)
     return result
 
 def read_stereo_wav_file(obj):
@@ -274,31 +277,34 @@ def read_stereo_wav_file(obj):
         "ts": [],
     }
 
-    with wave.open(stereo_file, "rb") as stereo_channel:
-        xl = []
-        xr = []
-        ts = []
-        tc = 0
-        params = stereo_channel.getparams()
-        result['framerate'] = params.framerate
-        Fs = 1.0 / result['framerate']
-        for _i in range(params.nframes):
-            stereo_data = stereo_channel.readframes(1)
-            xl.append(int.from_bytes(
-                stereo_data[0:params.sampwidth],
-                "little",
-                signed=True
-            ))
-            xr.append(int.from_bytes(
-                stereo_data[params.sampwidth:2*params.sampwidth],
-                "little",
-                signed=True
-            ))
-            ts.append(tc)
-            tc += Fs
-        result['left'] = xl
-        result['right'] = xr
-        result['ts'] = ts
+    try:
+        with wave.open(stereo_file, "rb") as stereo_channel:
+            xl = []
+            xr = []
+            ts = []
+            tc = 0
+            params = stereo_channel.getparams()
+            result['framerate'] = params.framerate
+            Fs = 1.0 / result['framerate']
+            for _i in range(params.nframes):
+                stereo_data = stereo_channel.readframes(1)
+                xl.append(int.from_bytes(
+                    stereo_data[0:params.sampwidth],
+                    "little",
+                    signed=True
+                ))
+                xr.append(int.from_bytes(
+                    stereo_data[params.sampwidth:2*params.sampwidth],
+                    "little",
+                    signed=True
+                ))
+                ts.append(tc)
+                tc += Fs
+            result['left'] = xl
+            result['right'] = xr
+            result['ts'] = ts
+    except FileNotFoundError as ex:
+        result['error'] = str(ex)
     return result
 
 def read_wav_file(obj):
