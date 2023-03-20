@@ -7,6 +7,7 @@ import json
 import re
 import sys
 import numpy
+import statistics
 
 import pirail
 
@@ -61,11 +62,46 @@ def thin_pitch_roll(obj, _qsdict):
     else:
         return obj
 
+def thin_acoustic(obj, _qsdict):
+    """ Thins Acoustic Data """
+    new_left = []
+    new_right = []
+    new_ts = []
+    fifty_increment = []
+    for i in obj['left']:
+        fifty_increment.append(i)
+        if len(fifty_increment) == 50:
+            max_num = max(fifty_increment, key=abs)
+            fifty_increment.clear()
+            new_left.append(max_num)
+    fifty_increment.clear()
+    for i in obj['right']:
+        fifty_increment.append(i)
+        if len(fifty_increment) == 50:
+            max_num = max(fifty_increment, key=abs)
+            fifty_increment.clear()
+            new_right.append(max_num)
+    fifty_increment.clear()
+    for i in obj['ts']:
+        fifty_increment.append(i)
+        if len(fifty_increment) == 50:
+            new_ts.append(statistics.median(fifty_increment))
+            fifty_increment.clear()
+    return {
+            'class': obj['class'],
+            'time': obj['time'],
+            'mileage': obj['mileage'],
+            'left': new_left,
+            'right': new_right,
+            'ts': new_ts,
+        }
+
 # Dictionary of Data Transformations
 DATA_XFORM = {
     'thin': thin_acc_z,
     'attitude': thin_pitch_roll,
     'default': default,
+    'acoustic': thin_acoustic,
 }
 
 def get_file_listing(self, groups, _qsdict):
@@ -330,7 +366,7 @@ def get_acoustic(self, groups, qsdict):
             args['end-longitude'] = float(value)
 
         classes = ["LPCM", "TPV"]
-        xform_function = DATA_XFORM['default']
+        xform_function = DATA_XFORM['acoustic']
 
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
