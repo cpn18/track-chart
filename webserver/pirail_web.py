@@ -193,7 +193,7 @@ def thin_acoustic_3(obj, _qsdict):
             'mileage': obj['mileage'],
             'left': final_left,
             'right': final_right,
-            'ts': left_ts,#obj['ts'],
+            'ts': final_ts_left,#obj['ts'],
             'left_ts': final_ts_left,
             'right_ts': final_ts_right,
         }
