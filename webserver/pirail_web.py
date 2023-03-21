@@ -93,7 +93,8 @@ def thin_acoustic(obj, _qsdict):
             'mileage': obj['mileage'],
             'left': new_left,
             'right': new_right,
-            'ts': new_ts,
+            'left_ts': new_ts,
+            'right_ts': new_ts,
         }
 
 def thin_acoustic_2(obj, _qsdict):
@@ -126,7 +127,6 @@ def thin_acoustic_2(obj, _qsdict):
             'mileage': obj['mileage'],
             'left': new_left,
             'right': new_right,
-            'ts': left_ts,#obj['ts'],
             'left_ts': left_ts,
             'right_ts': right_ts,
         }
@@ -193,7 +193,6 @@ def thin_acoustic_3(obj, _qsdict):
             'mileage': obj['mileage'],
             'left': final_left,
             'right': final_right,
-            'ts': final_ts_left,#obj['ts'],
             'left_ts': final_ts_left,
             'right_ts': final_ts_right,
         }
@@ -470,7 +469,7 @@ def get_acoustic(self, groups, qsdict):
             args['end-longitude'] = float(value)
 
         classes = ["LPCM", "TPV"]
-        xform_function = DATA_XFORM['acoustic3']
+        xform_function = DATA_XFORM['acoustic2']
 
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))

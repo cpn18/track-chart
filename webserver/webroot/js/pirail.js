@@ -145,13 +145,13 @@ function plot_acoustic_data(chartname, result, windowsize) {
   
   // populate left values
   for (let i = 0; i < result[0].left.length; i++) {
-    left_values.push({x: result[0].ts[i], y: result[0].left[i]})
+    left_values.push({x: result[0].left_ts[i], y: result[0].left[i]})
   }
   //console.log("left populated");
 
   // populate right values
   for (let i = 0; i < result[0].right.length ; i++) {
-    right_values.push({x: result[0].ts[i], y: result[0].right[i]})
+    right_values.push({x: result[0].right_ts[i], y: result[0].right[i]})
   }
 
   // Setup JChart Data
