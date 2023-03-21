@@ -96,12 +96,116 @@ def thin_acoustic(obj, _qsdict):
             'ts': new_ts,
         }
 
+def thin_acoustic_2(obj, _qsdict):
+    """ Thins Acoustic Data """
+    #std is standard deviation, edit this variable to change how graph is thinned
+    std = 4
+    new_left = []
+    new_right = []
+    left_ts = []
+    right_ts = []
+    left_abs = [abs(x) for x in obj['left']]
+    mean_left = statistics.mean(left_abs)
+    std_left = (numpy.std(left_abs) * std) + mean_left
+    #print(mean_left,numpy.std(left_abs),two_std_left)
+    right_abs = [abs(x) for x in obj['right']]
+    mean_right = statistics.mean(right_abs)
+    std_right = (numpy.std(right_abs) * std) + mean_right
+    for idx, i in enumerate(obj['left']):
+        if (i > std_left) or (i < -std_left):
+            new_left.append(i)
+            #print(idx, i)
+            left_ts.append(obj['ts'][idx])
+    for idx, i in enumerate(obj['right']):
+        if (i > std_right) or (i < -std_right):
+            new_right.append(i)
+            right_ts.append(obj['ts'][idx])
+    return {
+            'class': obj['class'],
+            'time': obj['time'],
+            'mileage': obj['mileage'],
+            'left': new_left,
+            'right': new_right,
+            'ts': left_ts,#obj['ts'],
+            'left_ts': left_ts,
+            'right_ts': right_ts,
+        }
+
+def thin_acoustic_3(obj, _qsdict):
+    """ Thins Acoustic Data """
+    #std is standard deviation, edit this variable to change how graph is thinned
+    std = 4
+    new_left = []
+    new_right = []
+    left_ts = []
+    right_ts = []
+    left_abs = [abs(x) for x in obj['left']]
+    mean_left = statistics.mean(left_abs)
+    std_left = (numpy.std(left_abs) * std) + mean_left
+    #print(mean_left,numpy.std(left_abs),two_std_left)
+    right_abs = [abs(x) for x in obj['right']]
+    mean_right = statistics.mean(right_abs)
+    std_right = (numpy.std(right_abs) * std) + mean_right
+    for idx, i in enumerate(obj['left']):
+        if (i > std_left) or (i < -std_left):
+            new_left.append(i)
+            #print(idx, i)
+            left_ts.append(obj['ts'][idx])
+    for idx, i in enumerate(obj['right']):
+        if (i > std_right) or (i < -std_right):
+            new_right.append(i)
+            right_ts.append(obj['ts'][idx])
+    #change hz to change hertz grouping
+    hz = 25
+    final_left = []
+    final_right = []
+    final_ts_left = []
+    final_ts_right = []
+    hz_increment = []
+    for i in new_left:
+        hz_increment.append(i)
+        if len(hz_increment) == hz:
+            max_num = max(hz_increment, key=abs)
+            hz_increment.clear()
+            final_left.append(max_num)
+    hz_increment.clear()
+    for i in new_right:
+        hz_increment.append(i)
+        if len(hz_increment) == hz:
+            max_num = max(hz_increment, key=abs)
+            hz_increment.clear()
+            final_right.append(max_num)
+    hz_increment.clear()
+    for i in left_ts:
+        hz_increment.append(i)
+        if len(hz_increment) == hz:
+            final_ts_left.append(statistics.median(hz_increment))
+            hz_increment.clear()
+    hz_increment.clear()
+    for i in right_ts:
+        hz_increment.append(i)
+        if len(hz_increment) == hz:
+            final_ts_right.append(statistics.median(hz_increment))
+            hz_increment.clear()
+    return {
+            'class': obj['class'],
+            'time': obj['time'],
+            'mileage': obj['mileage'],
+            'left': final_left,
+            'right': final_right,
+            'ts': left_ts,#obj['ts'],
+            'left_ts': final_ts_left,
+            'right_ts': final_ts_right,
+        }
+
 # Dictionary of Data Transformations
 DATA_XFORM = {
     'thin': thin_acc_z,
     'attitude': thin_pitch_roll,
     'default': default,
     'acoustic': thin_acoustic,
+    'acoustic2': thin_acoustic_2,
+    'acoustic3': thin_acoustic_3,
 }
 
 def get_file_listing(self, groups, _qsdict):
@@ -143,7 +247,7 @@ def get_file(self, groups, qsdict):
         if filename is None:
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
-
+        
         pathname = pirail.list_files(filename=filename)
         if not os.path.isfile(pathname):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
@@ -327,7 +431,7 @@ def get_acoustic(self, groups, qsdict):
         if filename is None:
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
             return
-
+        
         pathname = pirail.list_files(filename=filename)
         if not os.path.isfile(pathname):
             self.send_error(HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.description)
@@ -366,7 +470,7 @@ def get_acoustic(self, groups, qsdict):
             args['end-longitude'] = float(value)
 
         classes = ["LPCM", "TPV"]
-        xform_function = DATA_XFORM['acoustic']
+        xform_function = DATA_XFORM['acoustic3']
 
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
