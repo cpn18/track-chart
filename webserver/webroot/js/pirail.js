@@ -137,12 +137,24 @@ function acc_z_stats(data, textStatus, jqXHR) {
   document.getElementById('nf_acc_z').innerHTML = "&plusmn;" + data.acc_z.noise_floor.toFixed(4) + unit;
 }
 
-function plot_acoustic_data(chartname, result, windowsize) {
+function plot_acoustic_data(chartname, result, imudata, windowsize) {
+	lpcmstart = result[0].time;
+	base = Date.parse(lpcmstart);
+	acc_z = [];
+	for (let i = 0; i < imudata.length; i++) {
+		if (imudata[i].time >= lpcmstart) {
+			diff = (Date.parse(imudata[i].time) - base)/1000.0;
+			if (diff <= 60.0) {
+				acc_z.push({x: diff, y: (imudata[i].acc_z - 9.80665) * 400});
+			}
+		}
+	}
+	console.log(acc_z);
 
   // convert the JSON to arrays for JChart
   left_values = [];
   right_values = [];
-  
+
   // populate left values
   for (let i = 0; i < result[0].left.length; i++) {
     left_values.push({x: result[0].left_ts[i], y: result[0].left[i]})
@@ -164,6 +176,10 @@ function plot_acoustic_data(chartname, result, windowsize) {
       label: "right",
       backgroundColor: "rgba(220,0,0)",
       data: right_values,
+    }, {
+      label: "acc",
+      backgroundColor: "rgba(0,220,0)",
+      data: acc_z,
     }]
   };
 
@@ -208,7 +224,7 @@ function plot_both_data(chartname, result, windowsize) {
   // convert the JSON to arrays for JChart
   left_values = [];
   right_values = [];
-  
+
   // populate left values
   for (let i = 0; i < result[0].left.length; i++) {
     left_values.push({x: result[0].ts[i], y: result[0].left[i]})

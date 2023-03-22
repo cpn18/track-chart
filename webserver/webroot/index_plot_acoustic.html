@@ -61,6 +61,25 @@ Luke Knedeisen
             <script>
 function submit_handler()
 {
+  var imuurl = "pirail_data_fetch.php" +
+    "?classes=ATT&xform=thin" +
+    "&start-time=" + document.getElementById('starttime').value +
+    "&end-time=" + document.getElementById('endtime').value +
+    "&percentile=" + document.getElementById('percentile').value +
+    "&file=" + document.getElementById('file').value +
+    "&stream=false";
+  console.log(imuurl);
+  $.ajax({
+    async: false,
+    type: "GET",
+    dataType: "json",
+    headers: {"Accept": "application/json"},
+    url: imuurl,
+    success: function(data, textStatus, jqXHR) {
+      imudata = data;
+    },
+  });
+
   var url = "pirail_acoustic_fetch.php" +
     "?start-time=" + document.getElementById('starttime').value +
     "&end-time=" + document.getElementById('endtime').value +
@@ -73,28 +92,13 @@ function submit_handler()
     headers: {"Accept": "application/json"},
     url: url,
     success: function(data, textStatus, jqXHR) {
-      plot_acoustic_data('myChart', data, document.getElementById('window').value);
-    },
-  }); 
-  /*var url = "pirail_data_fetch.php" +
-    "?classes=ATT&xform=thin" +
-    "&start-mileage=" + document.getElementById('startmileage').value +
-    "&end-mileage=" + document.getElementById('endmileage').value +
-    "&file=" + document.getElementById('file').value;
-  console.log(url);
-  $.ajax({
-    type: "GET",
-    dataType: "json",
-    headers: {"Accept": "application/json"},
-    url: url,
-    success: function(data, textStatus, jqXHR) {
-      plot_data('myChart', data, document.getElementById('window').value);
+      plot_acoustic_data('myChart', data, imudata, document.getElementById('window').value);
     },
   });
 
-  var url = "pirail_stats_fetch.php" +
-    "?start-mileage=" + document.getElementById('startmileage').value +
-    "&end-mileage=" + document.getElementById('endmileage').value +
+      var url = "pirail_stats_fetch.php" +
+    "?start-time=" + document.getElementById('starttime').value +
+    "&end-time=" + document.getElementById('endtime').value +
     "&percentile=" + document.getElementById('percentile').value +
     "&file=" + document.getElementById('file').value;
   console.log(url);
@@ -104,7 +108,8 @@ function submit_handler()
     headers: {"Accept": "application/json"},
     url: url,
     success: acc_z_stats,
-  });*/
+  });
+
 }
             </script>
         </div>
