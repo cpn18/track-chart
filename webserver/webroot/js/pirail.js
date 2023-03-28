@@ -144,9 +144,10 @@ function plot_acoustic_data(chartname, result, imudata, windowsize) {
 	for (let i = 0; i < imudata.length; i++) {
 		if (imudata[i].time >= lpcmstart) {
 			diff = (Date.parse(imudata[i].time) - base)/1000.0;
-			if (diff <= 60.0) {
-				acc_z.push({x: diff, y: (imudata[i].acc_z - 9.80665) * 400});
+			if (diff > 60.0) {
+				break;
 			}
+			acc_z.push({x: diff, y: (imudata[i].acc_z - 9.80665) * 400});
 		}
 	}
 	console.log(acc_z);
