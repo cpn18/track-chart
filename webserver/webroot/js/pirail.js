@@ -203,36 +203,7 @@ function plot_acoustic_data(chartname, result, windowsize) {
   })
 }
 
-function plot_both_data(chartname, result, imudata, windowsize) {
-  lpcmstart = result[0].time;
-  base = Date.parse(lpcmstart);
-  acc_z = [];
-  for (let i = 0; i < imudata.length; i++) {
-    if (imudata[i].time >= lpcmstart) {
-      var date = (Date.parse(imudata[i].time) - base)/1000;
-      if (date >= 60){
-        break;
-      }
-      acc_z.push({x: date, y: (imudata[i].acc_z - 9.8) * 400})
-    }
-  }
-  console.log(acc_z);
-
-  // convert the JSON to arrays for JChart
-  left_values = [];
-  right_values = [];
-  
-  // populate left values
-  for (let i = 0; i < result[0].left.length; i++) {
-    left_values.push({x: result[0].left_ts[i], y: result[0].left[i]})
-  }
-  //console.log("left populated");
-
-  // populate right values
-  for (let i = 0; i < result[0].right.length ; i++) {
-    right_values.push({x: result[0].right_ts[i], y: result[0].right[i]})
-  }
-
+function plot_both_data(chartname, result, imudata, windowsize, percentile) {
   // Find an average reading over the window to normallize the data
   // TODO: This only works with data sorted low-to-high
   avgresult = []
@@ -264,54 +235,47 @@ function plot_both_data(chartname, result, imudata, windowsize) {
   }
 
   bins.sort(function(a,b){return a-b;});
-  index = Math.floor(
-    parseFloat(document.getElementById('percentile').value) * bins.length);
+  index = Math.floor(percentile * bins.length);
   noisefloor = bins[index];
-  console.log("noisefloor =", index, "of", bins.length, "value=", noisefloor);
 
   // convert the JSON to arrays for JChart
-  values = [];
-  allvalues = [];
 
-  // only plot above the noise floor
+  // populate acc_z values
+  acc_z = [];
+  lpcmstart = result[0].time;
+  base = Date.parse(lpcmstart);
   for (let i = 0; i < imudata.length; i++) {
-    thispoint = Math.abs(imudata[i].acc_z - avgresult[i])
-    if (thispoint > noisefloor) {
-      values.push({x: imudata[i].mileage, y: imudata[i].acc_z});
+    if (imudata[i].time >= lpcmstart) {
+      var date = (Date.parse(imudata[i].time) - base)/1000;
+      if (date >= 60){
+        break;
+      }
+      if (Math.abs(imudata[i].acc_z) > noisefloor) {
+        acc_z.push({x: date, y: (imudata[i].acc_z - 9.8) * 400})
+      }
     }
-    allvalues.push({x: imudata[i].mileage, y: imudata[i].acc_z});
+  }
+  
+  // populate left values
+  left_values = [];
+  for (let i = 0; i < result[0].left.length; i++) {
+    left_values.push({x: result[0].left_ts[i], y: result[0].left[i]})
   }
 
-  // Calculate the average acc_z using a sliding window
-  avalues = [];
-  for (let i = 0; i < allvalues.length; i++) {
-    mlow = allvalues[i]['x'] - windowsize/2;
-    mhigh = allvalues[i]['x'] + windowsize/2;
-    msum = 0;
-    mcnt = 0;
-    j = i;
-    while ( j >= 0 && allvalues[j]['x'] >= mlow ) {
-      msum += allvalues[j]['y'];
-      mcnt += 1;
-      j -= 1;
-    }
-    j = i + 1;
-    while ( j < allvalues.length && allvalues[j]['x'] <= mhigh) {
-      msum += allvalues[j]['y'];
-      mcnt += 1;
-      j += 1;
-    }
-    avalues.push({x: allvalues[i]['x'], y: msum/mcnt});
+  // populate right values
+  right_values = [];
+  for (let i = 0; i < result[0].right.length ; i++) {
+    right_values.push({x: result[0].right_ts[i], y: result[0].right[i]})
   }
 
   // Setup JChart Data
   const data = {
     datasets: [{
-      label: "left",
+      label: "Channel 1",
       backgroundColor: "rgba(0,0,220)",
       data: left_values,
     }, {
-      label: "right",
+      label: "Channel 2",
       backgroundColor: "rgba(220,0,0)",
       data: right_values,
     }, {
