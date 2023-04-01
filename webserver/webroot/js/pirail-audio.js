@@ -37,7 +37,7 @@ function plot_data(chartname, result, windowsize) {
     parseFloat(document.getElementById('percentile').value) * bins.length);
   noisefloor = bins[index];
   console.log("noisefloor =", index, "of", bins.length, "value=", noisefloor);
-
+  
 
   // convert the JSON to arrays for JChart
   values = [];
@@ -143,7 +143,7 @@ function plot_acoustic_data(chartname, result, windowsize) {
   // convert the JSON to arrays for JChart
   left_values = [];
   right_values = [];
-
+  
   // populate left values
   for (let i = 0; i < result[0].left.length; i++) {
     left_values.push({x: result[0].ts[i], y: result[0].left[i]})

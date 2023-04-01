@@ -1,5 +1,9 @@
 """
 PiRail Web Service Modules
+
+UNH Capstone 2023 Project
+
+Matthew Cusack, Luke Knedeisen, Joshua Knauer
 """
 
 import os
@@ -93,8 +97,7 @@ def thin_acoustic(obj, _qsdict):
             'mileage': obj['mileage'],
             'left': new_left,
             'right': new_right,
-            'left_ts': new_ts,
-            'right_ts': new_ts,
+            'ts': new_ts,
         }
 
 def thin_acoustic_2(obj, _qsdict):
@@ -127,6 +130,7 @@ def thin_acoustic_2(obj, _qsdict):
             'mileage': obj['mileage'],
             'left': new_left,
             'right': new_right,
+            'ts': left_ts,#obj['ts'],
             'left_ts': left_ts,
             'right_ts': right_ts,
         }
@@ -134,7 +138,7 @@ def thin_acoustic_2(obj, _qsdict):
 def thin_acoustic_3(obj, _qsdict):
     """ Thins Acoustic Data """
     #std is standard deviation, edit this variable to change how graph is thinned
-    std = 4
+    std = 3
     new_left = []
     new_right = []
     left_ts = []
@@ -156,7 +160,7 @@ def thin_acoustic_3(obj, _qsdict):
             new_right.append(i)
             right_ts.append(obj['ts'][idx])
     #change hz to change hertz grouping
-    hz = 25
+    hz = 15
     final_left = []
     final_right = []
     final_ts_left = []
@@ -193,6 +197,7 @@ def thin_acoustic_3(obj, _qsdict):
             'mileage': obj['mileage'],
             'left': final_left,
             'right': final_right,
+            'ts': left_ts,#obj['ts'],
             'left_ts': final_ts_left,
             'right_ts': final_ts_right,
         }
@@ -469,7 +474,7 @@ def get_acoustic(self, groups, qsdict):
             args['end-longitude'] = float(value)
 
         classes = ["LPCM", "TPV"]
-        xform_function = DATA_XFORM['acoustic2']
+        xform_function = DATA_XFORM['acoustic3']
 
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))

@@ -137,25 +137,12 @@ function acc_z_stats(data, textStatus, jqXHR) {
   document.getElementById('nf_acc_z').innerHTML = "&plusmn;" + data.acc_z.noise_floor.toFixed(4) + unit;
 }
 
-function plot_acoustic_data(chartname, result, imudata, windowsize) {
-	lpcmstart = result[0].time;
-	base = Date.parse(lpcmstart);
-	acc_z = [];
-	for (let i = 0; i < imudata.length; i++) {
-		if (imudata[i].time >= lpcmstart) {
-			diff = (Date.parse(imudata[i].time) - base)/1000.0;
-			if (diff > 60.0) {
-				break;
-			}
-			acc_z.push({x: diff, y: (imudata[i].acc_z - 9.80665) * 400});
-		}
-	}
-	console.log(acc_z);
+function plot_acoustic_data(chartname, result, windowsize) {
 
   // convert the JSON to arrays for JChart
   left_values = [];
   right_values = [];
-
+  
   // populate left values
   for (let i = 0; i < result[0].left.length; i++) {
     left_values.push({x: result[0].left_ts[i], y: result[0].left[i]})
@@ -177,10 +164,6 @@ function plot_acoustic_data(chartname, result, imudata, windowsize) {
       label: "right",
       backgroundColor: "rgba(220,0,0)",
       data: right_values,
-    }, {
-      label: "acc",
-      backgroundColor: "rgba(0,220,0)",
-      data: acc_z,
     }]
   };
 
@@ -220,40 +203,53 @@ function plot_acoustic_data(chartname, result, imudata, windowsize) {
   })
 }
 
-function plot_both_data(chartname, result, windowsize) {
+function plot_both_data(chartname, result, imudata, windowsize) {
+  lpcmstart = result[0].time;
+  base = Date.parse(lpcmstart);
+  acc_z = [];
+  for (let i = 0; i < imudata.length; i++) {
+    if (imudata[i].time >= lpcmstart) {
+      var date = (Date.parse(imudata[i].time) - base)/1000;
+      if (date >= 60){
+        break;
+      }
+      acc_z.push({x: date, y: (imudata[i].acc_z - 9.8) * 400})
+    }
+  }
+  console.log(acc_z);
 
   // convert the JSON to arrays for JChart
   left_values = [];
   right_values = [];
-
+  
   // populate left values
   for (let i = 0; i < result[0].left.length; i++) {
-    left_values.push({x: result[0].ts[i], y: result[0].left[i]})
+    left_values.push({x: result[0].left_ts[i], y: result[0].left[i]})
   }
   //console.log("left populated");
 
   // populate right values
   for (let i = 0; i < result[0].right.length ; i++) {
-    right_values.push({x: result[0].ts[i], y: result[0].right[i]})
+    right_values.push({x: result[0].right_ts[i], y: result[0].right[i]})
   }
 
   // Find an average reading over the window to normallize the data
   // TODO: This only works with data sorted low-to-high
   avgresult = []
-  for (let i = 0; i < result.length; i++) {
-    mlow = result[i].mileage - windowsize/2;
-    mhigh = result[i].mileage + windowsize/2;
+  for (let i = 0; i < imudata.length; i++) {
+    mlow = imudata[i].mileage - windowsize/2;
+    mhigh = imudata[i].mileage + windowsize/2;
     msum = 0;
     mcnt = 0;
     j = i;
-    while ( j >= 0 && result[j].mileage >= mlow ) {
-      msum += result[j].acc_z;
+    while ( j >= 0 && imudata[j].mileage >= mlow ) {
+      msum += imudata[j].acc_z;
       mcnt += 1;
       j -= 1;
     }
     j = i + 1;
-    while ( j < result.length && result[j].mileage <= mhigh) {
-      msum += result[j].acc_z;
+    while ( j < imudata.length && imudata[j].mileage <= mhigh) {
+      msum += imudata[j].acc_z;
       mcnt += 1;
       j += 1;
     }
@@ -262,8 +258,8 @@ function plot_both_data(chartname, result, windowsize) {
 
   // calculate the noisefloor
   bins = [];
-  for (let i = 0; i < result.length; i++) {
-    thispoint = Math.abs(result[i].acc_z - avgresult[i])
+  for (let i = 0; i < imudata.length; i++) {
+    thispoint = Math.abs(imudata[i].acc_z - avgresult[i])
     bins.push(thispoint);
   }
 
@@ -278,12 +274,12 @@ function plot_both_data(chartname, result, windowsize) {
   allvalues = [];
 
   // only plot above the noise floor
-  for (let i = 0; i < result.length; i++) {
-    thispoint = Math.abs(result[i].acc_z - avgresult[i])
+  for (let i = 0; i < imudata.length; i++) {
+    thispoint = Math.abs(imudata[i].acc_z - avgresult[i])
     if (thispoint > noisefloor) {
-      values.push({x: result[i].mileage, y: result[i].acc_z});
+      values.push({x: imudata[i].mileage, y: imudata[i].acc_z});
     }
-    allvalues.push({x: result[i].mileage, y: result[i].acc_z});
+    allvalues.push({x: imudata[i].mileage, y: imudata[i].acc_z});
   }
 
   // Calculate the average acc_z using a sliding window
@@ -320,11 +316,8 @@ function plot_both_data(chartname, result, windowsize) {
       data: right_values,
     }, {
       label: "ACC_Z",
-      data: values,
-    }, {
-      label: "AVG_Z",
       backgroundColor: "rgba(0,220,0)",
-      data: avalues,
+      data: acc_z,
     }]
   };
 

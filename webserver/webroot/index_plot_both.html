@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <!--
+UNH Capstone 2022 Project
+
+Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
+-->
+<!--
 UNH Capstone 2023 Project
 
 Luke Knedeisen
@@ -45,6 +50,12 @@ Luke Knedeisen
 <label for="endtime">End Time:</label>
 <input type="text" max="9999" step="0.01" id="endtime" size="20" name="endtime" value="2022-10-15T12:14:00">
 <br>
+<label for="startmileage">Start Mileage:</label>
+<input type="number" min="0" step="0.01" id="startmileage" size="20" name="startmileage" value="0">
+<br>
+<label for="endmileage">End Mileage:</label>
+<input type="number" max="9999" step="0.01" id="endmileage" size="20" name="endmileage" value="9999">
+<br>
 <label for="window">Mileage Window:</label>
 <input type="number" min="0" max="1" step="0.001" id="window" size="20" name="window" value="0.01">
 <br>
@@ -61,6 +72,22 @@ Luke Knedeisen
             <script>
 function submit_handler()
 {
+  var imuurl = "pirail_data_fetch.php" +
+    "?classes=ATT&xform=thin" +
+    "&start-time=" + document.getElementById('starttime').value +
+    "&end-time=" + document.getElementById('endtime').value +
+    "&file=" + document.getElementById('file').value;
+  console.log(imuurl);
+  $.ajax({
+    async: false,
+    type: "GET",
+    dataType: "json",
+    headers: {"Accept": "application/json"},
+    url: imuurl,
+    success: function(data, textStatus, jqXHR) {
+      imudata = data;
+    },
+  });
   var url = "pirail_acoustic_fetch.php" +
     "?start-time=" + document.getElementById('starttime').value +
     "&end-time=" + document.getElementById('endtime').value +
@@ -73,38 +100,9 @@ function submit_handler()
     headers: {"Accept": "application/json"},
     url: url,
     success: function(data, textStatus, jqXHR) {
-      plot_acoustic_data('myChart', data, document.getElementById('window').value);
+      plot_both_data('myChart', data, imudata, document.getElementById('window').value);
     },
   }); 
-  /*var url = "pirail_data_fetch.php" +
-    "?classes=ATT&xform=thin" +
-    "&start-mileage=" + document.getElementById('startmileage').value +
-    "&end-mileage=" + document.getElementById('endmileage').value +
-    "&file=" + document.getElementById('file').value;
-  console.log(url);
-  $.ajax({
-    type: "GET",
-    dataType: "json",
-    headers: {"Accept": "application/json"},
-    url: url,
-    success: function(data, textStatus, jqXHR) {
-      plot_data('myChart', data, document.getElementById('window').value);
-    },
-  });
-
-  var url = "pirail_stats_fetch.php" +
-    "?start-mileage=" + document.getElementById('startmileage').value +
-    "&end-mileage=" + document.getElementById('endmileage').value +
-    "&percentile=" + document.getElementById('percentile').value +
-    "&file=" + document.getElementById('file').value;
-  console.log(url);
-  $.ajax({
-    type: "GET",
-    dataType: "json",
-    headers: {"Accept": "application/json"},
-    url: url,
-    success: acc_z_stats,
-  });*/
 }
             </script>
         </div>
