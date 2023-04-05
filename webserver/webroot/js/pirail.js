@@ -250,11 +250,13 @@ function plot_both_data(chartname, result, imudata, windowsize, percentile) {
       if (date >= 60){
         break;
       }
-      if (Math.abs(imudata[i].acc_z) > noisefloor) {
-        acc_z.push({x: date, y: (imudata[i].acc_z - 9.8) * 400})
+      thispoint = imudata[i].acc_z - avgresult[i];
+      if (Math.abs(thispoint) > noisefloor) {
+        acc_z.push({x: date, y: thispoint})
       }
     }
   }
+	console.log(acc_z);
   
   // populate left values
   left_values = [];
@@ -274,14 +276,17 @@ function plot_both_data(chartname, result, imudata, windowsize, percentile) {
       label: "Channel 1",
       backgroundColor: "rgba(0,0,220)",
       data: left_values,
+	    yAxisID: 'y',
     }, {
       label: "Channel 2",
       backgroundColor: "rgba(220,0,0)",
       data: right_values,
+	    yAxisID: 'y',
     }, {
       label: "ACC_Z",
       backgroundColor: "rgba(0,220,0)",
       data: acc_z,
+	    yAxisID: 'y2',
     }]
   };
 
@@ -306,7 +311,17 @@ function plot_both_data(chartname, result, imudata, windowsize, percentile) {
           }
         }
       }
-    }
+    },
+	  scales: {
+		  y: {
+			  type: "linear",
+			  position: "left",
+		  },
+		  y2: {
+			  type: "linear",
+			  position: "right",
+		  },
+	  }
   }
 
   // Plot the chart
