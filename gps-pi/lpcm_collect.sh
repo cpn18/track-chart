@@ -20,11 +20,11 @@ collect()
       arecord \
         --device=hw:CARD=Device,DEV=0 \
         ${args} \
-        ${outputdir}/${timestamp}_left.wav &
+        ${outputdir}/${timestamp}_right.wav &
       arecord \
         --device=hw:CARD=Device_1,DEV=0 \
         ${args} \
-        ${outputdir}/${timestamp}_right.wav &
+        ${outputdir}/${timestamp}_left.wav &
       wait
   fi
 }
