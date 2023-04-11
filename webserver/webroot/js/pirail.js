@@ -271,14 +271,15 @@ function plot_both_data(chartname, result, imudata, windowsize, percentile) {
   }
 
   // Setup JChart Data
+  // prior to 2023, LPCM data was collected backwards
   const data = {
     datasets: [{
-      label: "Channel 1",
+      label: "Right",
       backgroundColor: "rgba(0,0,220)",
       data: left_values,
 	    yAxisID: 'y',
     }, {
-      label: "Channel 2",
+      label: "Left",
       backgroundColor: "rgba(220,0,0)",
       data: right_values,
 	    yAxisID: 'y',
