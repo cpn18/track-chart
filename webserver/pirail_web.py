@@ -646,11 +646,9 @@ def get_stats(self, groups, qsdict):
     for obj in data:
         data_acc_z.append(obj['acc_z'])
 
-    average = numpy.average(data_acc_z)
-    data_acc_z_abs = []
-    for obj in data:
-        data_acc_z_abs.append(abs(obj['acc_z'] - average))
-    data_acc_z_abs = sorted(data_acc_z_abs)
+    # Stats
+    mean = statistics.mean(data_acc_z)
+    stdev = statistics.stdev(data_acc_z, mean)
 
     stddev = numpy.std(data_acc_z)
     result = {
@@ -658,9 +656,9 @@ def get_stats(self, groups, qsdict):
             "min": data[0],
             "max": data[-1],
             "median": data[int(len(data)/2)],
-            "avg": average,
-            "stddev": stddev,
-            "noise_floor": stddev*noise,
+            "avg": mean,
+            "stddev": stdev,
+            "noise_floor": stdev*noise,
         },
     }
 
