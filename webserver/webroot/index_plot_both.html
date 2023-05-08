@@ -64,6 +64,9 @@ Luke Knedeisen
 <label for="percentile">Percentile:</label>
 <input type="number" min="0" max="1" step="0.01" id="percentile" size="20" name="percentile" value="0.99">
 <br>
+<label for="stddev">Standard Deviation:</label>
+<input type="number" min="0" max="5" step="0.1" id="stddev" size="20" name="stddev" value="2">
+<br>
 <br>
                 <button onclick="submit_handler()" id="submit">Submit</button>
 
@@ -75,9 +78,11 @@ Luke Knedeisen
 function submit_handler()
 {
   var imuurl = "pirail_data_fetch.php" +
-    "?classes=ATT&xform=thin" +
+    "?classes=ATT&xform=thin_acc_z" +
     "&start-time=" + document.getElementById('starttime').value +
     "&end-time=" + document.getElementById('endtime').value +
+    "window-size=" + document.getElementById('window').value +
+    "std-dev=" + document.getElementById('stddev').value +
     "&file=" + document.getElementById('file').value;
   console.log(imuurl);
   $.ajax({
@@ -102,13 +107,13 @@ function submit_handler()
     headers: {"Accept": "application/json"},
     url: url,
     success: function(data, textStatus, jqXHR) {
-      plot_both_data('myChart', data, imudata, document.getElementById('window').value, document.getElementById('percentile').value);
+      plot_both_data('myChart', data, imudata);
     },
   }); 
   var url = "pirail_stats_fetch.php" +
     "?start-time=" + document.getElementById('starttime').value +
     "&end-time=" + document.getElementById('endtime').value +
-    "&percentile=" + document.getElementById('percentile').value +
+    "&std-dev=" + document.getElementById('stddev').value +
     "&file=" + document.getElementById('file').value;
   console.log(url);
   $.ajax({

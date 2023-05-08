@@ -12,6 +12,7 @@ import re
 import sys
 import numpy
 import statistics
+import math
 
 import pirail
 
@@ -41,17 +42,63 @@ def default(obj, _qsdict):
     """ Do not modify data """
     return obj
 
-def thin_acc_z(obj, _qsdict):
-    """ Sample Data Thinning """
-    if obj['class'] == "ATT":
-        return {
-            'class': obj['class'],
-            'time': obj['time'],
-            'mileage': obj['mileage'],
-            'acc_z': obj['acc_z'],
-        }
-    else:
-        return obj
+def thin(data, qsdict, data_key="acc_z", window_key="mileage", window_size=0.01, noise=1):
+    """ Sample Data Thinning and Window Filter """
+    if isinstance(data, dict):
+        # Thin Object Data
+        if data_key in data:
+            return {
+                'class': data['class'],
+                'time': data['time'],
+                'mileage': data['mileage'],
+                data_key: data[data_key],
+            }
+    elif isinstance(data, list):
+        # Window Filter
+        new_data = []
+        data_set = []
+
+        # Copy the Data to array
+        values = []
+        for obj in data:
+            values.append(obj[data_key])
+
+        start = 0
+        while True:
+
+            # Find the Window (min size has to be two)
+            end = start + 2
+            while end < len(data) and abs(data[end][window_key] - data[start][window_key]) < window_size:
+                end += 1
+
+            # escape clause
+            if end >= len(data):
+                break
+
+            # Stats
+            mean = statistics.mean(values[start:end])
+            stdev = statistics.stdev(values[start:end], mean)
+
+            for i in range(start, end):
+                if abs(values[i] - mean) > noise*stdev:
+                    if i not in data_set:
+                        new_data.append(data[i])
+                        data_set.append(i)
+            start += 1
+        return new_data
+
+    # Not sure what was passed to us, so return the default
+    return default(data, qsdict)
+
+def thin_acc_z(data, qsdict):
+    return thin(
+        data,
+        qsdict,
+        data_key="acc_z",
+        window_key="mileage",
+        window_size=float(qsdict.get("window-size", ["0.01"])[0]),
+        noise=float(qsdict.get("std-dev", ["2"])[0]),
+    )
 
 def thin_pitch_roll(obj, _qsdict):
     """ Sample Data Thinning """
@@ -204,13 +251,14 @@ def thin_acoustic_3(obj, _qsdict):
 
 # Dictionary of Data Transformations
 DATA_XFORM = {
-    'thin': thin_acc_z,
+    'thin_acc_z': thin_acc_z,
     'attitude': thin_pitch_roll,
     'default': default,
     'acoustic': thin_acoustic,
     'acoustic2': thin_acoustic_2,
     'acoustic3': thin_acoustic_3,
 }
+
 
 def get_file_listing(self, groups, _qsdict):
     """
@@ -319,6 +367,7 @@ def get_file(self, groups, qsdict):
         # Sort the data
         if SORTBY is not None:
             data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
+            data = xform_function(data, qsdict)
 
         output = json.dumps(data, indent=4) + "\n"
 
@@ -573,11 +622,11 @@ def get_stats(self, groups, qsdict):
         if value is not None:
             args['end-longitude'] = float(value)
 
-        value = qsdict.get("percentile",["0.95"])[0]
-        percentile = float(value)
+        value = qsdict.get("std-dev",["2"])[0]
+        noise = float(value)
 
         classes = "ATT"
-        xform_function = DATA_XFORM['thin']
+        xform_function = DATA_XFORM['thin_acc_z']
 
     except ValueError as ex:
         self.send_error(HTTPStatus.BAD_REQUEST, str(ex))
@@ -603,14 +652,15 @@ def get_stats(self, groups, qsdict):
         data_acc_z_abs.append(abs(obj['acc_z'] - average))
     data_acc_z_abs = sorted(data_acc_z_abs)
 
+    stddev = numpy.std(data_acc_z)
     result = {
         "acc_z": {
             "min": data[0],
             "max": data[-1],
             "median": data[int(len(data)/2)],
             "avg": average,
-            "stddev": numpy.std(data_acc_z),
-            "noise_floor": data_acc_z_abs[int(len(data_acc_z_abs)*percentile)],
+            "stddev": stddev,
+            "noise_floor": stddev*noise,
         },
     }
 

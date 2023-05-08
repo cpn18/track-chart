@@ -133,7 +133,7 @@ function acc_z_stats(data, textStatus, jqXHR) {
   document.getElementById('median_acc_z').innerHTML = data.acc_z.median.acc_z.toFixed(4) + unit;
   document.getElementById('median_acc_z_mile').innerHTML = data.acc_z.median.mileage.toFixed(2);
   document.getElementById('stddev_acc_z').innerHTML = data.acc_z.stddev.toFixed(4) + unit;
-  document.getElementById('nf_label').innerHTML = "NoiseFloor("+document.getElementById('percentile').value*100+"%)";
+  document.getElementById('nf_label').innerHTML = "NoiseFloor("+document.getElementById('stddev').value + "&sigma;)";
   document.getElementById('nf_acc_z').innerHTML = "&plusmn;" + data.acc_z.noise_floor.toFixed(4) + unit;
 }
 
@@ -203,40 +203,7 @@ function plot_acoustic_data(chartname, result, windowsize) {
   })
 }
 
-function plot_both_data(chartname, result, imudata, windowsize, percentile) {
-  // Find an average reading over the window to normallize the data
-  // TODO: This only works with data sorted low-to-high
-  avgresult = []
-  for (let i = 0; i < imudata.length; i++) {
-    mlow = imudata[i].mileage - windowsize/2;
-    mhigh = imudata[i].mileage + windowsize/2;
-    msum = 0;
-    mcnt = 0;
-    j = i;
-    while ( j >= 0 && imudata[j].mileage >= mlow ) {
-      msum += imudata[j].acc_z;
-      mcnt += 1;
-      j -= 1;
-    }
-    j = i + 1;
-    while ( j < imudata.length && imudata[j].mileage <= mhigh) {
-      msum += imudata[j].acc_z;
-      mcnt += 1;
-      j += 1;
-    }
-    avgresult.push(msum/mcnt);
-  }
-
-  // calculate the noisefloor
-  bins = [];
-  for (let i = 0; i < imudata.length; i++) {
-    thispoint = Math.abs(imudata[i].acc_z - avgresult[i])
-    bins.push(thispoint);
-  }
-
-  bins.sort(function(a,b){return a-b;});
-  index = Math.floor(percentile * bins.length);
-  noisefloor = bins[index];
+function plot_both_data(chartname, result, imudata) {
 
   // convert the JSON to arrays for JChart
 
@@ -250,13 +217,10 @@ function plot_both_data(chartname, result, imudata, windowsize, percentile) {
       if (date >= 60){
         break;
       }
-      thispoint = imudata[i].acc_z - avgresult[i];
-      if (Math.abs(thispoint) > noisefloor) {
-        acc_z.push({x: date, y: thispoint})
-      }
+      thispoint = imudata[i].acc_z;
+      acc_z.push({x: date, y: thispoint})
     }
   }
-	console.log(acc_z);
   
   // populate left values
   left_values = [];
@@ -284,7 +248,7 @@ function plot_both_data(chartname, result, imudata, windowsize, percentile) {
       data: right_values,
 	    yAxisID: 'y',
     }, {
-      label: "ACC_Z",
+      label: "ACCz",
       backgroundColor: "rgba(0,220,0)",
       data: acc_z,
 	    yAxisID: 'y2',
