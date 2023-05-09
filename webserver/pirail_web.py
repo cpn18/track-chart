@@ -182,70 +182,81 @@ def thin_acoustic_2(obj, _qsdict):
             'right_ts': right_ts,
         }
 
-def thin_acoustic_3(obj, _qsdict):
+def thin_acoustic_3(obj, qsdict):
     """ Thins Acoustic Data """
-    #std is standard deviation, edit this variable to change how graph is thinned
-    std = 3
+    # Number of standard deviations to use as the noise floor
+    noise = float(qsdict.get('std-dev', ["2"])[0])
+
+    # New data arrays
     new_left = []
     new_right = []
     left_ts = []
     right_ts = []
-    left_abs = [abs(x) for x in obj['left']]
-    mean_left = statistics.mean(left_abs)
-    std_left = (numpy.std(left_abs) * std) + mean_left
-    #print(mean_left,numpy.std(left_abs),two_std_left)
-    right_abs = [abs(x) for x in obj['right']]
-    mean_right = statistics.mean(right_abs)
-    std_right = (numpy.std(right_abs) * std) + mean_right
+
+    # Left Channel
+    mean_left = statistics.mean(obj['left'])
+    noise_floor_left = statistics.stdev(obj['left'], mean_left) * noise
+
     for idx, i in enumerate(obj['left']):
-        if (i > std_left) or (i < -std_left):
+        if abs(i) > noise_floor_left:
             new_left.append(i)
-            #print(idx, i)
             left_ts.append(obj['ts'][idx])
+
+    # Right Channel
+    mean_right = statistics.mean(obj['right'])
+    noise_floor_right = statistics.stdev(obj['right'], mean_right) * noise
+
     for idx, i in enumerate(obj['right']):
-        if (i > std_right) or (i < -std_right):
+        if abs(i) > noise_floor_right:
             new_right.append(i)
             right_ts.append(obj['ts'][idx])
-    #change hz to change hertz grouping
-    hz = 15
+
+    # Downsample the remaining data
+    windowsize = 15
+
+    # Left channel Data and Timestamp
     final_left = []
-    final_right = []
     final_ts_left = []
-    final_ts_right = []
-    hz_increment = []
+    window = []
     for i in new_left:
-        hz_increment.append(i)
-        if len(hz_increment) == hz:
-            max_num = max(hz_increment, key=abs)
-            hz_increment.clear()
-            final_left.append(max_num)
-    hz_increment.clear()
-    for i in new_right:
-        hz_increment.append(i)
-        if len(hz_increment) == hz:
-            max_num = max(hz_increment, key=abs)
-            hz_increment.clear()
-            final_right.append(max_num)
-    hz_increment.clear()
+        window.append(i)
+        if len(window) == windowsize:
+            # Preserve the maximum absolute value in the window
+            final_left.append(max(window, key=abs))
+            window.clear()
+
+    window.clear()
     for i in left_ts:
-        hz_increment.append(i)
-        if len(hz_increment) == hz:
-            final_ts_left.append(statistics.median(hz_increment))
-            hz_increment.clear()
-    hz_increment.clear()
+        window.append(i)
+        if len(window) == windowsize:
+            # Preserve tje median timestamp for the window
+            final_ts_left.append(statistics.median(window))
+            window.clear()
+
+    # Right channel Data and Timestamp
+    final_right = []
+    final_ts_right = []
+    window.clear()
+    for i in new_right:
+        window.append(i)
+        if len(window) == windowsize:
+            final_right.append(max(window, key=abs))
+            window.clear()
+
+    window.clear()
     for i in right_ts:
-        hz_increment.append(i)
-        if len(hz_increment) == hz:
-            final_ts_right.append(statistics.median(hz_increment))
-            hz_increment.clear()
+        window.append(i)
+        if len(window) == windowsize:
+            final_ts_right.append(statistics.median(window))
+            window.clear()
+
     return {
             'class': obj['class'],
             'time': obj['time'],
             'mileage': obj['mileage'],
             'left': final_left,
-            'right': final_right,
-            'ts': left_ts,#obj['ts'],
             'left_ts': final_ts_left,
+            'right': final_right,
             'right_ts': final_ts_right,
         }
 

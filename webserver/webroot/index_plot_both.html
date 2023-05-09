@@ -81,8 +81,8 @@ function submit_handler()
     "?classes=ATT&xform=thin_acc_z" +
     "&start-time=" + document.getElementById('starttime').value +
     "&end-time=" + document.getElementById('endtime').value +
-    "window-size=" + document.getElementById('window').value +
-    "std-dev=" + document.getElementById('stddev').value +
+    "&window-size=" + document.getElementById('window').value +
+    "&std-dev=" + document.getElementById('stddev').value +
     "&file=" + document.getElementById('file').value;
   console.log(imuurl);
   $.ajax({
@@ -98,6 +98,7 @@ function submit_handler()
   var url = "pirail_acoustic_fetch.php" +
     "?start-time=" + document.getElementById('starttime').value +
     "&end-time=" + document.getElementById('endtime').value +
+    "&std-dev=" + document.getElementById('stddev').value +
     "&file=" + document.getElementById('file').value +
     "&stream=false";
   console.log(url);
