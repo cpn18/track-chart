@@ -297,4 +297,3 @@ function plot_both_data(chartname, result, imudata) {
     options: options,
   })
 }
->>>>>>> unh_2023_capstone
