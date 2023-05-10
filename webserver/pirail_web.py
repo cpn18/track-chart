@@ -390,7 +390,7 @@ def get_file(self, _groups, qsdict):
             data = sorted(data, key=lambda k: k[SORTBY], reverse=False)
             data = xform_function(data, qsdict)
 
-        output = json.dumps(xform_function(data, qsdict), indent=4) + "\n"
+        output = json.dumps(data, indent=4) + "\n"
 
         self.send_header("Content-length", str(len(output)))
         self.end_headers()
