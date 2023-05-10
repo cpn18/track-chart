@@ -4,6 +4,11 @@ UNH Capstone 2022 Project
 
 Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
 -->
+<!--
+UNH Capstone 2023 Project
+
+Luke Knedeisen
+-->
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -37,19 +42,30 @@ Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
         <h1>PiRail Data Viewer</h1>
 	<h2>Query Parameters</h2>
 <label for="file">Data Source:</label>
-<input type=text id="file" value="wrr_20211016_westbound.json">
+<input type=text id="file" value="wrr_20221015_eastbound_with_mileage_sort_by_time.json">
+<br>
+<label for="starttime">Start Time:</label>
+<input type="text" min="0" step="0.01" id="starttime" size="20" name="starttime" value="2022-10-15T12:12:00">
+<br>
+<label for="endtime">End Time:</label>
+<input type="text" max="9999" step="0.01" id="endtime" size="20" name="endtime" value="2022-10-15T12:14:00">
+<!--
 <br>
 <label for="startmileage">Start Mileage:</label>
 <input type="number" min="0" step="0.01" id="startmileage" size="20" name="startmileage" value="0">
 <br>
 <label for="endmileage">End Mileage:</label>
 <input type="number" max="9999" step="0.01" id="endmileage" size="20" name="endmileage" value="9999">
+-->
 <br>
 <label for="window">Mileage Window:</label>
 <input type="number" min="0" max="1" step="0.001" id="window" size="20" name="window" value="0.01">
 <br>
 <label for="percentile">Percentile:</label>
 <input type="number" min="0" max="1" step="0.01" id="percentile" size="20" name="percentile" value="0.99">
+<br>
+<label for="stddev">Standard Deviation:</label>
+<input type="number" min="0" max="5" step="0.1" id="stddev" size="20" name="stddev" value="2">
 <br>
 <br>
                 <button onclick="submit_handler()" id="submit">Submit</button>
@@ -61,11 +77,30 @@ Ben Grimes, Jeff Fernandes, Max Hennessey, Liqi Li
             <script>
 function submit_handler()
 {
-  var url = "pirail_data_fetch.php" +
-    "?classes=ATT&xform=thin" +
-    "&start-mileage=" + document.getElementById('startmileage').value +
-    "&end-mileage=" + document.getElementById('endmileage').value +
+  var imuurl = "pirail_data_fetch.php" +
+    "?classes=ATT&xform=thin_acc_z" +
+    "&start-time=" + document.getElementById('starttime').value +
+    "&end-time=" + document.getElementById('endtime').value +
+    "&window-size=" + document.getElementById('window').value +
+    "&std-dev=" + document.getElementById('stddev').value +
     "&file=" + document.getElementById('file').value;
+  console.log(imuurl);
+  $.ajax({
+    async: false,
+    type: "GET",
+    dataType: "json",
+    headers: {"Accept": "application/json"},
+    url: imuurl,
+    success: function(data, textStatus, jqXHR) {
+      imudata = data;
+    },
+  });
+  var url = "pirail_acoustic_fetch.php" +
+    "?start-time=" + document.getElementById('starttime').value +
+    "&end-time=" + document.getElementById('endtime').value +
+    "&std-dev=" + document.getElementById('stddev').value +
+    "&file=" + document.getElementById('file').value +
+    "&stream=false";
   console.log(url);
   $.ajax({
     type: "GET",
@@ -73,14 +108,13 @@ function submit_handler()
     headers: {"Accept": "application/json"},
     url: url,
     success: function(data, textStatus, jqXHR) {
-      plot_data('myChart', data, document.getElementById('window').value);
+      plot_both_data('myChart', data, imudata);
     },
-  });
-
+  }); 
   var url = "pirail_stats_fetch.php" +
-    "?start-mileage=" + document.getElementById('startmileage').value +
-    "&end-mileage=" + document.getElementById('endmileage').value +
-    "&percentile=" + document.getElementById('percentile').value +
+    "?start-time=" + document.getElementById('starttime').value +
+    "&end-time=" + document.getElementById('endtime').value +
+    "&std-dev=" + document.getElementById('stddev').value +
     "&file=" + document.getElementById('file').value;
   console.log(url);
   $.ajax({
@@ -90,6 +124,7 @@ function submit_handler()
     url: url,
     success: acc_z_stats,
   });
+
 }
             </script>
         </div>

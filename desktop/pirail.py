@@ -314,7 +314,7 @@ def read_wav_file(obj):
 def list_files(filename=None, regex=None):
     """
     Find a file using the PIRAILDATA search path
-    
+
     The assumption is that each directory in the PIRAILDATA
     search path is a "PIRAIL" directory, and contains
     subdirectories in the YYYYmmdd format.
@@ -345,8 +345,7 @@ def list_files(filename=None, regex=None):
 
     if filename is not None:
         return filename
-    else:
-        return files
+    return files
 
 def get_min_max(subset, field):
     """ Find the minimum and maximum objects """
