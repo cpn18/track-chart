@@ -109,8 +109,8 @@ function submit_handler()
     dataType: "json",
     headers: {"Accept": "application/json"},
     url: url,
-    success: function(data, textStatus, jqXHR) {
-      plot_both_data('myChart', data, imudata);
+    success: function(lpcmdata, textStatus, jqXHR) {
+      plot_both_data('myChart', lpcmdata, imudata, false);
     },
   }); 
   var url = "pirail_stats_fetch.php" +

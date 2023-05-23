@@ -200,35 +200,67 @@ function plot_acoustic_data(chartname, result, windowsize) {
   })
 }
 
-function plot_both_data(chartname, result, imudata) {
+function time_to_mileage(timescale, ts) {
+	m = timescale[0].m
+	i = 0
+	while (i < timescale.length && timescale[i].t < ts) {
+		m = timescale[i].m
+		i += 1
+	}
+	if (i >= 1 && i < timescale.length) {
+		m = timescale[i].m + (timescale[i].m - timescale[i-1].m) * (ts - timescale[i-1].t) / (timescale[i].t - timescale[i-1].t)
+	}
+	//console.log(i, ts)
+	return m
+}
+
+function plot_both_data(chartname, lpcm_result, imu_result, by_mileage) {
 
   // convert the JSON to arrays for JChart
 
-  // populate acc_z values
-  acc_z = [];
-  lpcmstart = result[0].time;
+  // populate imu values
+  imu_values = [];
+  timescale = [];
+
+  // first timestamp value
+  lpcmstart = lpcm_result[0].time;
   base = Date.parse(lpcmstart);
-  for (let i = 0; i < imudata.length; i++) {
-    if (imudata[i].time >= lpcmstart) {
-      var date = (Date.parse(imudata[i].time) - base)/1000;
+
+  // Loop through IMU data
+  for (let i = 0; i < imu_result.length; i++) {
+    if (imu_result[i].time >= lpcmstart) {
+      var date = (Date.parse(imu_result[i].time) - base) / 1000.0;
       if (date >= 60){
         break;
       }
-      thispoint = imudata[i].acc_z;
-      acc_z.push({x: date, y: thispoint})
+      thispoint = imu_result[i].acc_z;
+      xval = date;
+      if (by_mileage) {
+        xval = imu_result[i].mileage;
+      }
+      imu_values.push({x: xval, y: thispoint})
+      timescale.push({t: date, m: imu_result[i].mileage})
     }
   }
   
   // populate left values
   left_values = [];
-  for (let i = 0; i < result[0].left.length; i++) {
-    left_values.push({x: result[0].left_ts[i], y: result[0].left[i]})
+  for (let i = 0; i < lpcm_result[0].left.length; i++) {
+    xval = lpcm_result[0].left_ts[i]
+    if (by_mileage) {
+      xval = time_to_mileage(timescale, xval)
+    }
+    left_values.push({x: xval, y: lpcm_result[0].left[i]})
   }
 
   // populate right values
   right_values = [];
-  for (let i = 0; i < result[0].right.length ; i++) {
-    right_values.push({x: result[0].right_ts[i], y: result[0].right[i]})
+  for (let i = 0; i < lpcm_result[0].right.length ; i++) {
+    xval = lpcm_result[0].right_ts[i]
+    if (by_mileage) {
+      xval = time_to_mileage(timescale, xval)
+    }
+    right_values.push({x: xval, y: lpcm_result[0].right[i]})
   }
 
   // Setup JChart Data
@@ -247,7 +279,7 @@ function plot_both_data(chartname, result, imudata) {
     }, {
       label: "ACCz",
       backgroundColor: "rgba(0,220,0)",
-      data: acc_z,
+      data: imu_values,
 	    yAxisID: 'y2',
     }]
   };
