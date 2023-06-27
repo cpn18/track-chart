@@ -27,6 +27,18 @@ function hold()
   });
 }
 
+function reset()
+{
+  $.ajax({
+    datatype: "json",
+    url: "/reset",
+    success: function(obj) {
+      $('#msg').text(obj.message);
+      $('#memo').val('');
+    }
+  });
+}
+
 function gps_setup(viewport) {
 	var canvas = $("#"+viewport)[0];
 	var context = canvas.getContext("2d");
@@ -90,6 +102,9 @@ function gps_stream(viewport, imagedata) {
 	}
 	if (tpv.eps) {
 	    $("#eps").html("&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph");
+	}
+	if (tpv.odometer) {
+	    $("#odometer").text(tpv.odometer);
 	}
 	if (tpv.mode) {
 	    $("#mode").text(tpv.mode + "D ");

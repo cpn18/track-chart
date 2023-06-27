@@ -19,6 +19,7 @@ import http.client
 import gps
 import nmea
 import util
+import geo
 
 ALWAYS_LOG = True
 
@@ -29,6 +30,19 @@ MEMO = ""
 
 GPS_NUM_SAT = 0
 GPS_NUM_USED = 0
+
+ODOMETER = 0.0
+
+def great_circle(last, now):
+    try:
+        return geo.great_circle(
+            last['lat'],
+            last['lon'],
+            now['lat'],
+            now['lon']
+        )
+    except IndexError:
+        return 0
 
 def do_json_output(self, output_dict):
     """ send back json text """
@@ -52,6 +66,12 @@ def handle_hold(self, _groups, qsdict):
     HOLD = 15
     MEMO = qsdict['memo']
     do_json_output(self, {"message": "Holding..."})
+
+def handle_reset(self, _groups, qsdict):
+    """ Reset Odometer """
+    global ODOMETER
+    ODOMETER = 0.0
+    do_json_output(self, {"message": "Reset Odometer..."})
 
 def handle_tpv(self, _groups, _qsdict):
     """ get a TPV report """
@@ -107,6 +127,10 @@ MATCHES = [
     {
         "pattern": re.compile(r"GET /hold$"),
         "handler": handle_hold,
+    },
+    {
+        "pattern": re.compile(r"GET /reset$"),
+        "handler": handle_reset,
     },
     {
         "pattern": re.compile(r"GET /tpv$"),
@@ -177,10 +201,15 @@ def gps_logger(output_directory):
 
             if report['class'] == 'TPV':
                 obj = nmea.tpv_to_json(report)
+
+                # Update Odometer
+                ODOMETER += great_circle(TPV, now)
+
                 # Add Sat Metrics
                 obj['num_sat'] = GPS_NUM_SAT
                 obj['num_used'] = GPS_NUM_USED
                 obj['hold'] = HOLD
+                obj['odometer'] = ODOMETER
                 TPV = obj
                 TPV_SYS_TIME = time.time()
             elif report['class'] == 'SKY':

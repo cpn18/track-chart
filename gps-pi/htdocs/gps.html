@@ -22,6 +22,7 @@
 <tr><th align="right">Longitude:</th><td id="lon" align="right"></td><td id="epx" align="right"></td></tr>
 <tr><th align="right">Altitude:</th><td id="alt" align="right"></td><td id="epv" align="right"></td></tr>
 <tr><th align="right">Speed:</th><td id="speed" align="right"></td><td id="eps" align="right"></td></tr>
+<tr><th align="right">Odometer:</th><td id="odometer" align="right"></td><td align="right">miles</td></tr>
 <tr><th align="right">GPS:</th><td id="mode" align="right">OFF</td><td id="gps_count"></td></tr>
 <tr><th align="right">Hold:</th><td id="hold" align="right">OFF</td><td></td></tr>
 <tr><td colspan=3 align=center><i><p id="time"></p></i></td><tr>
@@ -30,6 +31,7 @@
 <br>
 <button onclick="mark()">&#x1F4CC;Mark</button>
 <button onclick="hold()">&#x1F6D1;Hold</button>
+<button onclick="reset()">&#x1F504;Reset</button>
 <br>
 <br>
 <canvas id="viewport" width="200" height="200">
