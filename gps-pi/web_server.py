@@ -115,7 +115,7 @@ class MyHandler(BaseHTTPRequestHandler):
             else:
                 self.send_error(response.status_code, response.reason)
                 return
-        elif self.path == "/gps-stream":
+        elif self.path == "/gps/stream":
             if CONFIG['gps']['enable'] is False:
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
@@ -125,7 +125,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 "accept": content_type,
             }
             response = requests.get(
-                "http://localhost:%d/gps-stream" % CONFIG['gps']['port'],
+                "http://localhost:%d%s" % (CONFIG['gps']['port'], self.path),
                 headers=headers,
                 stream=True,
             )
@@ -150,7 +150,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 "accept": content_type,
             }
             response = requests.get(
-                "http://localhost:%d" % CONFIG['gps']['port'] + self.path,
+                "http://localhost:%d%s" % (CONFIG['gps']['port'], self.path),
                 headers=headers,
             )
             if response.status_code != http.client.OK:
