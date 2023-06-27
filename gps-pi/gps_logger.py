@@ -121,31 +121,31 @@ def handle_gps(self, _groups, _qsdict):
 
 MATCHES = [
     {
-        "pattern": re.compile(r"GET /mark$"),
+        "pattern": re.compile(r"GET /gps/mark$"),
         "handler": handle_mark,
     },
     {
-        "pattern": re.compile(r"GET /hold$"),
+        "pattern": re.compile(r"GET /gps/hold$"),
         "handler": handle_hold,
     },
     {
-        "pattern": re.compile(r"GET /odometer-reset$"),
+        "pattern": re.compile(r"GET /gps/odometer-reset$"),
         "handler": handle_reset,
     },
     {
-        "pattern": re.compile(r"GET /tpv$"),
+        "pattern": re.compile(r"GET /gps/tpv$"),
         "handler": handle_tpv,
     },
     {
-        "pattern": re.compile(r"GET /sky$"),
+        "pattern": re.compile(r"GET /gps/sky$"),
         "handler": handle_sky,
     },
     {
-        "pattern": re.compile(r"GET /gps-stream$"),
+        "pattern": re.compile(r"GET /gps/stream$"),
         "handler": handle_gps_stream,
     },
     {
-        "pattern": re.compile(r"GET /gps$"),
+        "pattern": re.compile(r"GET /gps/single$"),
         "handler": handle_gps,
     },
 ]

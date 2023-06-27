@@ -7,7 +7,7 @@ function mark()
 {
   $.ajax({
     datatype: "json",
-    url: "/mark?memo="+$('#memo').val(),
+    url: "/gps/mark?memo="+$('#memo').val(),
     success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
@@ -19,7 +19,7 @@ function hold()
 {
   $.ajax({
     datatype: "json",
-    url: "/hold?memo="+$('#memo').val(),
+    url: "/gps/hold?memo="+$('#memo').val(),
     success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
@@ -31,7 +31,7 @@ function reset()
 {
   $.ajax({
     datatype: "json",
-    url: "/odometer-reset",
+    url: "/gps/odometer-reset",
     success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
@@ -46,7 +46,7 @@ function gps_setup(viewport) {
 }
 
 function gps_stream(viewport, imagedata) {
-    const gpsStream = new EventSource("/gps-stream");
+    const gpsStream = new EventSource("/gps/stream");
 
     console.log(gpsStream.readyState);
     console.log(gpsStream.url);

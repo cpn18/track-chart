@@ -24,7 +24,7 @@ function power()
 }
 
 function dashboard() {
-    const gpsStream = new EventSource("/gps-stream");
+    const gpsStream = new EventSource("/gps/stream");
     console.log(gpsStream.readyState);
     console.log(gpsStream.url);
 

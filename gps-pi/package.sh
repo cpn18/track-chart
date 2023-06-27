@@ -33,6 +33,7 @@ files="adxl345.py \
 
 echo $hash > version.txt
 file=${HOME}/PiRail-${hash}.tgz
+cp ../desktop/geo.py .
 tar -zcf ${file} ${files} version.txt
-rm version.txt
+rm version.txt geo.py
 echo "Wrote ${file}"
