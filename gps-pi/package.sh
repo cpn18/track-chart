@@ -6,6 +6,7 @@ files="adxl345.py \
     adxl345_shim.py \
     berryimu_shim.py \
     config.json.sample \
+    geo.py \
     gps_logger.py \
     gps_logger.sh \
     imu_logger.py \

@@ -41,7 +41,7 @@ def great_circle(last, now):
             now['lat'],
             now['lon']
         )
-    except IndexError:
+    except KeyError:
         return 0
 
 def do_json_output(self, output_dict):
@@ -174,6 +174,7 @@ def gps_logger(output_directory):
     global SKY, TPV, SKY_SYS_TIME, TPV_SYS_TIME
     global HOLD
     global GPS_NUM_SAT, GPS_NUM_USED
+    global ODOMETER
 
     hold_lat = []
     hold_lon = []
@@ -203,7 +204,7 @@ def gps_logger(output_directory):
                 obj = nmea.tpv_to_json(report)
 
                 # Update Odometer
-                ODOMETER += great_circle(TPV, now)
+                ODOMETER += great_circle(TPV, obj)
 
                 # Add Sat Metrics
                 obj['num_sat'] = GPS_NUM_SAT

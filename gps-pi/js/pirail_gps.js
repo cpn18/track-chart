@@ -104,7 +104,7 @@ function gps_stream(viewport, imagedata) {
 	    $("#eps").html("&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph");
 	}
 	if (tpv.odometer) {
-	    $("#odometer").text(tpv.odometer);
+	    $("#odometer").text(tpv.odometer.toFixed(2));
 	}
 	if (tpv.mode) {
 	    $("#mode").text(tpv.mode + "D ");
