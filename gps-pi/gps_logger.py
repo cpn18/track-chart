@@ -129,7 +129,7 @@ MATCHES = [
         "handler": handle_hold,
     },
     {
-        "pattern": re.compile(r"GET /reset$"),
+        "pattern": re.compile(r"GET /odometer-reset$"),
         "handler": handle_reset,
     },
     {

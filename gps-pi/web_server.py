@@ -144,7 +144,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 except (BrokenPipeError, ConnectionResetError):
                     break
             return
-        elif self.path.startswith("/mark?memo=") or self.path.startswith("/hold?memo="):
+        elif self.path.startswith("/mark?memo=") or self.path.startswith("/hold?memo=") or self.path.startswith("/odometer-reset"):
             content_type = "application/json"
             headers = {
                 "accept": content_type,

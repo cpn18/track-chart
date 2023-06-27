@@ -31,7 +31,7 @@ function reset()
 {
   $.ajax({
     datatype: "json",
-    url: "/reset",
+    url: "/odometer-reset",
     success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
