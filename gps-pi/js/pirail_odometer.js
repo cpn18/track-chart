@@ -54,4 +54,17 @@ function gps_stream(viewport, imagedata) {
 	}
     });
 
+	gpsStream.addEventListener("sky", function(event) {
+        // console.log(event);
+        var sky = JSON.parse(event.data);
+        // console.log(sky);
+        var used = 0;
+		for (var i=0; i<sky.satellites.length; i++) {
+			if (sky.satellites[i].used) {
+				used ++;
+			}
+		}
+		$("#gps_count").text(used + "/" + sky.satellites.length);
+	});
+
 }
