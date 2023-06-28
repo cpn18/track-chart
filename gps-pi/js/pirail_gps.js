@@ -31,7 +31,7 @@ function reset()
 {
   $.ajax({
     datatype: "json",
-    url: "/gps/odometer-reset",
+    url: "/gps/odometer-reset?memo="+$('#memo').val(),
     success: function(obj) {
       $('#msg').text(obj.message);
       $('#memo').val('');
@@ -73,43 +73,43 @@ function gps_stream(viewport, imagedata) {
 	var tpv = JSON.parse(event.data);
         // console.log(tpv);
 
-	if (tpv.time) {
+	if (typeof tpv.time != 'undefined') {
 	    $("#gpstime").html(tpv.time.replace('T', '<br>'));
 	}
-	if (tpv.ept) {
+	if (typeof tpv.ept != 'undefined') {
 	    $("#ept").html("&plusmn;"+tpv.ept+"s");
 	}
-	if (tpv.lat) {
+	if (typeof tpv.lat != 'undefined') {
 	    $("#lat").html(tpv.lat.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;");
 	}
-	if (tpv.epv) {
+	if (typeof tpv.epv != 'undefined') {
 	    $("#epy").html("&plusmn;"+Math.round(tpv.epy*m_to_ft)+"ft");
 	}
-	if (tpv.lon) {
+	if (typeof tpv.lon != 'undefined') {
 	    $("#lon").html(tpv.lon.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;");
 	}
-	if (tpv.epx) {
+	if (typeof tpv.epx != 'undefined') {
 	    $("#epx").html("&plusmn;"+Math.round(tpv.epx*m_to_ft)+"ft");
 	}
-	if (tpv.alt) {
+	if (typeof tpv.alt != 'undefined') {
 	    $("#alt").html(tpv.alt.toLocaleString('en-US',{minimumFractionDigits:1, maximumFractionDigits: 1})+"&rsquo;");
 	}
-	if (tpv.epv) {
+	if (typeof tpv.epv != 'undefined') {
 	    $("#epv").html("&plusmn;"+Math.round(tpv.epv*m_to_ft)+"ft");
 	}
-	if (tpv.speed) {
+	if (typeof tpv.speed != 'undefined') {
 	    $("#speed").text(Math.round(tpv.speed*ms_to_mph));
 	}
-	if (tpv.eps) {
+	if (typeof tpv.eps != 'undefined') {
 	    $("#eps").html("&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph");
 	}
-	if (tpv.odometer) {
+	if (typeof tpv.odometer != 'undefined') {
 	    $("#odometer").text(tpv.odometer.toFixed(2));
 	}
-	if (tpv.mode) {
+	if (typeof tpv.mode != 'undefined') {
 	    $("#mode").text(tpv.mode + "D ");
 	}
-	if (tpv.hold) {
+	if (typeof tpv.hold != 'undefined') {
 	    if (tpv.hold == -1) {
 	        $("#hold").text("OFF");
 	    } else {

@@ -34,6 +34,7 @@ GPS_NUM_USED = 0
 ODOMETER = 0.0
 
 def great_circle(last, now):
+    """ Great Circle Calculation """
     try:
         return geo.great_circle(
             last['lat'],
@@ -57,20 +58,23 @@ def handle_mark(self, _groups, qsdict):
     """ mark a location """
     global HOLD, MEMO
     HOLD = 1
-    MEMO = qsdict['memo']
+    MEMO = qsdict['memo'][0]
     do_json_output(self, {"message": "Marked..."})
 
 def handle_hold(self, _groups, qsdict):
     """ hold a location """
     global HOLD, MEMO
     HOLD = 15
-    MEMO = qsdict['memo']
+    MEMO = qsdict['memo'][0]
     do_json_output(self, {"message": "Holding..."})
 
 def handle_reset(self, _groups, qsdict):
     """ Reset Odometer """
     global ODOMETER
-    ODOMETER = 0.0
+    try:
+        ODOMETER = int(qsdict['memo'][0])
+    except ValueError:
+        ODOMETER = 0.0
     do_json_output(self, {"message": "Reset Odometer..."})
 
 def handle_tpv(self, _groups, _qsdict):
@@ -176,6 +180,8 @@ def gps_logger(output_directory):
     global GPS_NUM_SAT, GPS_NUM_USED
     global ODOMETER
 
+    last_pos = {}
+
     hold_lat = []
     hold_lon = []
     hold_alt = []
@@ -204,7 +210,11 @@ def gps_logger(output_directory):
                 obj = nmea.tpv_to_json(report)
 
                 # Update Odometer
-                ODOMETER += great_circle(TPV, obj)
+                if 'speed' in obj and \
+                    'eps' in obj and \
+                    obj['speed'] > obj['eps']:
+                    ODOMETER += great_circle(last_pos, obj)
+                    last_pos = obj
 
                 # Add Sat Metrics
                 obj['num_sat'] = GPS_NUM_SAT
