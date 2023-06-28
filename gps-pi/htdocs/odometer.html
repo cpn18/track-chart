@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>PiRail GPS Odometer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript" src="/jquery.js"></script>
+<script type="text/javascript" src="/pirail_odometer.js"></script>
+<script type="text/javascript" src="/pirail_draw.js"></script>
+</head>
+<body>
+<h1>GPS</h1>
+<button onclick="window.location.href='/index.html'">&#x1f3e0;HOME</button>
+<button onclick="window.location.href='/setup.html'">&#x2699;SETUP</button>
+<!-- <button onclick="window.location.href='/gps.html'">&#x1f6f0;GPS</button> -->
+<button onclick="window.location.href='/imu.html'">&#x1f4f3;IMU</button>
+<button onclick="window.location.href='/lidar.html'">&#x26a1;LIDAR</button>
+<button onclick="window.location.href='/lpcm.html'">&#x1f3a4;LPCM</button>
+<table>
+<h1 id="odometer"></h1>
+<tr><td colspan=2 align=center id="msg">Loading...</td><tr>
+<tr><th align="right">Speed:</th><td id="speed" align="right"></td><td id="eps" align="right"></td></tr>
+<tr><th align="right">GPS:</th><td id="mode" align="right">OFF</td><td id="gps_count"></td></tr>
+</table>
+<input type=text id="memo" placeholder="Memo"><br>
+<br>
+<button onclick="reset()">&#x1F504;Reset</button>
+<script>
+    $(document).ready(function()
+    {
+        gps_stream();
+    });
+</script>
+</body>
+</html>
