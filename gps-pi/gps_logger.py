@@ -72,8 +72,8 @@ def handle_reset(self, _groups, qsdict):
     """ Reset Odometer """
     global ODOMETER
     try:
-        ODOMETER = int(qsdict['memo'][0])
-    except ValueError:
+        ODOMETER = float(qsdict['memo'][0])
+    except (KeyError,ValueError):
         ODOMETER = 0.0
     do_json_output(self, {"message": "Reset Odometer..."})
 
