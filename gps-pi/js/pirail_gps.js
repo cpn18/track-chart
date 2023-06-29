@@ -27,18 +27,6 @@ function hold()
   });
 }
 
-function reset()
-{
-  $.ajax({
-    datatype: "json",
-    url: "/gps/odometer-reset?memo="+$('#memo').val(),
-    success: function(obj) {
-      $('#msg').text(obj.message);
-      $('#memo').val('');
-    }
-  });
-}
-
 function gps_setup(viewport) {
 	var canvas = $("#"+viewport)[0];
 	var context = canvas.getContext("2d");

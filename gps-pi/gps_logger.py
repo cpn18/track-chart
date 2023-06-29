@@ -32,6 +32,7 @@ GPS_NUM_SAT = 0
 GPS_NUM_USED = 0
 
 ODOMETER = 0.0
+ODIR = 1
 
 def great_circle(last, now):
     """ Great Circle Calculation """
@@ -76,6 +77,12 @@ def handle_reset(self, _groups, qsdict):
     except (KeyError,ValueError):
         ODOMETER = 0.0
     do_json_output(self, {"message": "Reset Odometer..."})
+
+def handle_reverse(self, _groups, _qsdict):
+    """ Reset Odometer """
+    global ODIR
+    ODIR = -ODIR
+    do_json_output(self, {"message": "Reverse Odometer..."})
 
 def handle_tpv(self, _groups, _qsdict):
     """ get a TPV report """
@@ -135,6 +142,10 @@ MATCHES = [
     {
         "pattern": re.compile(r"GET /gps/odometer-reset$"),
         "handler": handle_reset,
+    },
+    {
+        "pattern": re.compile(r"GET /gps/odometer-reverse$"),
+        "handler": handle_reverse,
     },
     {
         "pattern": re.compile(r"GET /gps/tpv$"),
@@ -213,7 +224,7 @@ def gps_logger(output_directory):
                 if 'speed' in obj and \
                     'eps' in obj and \
                     obj['speed'] > obj['eps']:
-                    ODOMETER += great_circle(last_pos, obj)
+                    ODOMETER += ODIR * great_circle(last_pos, obj)
                     last_pos = obj
 
                 # Add Sat Metrics
@@ -221,6 +232,7 @@ def gps_logger(output_directory):
                 obj['num_used'] = GPS_NUM_USED
                 obj['hold'] = HOLD
                 obj['odometer'] = ODOMETER
+                obj['odir'] = ODIR
                 TPV = obj
                 TPV_SYS_TIME = time.time()
             elif report['class'] == 'SKY':

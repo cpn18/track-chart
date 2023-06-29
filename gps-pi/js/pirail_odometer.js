@@ -15,6 +15,18 @@ function reset()
   });
 }
 
+function reverse()
+{
+  $.ajax({
+    datatype: "json",
+    url: "/gps/odometer-reverse",
+    success: function(obj) {
+      $('#msg').text(obj.message);
+      $('#memo').val('');
+    }
+  });
+}
+
 function gps_stream(viewport, imagedata) {
     const gpsStream = new EventSource("/gps/stream");
 
@@ -47,7 +59,12 @@ function gps_stream(viewport, imagedata) {
 	    $("#eps").html("&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph");
 	}
 	if (typeof tpv.odometer != 'undefined') {
-	    $("#odometer").text(tpv.odometer.toFixed(3));
+		if (tpv.odir == 1) {
+			dir = "&#x2B06;";
+		} else {
+			dir = "&#x2B07;";
+		}
+	    $("#odometer").html(tpv.odometer.toFixed(3) + " " + dir);
 	}
 	if (typeof tpv.mode != 'undefined') {
 	    $("#mode").text(tpv.mode + "D ");
