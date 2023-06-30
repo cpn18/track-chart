@@ -7,10 +7,10 @@ function reset()
 {
   $.ajax({
     datatype: "json",
-    url: "/gps/odometer-reset?memo="+$('#memo').val(),
+    url: "/gps/odometer-reset?mileage="+$('#mileage').val(),
     success: function(obj) {
       $('#msg').text(obj.message);
-      $('#memo').val('');
+      $('#mileage').val('');
     }
   });
 }
@@ -64,11 +64,12 @@ function gps_stream(viewport, imagedata) {
 		} else {
 			dir = "&#x2B07;";
 		}
-	    $("#odometer").html(tpv.odometer.toFixed(3) + " " + dir);
+	    $("#odometer").html(tpv.odometer.toFixed(3) + "mi " + dir);
 	}
 	if (typeof tpv.mode != 'undefined') {
 	    $("#mode").text(tpv.mode + "D ");
 	}
+        $('#msg').text("");
     });
 
 	gpsStream.addEventListener("sky", function(event) {
@@ -83,5 +84,4 @@ function gps_stream(viewport, imagedata) {
 		}
 		$("#gps_count").text(used + "/" + sky.satellites.length);
 	});
-
 }
