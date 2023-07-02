@@ -59,17 +59,19 @@ function gps_stream(viewport, imagedata) {
 	    $("#eps").html("&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph");
 	}
 	if (typeof tpv.odometer != 'undefined') {
+		var mileage = tpv.odometer.toFixed(3);
 		if (tpv.odir == 1) {
 			dir = "&#x2B06;";
 		} else {
 			dir = "&#x2B07;";
 		}
-	    $("#odometer").html(tpv.odometer.toFixed(3) + "mi " + dir);
+	    $("#odometer").html('<font size="+2">' + mileage.slice(0,-1) + '</font>' + mileage.slice(-1));
+	    $("#odir").html(dir + " mi");
 	}
 	if (typeof tpv.mode != 'undefined') {
 	    $("#mode").text(tpv.mode + "D ");
 	}
-        $('#msg').text("");
+        $('#msg').html('&nbsp;');
     });
 
 	gpsStream.addEventListener("sky", function(event) {
