@@ -150,44 +150,46 @@ class MyHandler(BaseHTTPRequestHandler):
                 content_type = response.headers['content-type']
                 output = response.content
 
-        elif self.path == "/imu":
-            content_type = "application/json"
-            response = requests.get("http://localhost:%d/imu" % CONFIG['imu']['port'])
-            if response:
-                output = response.json()
-                output = json.dumps(output)
-            else:
-                self.send_error(response.status_code, response.reason)
-                return
-        elif self.path == "/imu-stream":
+        elif self.path.startswith("/imu/"):
             if CONFIG['imu']['enable'] is False:
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
-            content_type = "text/event-stream"
-            headers = {
-                "accept": content_type,
-            }
-            response = requests.get(
-                "http://localhost:%d/imu-stream" % CONFIG['imu']['port'],
-                headers=headers,
-                stream=True,
-            )
-            if response.status_code != http.client.OK:
-                self.send_error(response.status_code, response.reason)
-                return
+            if self.path == "/imu/stream":
+                content_type = "text/event-stream"
+                headers = {
+                    "accept": content_type,
+                }
+                response = requests.get(
+                    "http://localhost:%d%s" % (CONFIG['imu']['port'], self.path),
+                    headers=headers,
+                    stream=True,
+                )
+                if response.status_code != http.client.OK:
+                    self.send_error(response.status_code, response.reason)
+                    return
 
-            self.send_response(response.status_code)
-            self.send_header("Content-type", response.headers['content-type'])
-            self.end_headers()
-            while not util.DONE:
-                try:
-                    for line in response.iter_lines():
-                        line = (line.decode('utf-8') + "\n").encode('utf-8')
-                        self.wfile.write(line)
-                except (BrokenPipeError, ConnectionResetError):
-                    break
-            return
+                self.send_response(response.status_code)
+                self.send_header("Content-type", response.headers['content-type'])
+                self.end_headers()
+                while not util.DONE:
+                    try:
+                        for line in response.iter_lines():
+                            line = (line.decode('utf-8') + "\n").encode('utf-8')
+                            self.wfile.write(line)
+                    except (BrokenPipeError, ConnectionResetError):
+                        break
+                return
+            else:
+                content_type = "application/json"
+                response = requests.get("http://localhost:%d%s" % (CONFIG['imu']['port'], self.path))
+                if response.status_code != http.client.OK:
+                    self.send_error(response.status_code, response.reason)
+                    return
+
+                content_type = response.headers['content-type']
+                output = response.content
+
         elif self.path == "/lidar":
             content_type = "application/json"
             response = requests.get("http://localhost:%d/lidar" % CONFIG['lidar']['port'])

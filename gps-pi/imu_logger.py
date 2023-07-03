@@ -69,11 +69,15 @@ def handle_imu(self, _groups, _qsdict):
 
 MATCHES = [
     {
-        "pattern": re.compile(r"GET /imu-stream$"),
+        "pattern": re.compile(r"GET /imu/stream$"),
         "handler": handle_imu_stream,
     },
     {
-        "pattern": re.compile(r"GET /imu$"),
+        "pattern": re.compile(r"GET /imu/att$"),
+        "handler": handle_imu,
+    },
+    {
+        "pattern": re.compile(r"GET /imu/single$"),
         "handler": handle_imu,
     },
 ]
