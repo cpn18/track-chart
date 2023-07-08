@@ -19,6 +19,8 @@ def main():
         print("Usage: %s start_mile end_mile" % sys.argv[0])
         sys.exit()
 
+    data_file = sys.argv[-1] != "-"
+
     #print("border")
     #trackchart.border(mychart)
     print("mainline")
@@ -29,14 +31,6 @@ def main():
     trackchart.bridges_and_crossings(mychart)
     print("stations")
     trackchart.stations(mychart)
-    print("elevation")
-    trackchart.elevation(mychart)
-    print("curvature")
-    trackchart.curvature(mychart)
-    print("accel")
-    trackchart.accel(mychart)
-    #print("lidar-gauge")
-    #trackchart.draw_gauge(mychart)
     print("townlines")
     trackchart.townlines(mychart)
     print("yardlimits")
@@ -48,6 +42,15 @@ def main():
     print("title")
     trackchart.draw_title(mychart)
 
+    if data_file:
+        print("elevation")
+        trackchart.elevation(mychart)
+        print("curvature")
+        trackchart.curvature(mychart)
+        print("accel")
+        trackchart.accel(mychart)
+        print("lidar-gauge")
+        trackchart.draw_gauge(mychart)
 
     filename = "images/mb%s_%s.png" % (sys.argv[-3], sys.argv[-2])
     mychart['image'].save(filename)
