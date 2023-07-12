@@ -114,34 +114,33 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
-            if self.path == "/gps/":
-                stream = self.headers['Accept'] == 'text/event-stream'
+            stream = self.headers['Accept'] == 'text/event-stream'
 
-                response = requests.get(
-                    "http://localhost:%d%s" % (CONFIG['gps']['port'], self.path),
-                    headers=self.headers,
-                    stream=stream,
-                )
-                if response.status_code != http.client.OK:
-                    self.send_error(response.status_code, response.reason)
-                    return
+            response = requests.get(
+                "http://localhost:%d%s" % (CONFIG['gps']['port'], self.path),
+                headers=self.headers,
+                stream=stream,
+            )
+            if response.status_code != http.client.OK:
+                self.send_error(response.status_code, response.reason)
+                return
 
-                content_type = response.headers['content-type']
+            content_type = response.headers['content-type']
 
-                if not stream:
-                    output = response.content
-                else:
-                    self.send_response(response.status_code)
-                    self.send_header("Content-type", content_type)
-                    self.end_headers()
-                    while not util.DONE:
-                        try:
-                            for line in response.iter_lines():
-                                line = (line.decode('utf-8') + "\n").encode('utf-8')
-                                self.wfile.write(line)
-                        except (BrokenPipeError, ConnectionResetError):
-                            break
-                    return
+            if not stream:
+                output = response.content
+            else:
+                self.send_response(response.status_code)
+                self.send_header("Content-type", content_type)
+                self.end_headers()
+                while not util.DONE:
+                    try:
+                        for line in response.iter_lines():
+                            line = (line.decode('utf-8') + "\n").encode('utf-8')
+                            self.wfile.write(line)
+                    except (BrokenPipeError, ConnectionResetError):
+                        break
+                return
 
         elif self.path == "/imu":
             content_type = "application/json"
