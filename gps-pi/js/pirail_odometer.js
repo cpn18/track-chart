@@ -28,7 +28,7 @@ function reverse()
 }
 
 function gps_stream(viewport, imagedata) {
-    const gpsStream = new EventSource("/gps/stream");
+    const gpsStream = new EventSource("/gps/");
 
     console.log(gpsStream.readyState);
     console.log(gpsStream.url);
