@@ -156,11 +156,12 @@ MATCHES = [
         "handler": handle_sky,
     },
     {
-        "pattern": re.compile(r"GET /gps/stream$"),
+        "pattern": re.compile(r"GET /gps/$"),
+        "accept": "text/event-stream",
         "handler": handle_gps_stream,
     },
     {
-        "pattern": re.compile(r"GET /gps/single$"),
+        "pattern": re.compile(r"GET /gps/$"),
         "handler": handle_gps,
     },
 ]
@@ -179,6 +180,8 @@ class MyHandler(BaseHTTPRequestHandler):
         for match in MATCHES:
             groups = match['pattern'].match(self.command + " " + url.path)
             if groups is not None:
+                if 'accept' in match and match['accept'] != self.headers['Accept']:
+                    continue
                 match['handler'](self, groups, qsdict)
                 return
 
