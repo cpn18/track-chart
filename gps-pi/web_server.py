@@ -142,7 +142,7 @@ class MyHandler(BaseHTTPRequestHandler):
                         break
                 return
 
-        elif self.path == "/imu/":
+        elif self.path.startswith("/imu/"):
             if CONFIG['imu']['enable'] is False:
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
@@ -175,44 +175,39 @@ class MyHandler(BaseHTTPRequestHandler):
                         break
                 return
 
-        elif self.path == "/lidar":
-            content_type = "application/json"
-            response = requests.get("http://localhost:%d/lidar" % CONFIG['lidar']['port'])
-            if response:
-                output = response.json()
-                output = json.dumps(output)
-            else:
-                self.send_error(response.status_code, response.reason)
-                return
-        elif self.path == "/lidar-stream":
+        elif self.path.startswith("/lidar/)":
             if CONFIG['lidar']['enable'] is False:
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
-            content_type = "text/event-stream"
-            headers = {
-                "accept": content_type,
-            }
+            stream = self.headers['Accept'] == 'text/event-stream'
+
             response = requests.get(
-                "http://localhost:%d/lidar-stream" % CONFIG['lidar']['port'],
-                headers=headers,
-                stream=True,
+                "http://localhost:%d%s" % (CONFIG['imu']['port'], self.path),
+                headers=self.headers,
+                stream=stream,
             )
             if response.status_code != http.client.OK:
                 self.send_error(response.status_code, response.reason)
                 return
 
-            self.send_response(response.status_code)
-            self.send_header("Content-type", response.headers['content-type'])
-            self.end_headers()
-            while not util.DONE:
-                try:
-                    for line in response.iter_lines():
-                        line = (line.decode('utf-8') + "\n").encode('utf-8')
-                        self.wfile.write(line)
-                except (BrokenPipeError, ConnectionResetError):
-                    break
-            return
+            content_type = response.headers['content-type']
+
+            if not stream:
+                output = response.content
+            else:
+                self.send_response(response.status_code)
+                self.send_header("Content-type", content_type)
+                self.end_headers()
+                while not util.DONE:
+                    try:
+                        for line in response.iter_lines():
+                            line = (line.decode('utf-8') + "\n").encode('utf-8')
+                            self.wfile.write(line)
+                    except (BrokenPipeError, ConnectionResetError):
+                        break
+                return
+                
         elif self.path == "/lpcm":
             content_type = "application/json"
             response = requests.get("http://localhost:%d/lpcm" % CONFIG['lpcm']['port'])

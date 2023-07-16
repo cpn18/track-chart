@@ -55,11 +55,12 @@ def handle_lidar(self, _groups, _qsdict):
 
 MATCHES = [
     {
-        "pattern": re.compile(r"GET /lidar-stream$"),
+        "pattern": re.compile(r"GET /lidar/$"),
+        "accept": "text/event-stream",
         "handler": handle_lidar_stream,
     },
     {
-        "pattern": re.compile(r"GET /lidar$"),
+        "pattern": re.compile(r"GET /lidar/$"),
         "handler": handle_lidar,
     },
 ]
@@ -77,6 +78,8 @@ class MyHandler(BaseHTTPRequestHandler):
         for match in MATCHES:
             groups = match['pattern'].match(self.command + " " + url.path)
             if groups is not None:
+                if 'accept' in match and match['accept'] != self.headers['Accept']:
+                    continue
                 match['handler'](self, groups, qsdict)
                 return
 
