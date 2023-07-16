@@ -52,11 +52,12 @@ def handle_lpcm(self, _groups, _qsdict):
 
 MATCHES = [
     {
-        "pattern": re.compile(r"GET /lpcm-stream$"),
+        "pattern": re.compile(r"GET /lpcm/$"),
+        "accept": "text/event-stream",
         "handler": handle_lpcm_stream,
     },
     {
-        "pattern": re.compile(r"GET /lpcm$"),
+        "pattern": re.compile(r"GET /lpcm/$"),
         "handler": handle_lpcm,
     },
 ]
@@ -74,6 +75,9 @@ class MyHandler(BaseHTTPRequestHandler):
         for match in MATCHES:
             groups = match['pattern'].match(self.command + " " + url.path)
             if groups is not None:
+                if groups is not None:
+                if 'accept' in match and match['accept'] != self.headers['Accept']:
+                    continue
                 match['handler'](self, groups, qsdict)
                 return
 
