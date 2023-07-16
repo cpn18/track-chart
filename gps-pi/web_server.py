@@ -45,6 +45,16 @@ MIME_MAP = {
 
 SHUTDOWN_DELAY="now"
 
+def get_sys_data():
+    """ Get System Data """
+    stat = os.statvfs(OUTPUT)
+
+    sys_data = {
+        "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
+        "sw_version": CONFIG['sw_version'],
+    }
+    return sys_data
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
@@ -241,33 +251,29 @@ class MyHandler(BaseHTTPRequestHandler):
                         break
                 return
 
-        elif self.path == "/sys-stream":
-            content_type = "text/event-stream"
-            headers = {
-                "accept": content_type,
-            }
-            self.send_response(http.client.OK)
-            self.send_header("Content-type", content_type)
-            self.end_headers()
-            while not util.DONE:
-                stat = os.statvfs(OUTPUT)
-
-                sys_data = {
-                    "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
-                    "sw_version": CONFIG['sw_version'],
-                }
-                try:
-                    lines = [
-                        "event: sys\n",
-                        "data: " + json.dumps(sys_data) + "\n",
-                        "\n",
-                    ]
-                    for line in lines:
-                        self.wfile.write(line.encode('utf-8'))
-                    time.sleep(util.STREAM_DELAY)
-                except (BrokenPipeError, ConnectionResetError):
-                    break
-            return
+        elif self.path.startswith("/sys/")
+            stream = self.headers['Accept'] == 'text/event-stream'
+            if not stream:
+                content_type = "application/json"
+                output = json.dumps(get_sys_data())
+            else:
+                self.send_response(http.client.OK)
+                self.send_header("Content-type", "text/event-stream")
+                self.end_headers()
+                while not util.DONE:
+                    sys_data = get_sys_data()
+                    try:
+                        lines = [
+                            "event: sys\n",
+                            "data: " + json.dumps(get_sys_data()) + "\n",
+                            "\n",
+                        ]
+                        for line in lines:
+                            self.wfile.write(line.encode('utf-8'))
+                        time.sleep(util.STREAM_DELAY)
+                    except (BrokenPipeError, ConnectionResetError):
+                        break
+                return
         else:
             self.send_error(http.client.NOT_FOUND, self.path)
             return

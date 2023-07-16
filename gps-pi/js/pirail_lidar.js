@@ -3,7 +3,7 @@ var decay=10;
 
 function lidar_stream(name, imagedata)
 {
-  const lidarStream = new EventSource("/lidar-stream");
+  const lidarStream = new EventSource("/lidar/");
   console.log(lidarStream.readyState);
   console.log(lidarStream.url);
 

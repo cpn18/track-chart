@@ -1,6 +1,6 @@
 function lpcm_stream()
 {
-  const lpcmStream = new EventSource("/lpcm-stream");
+  const lpcmStream = new EventSource("/lpcm/");
   console.log(lpcmStream.readyState);
   console.log(lpcmStream.url);
 

@@ -28,19 +28,19 @@ function dashboard() {
     console.log(gpsStream.readyState);
     console.log(gpsStream.url);
 
-    const imuStream = new EventSource("/imu-stream");
+    const imuStream = new EventSource("/imu/");
     console.log(imuStream.readyState);
     console.log(imuStream.url);
 
-    const lidarStream = new EventSource("/lidar-stream");
+    const lidarStream = new EventSource("/lidar/");
     console.log(lidarStream.readyState);
     console.log(lidarStream.url);
 
-    const lpcmStream = new EventSource("/lpcm-stream");
+    const lpcmStream = new EventSource("/lpcm/");
     console.log(lpcmStream.readyState);
     console.log(lpcmStream.url);
 
-    const sysStream = new EventSource("/sys-stream");
+    const sysStream = new EventSource("/sys/");
     console.log(sysStream.readyState);
     console.log(sysStream.url);
 

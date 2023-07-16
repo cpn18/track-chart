@@ -11,7 +11,7 @@ function imu_stream(viewport, imagedata) {
     var canvas = $("#"+viewport)[0];
     var context = canvas.getContext("2d");
 
-    const imuStream = new EventSource("/imu/stream");
+    const imuStream = new EventSource("/imu/");
     console.log(imuStream.readyState);
     console.log(imuStream.url);
 
