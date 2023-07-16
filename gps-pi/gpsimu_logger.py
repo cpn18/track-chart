@@ -20,6 +20,7 @@ import http.client
 import witmotionjygpsimu as gps
 import nmea
 import util
+import geo
 
 
 ALWAYS_LOG = True
@@ -30,6 +31,21 @@ MEMO = ""
 
 GPS_NUM_SAT = 0
 GPS_NUM_USED = 0
+
+ODOMETER = 0.0
+ODIR = 1
+
+def great_circle(last, now):
+    """ Great Circle Calculation """
+    try:
+        return geo.great_circle(
+            last['lat'],
+            last['lon'],
+            now['lat'],
+            now['lon']
+        )
+    except KeyError:
+        return 0
 
 def do_json_output(self, output_dict):
     """ send back json text """
@@ -53,6 +69,21 @@ def handle_hold(self, _groups, qsdict):
     HOLD = 15
     MEMO = qsdict['memo']
     do_json_output(self, {"message": "Holding..."})
+
+def handle_reset(self, _groups, qsdict):
+    """ Reset Odometer """
+    global ODOMETER
+    try:
+        ODOMETER = float(qsdict['mileage'][0])
+    except (KeyError,ValueError):
+        ODOMETER = 0.0
+    do_json_output(self, {"message": "Reset Odometer..."})
+
+def handle_reverse(self, _groups, _qsdict):
+    """ Reset Odometer """
+    global ODIR
+    ODIR = -ODIR
+    do_json_output(self, {"message": "Reverse Odometer..."})
 
 def handle_tpv(self, _groups, _qsdict):
     """ get a TPV report """
@@ -124,35 +155,41 @@ def handle_imu(self, _groups, _qsdict):
 
 MATCHES = [
     {
-        "pattern": re.compile(r"GET /mark$"),
+        "pattern": re.compile(r"GET /gps/mark$"),
         "handler": handle_mark,
     },
     {
-        "pattern": re.compile(r"GET /hold$"),
+        "pattern": re.compile(r"GET /gps/hold$"),
         "handler": handle_hold,
     },
     {
-        "pattern": re.compile(r"GET /tpv$"),
+        "pattern": re.compile(r"GET /gps/tpv$"),
         "handler": handle_tpv,
     },
     {
-        "pattern": re.compile(r"GET /sky$"),
+        "pattern": re.compile(r"GET /gps/sky$"),
         "handler": handle_sky,
     },
     {
-        "pattern": re.compile(r"GET /gps-stream$"),
+        "pattern": re.compile(r"GET /gps/$"),
+        "accept": "text/event-stream",
         "handler": handle_gps_stream,
     },
     {
-        "pattern": re.compile(r"GET /gps$"),
+        "pattern": re.compile(r"GET /gps/$"),
         "handler": handle_gps,
     },
     {
-        "pattern": re.compile(r"GET /imu-stream$"),
+        "pattern": re.compile(r"GET /imu/att$"),
+        "handler": handle_imu,
+    },
+    {
+        "pattern": re.compile(r"GET /imu/$"),
+        "accept": "text/event-stream",
         "handler": handle_imu_stream,
     },
     {
-        "pattern": re.compile(r"GET /imu$"),
+        "pattern": re.compile(r"GET /imu/$"),
         "handler": handle_imu,
     },
 ]
@@ -171,6 +208,8 @@ class MyHandler(BaseHTTPRequestHandler):
         for match in MATCHES:
             groups = match['pattern'].match(self.command + " " + url.path)
             if groups is not None:
+                if 'accept' in match and match['accept'] != self.headers['Accept']:
+                    continue
                 match['handler'](self, groups, qsdict)
                 return
 
@@ -189,6 +228,9 @@ def gpsimu_logger(output_directory):
     global SKY, TPV, ATT
     global HOLD
     global GPS_NUM_SAT, GPS_NUM_USED
+    global ODOMETER
+
+    last_pos = {}
 
     hold_lat = []
     hold_lon = []
@@ -222,10 +264,19 @@ def gpsimu_logger(output_directory):
                         (GPS_NUM_USED, GPS_NUM_SAT) = nmea.calc_used(obj)
                         SKY = obj
                     elif typeclass == "TPV":
+                        # Update Odometer
+                        if 'speed' in obj and \
+                            'eps' in obj and \
+                            obj['speed'] > obj['eps']:
+                            ODOMETER += ODIR * great_circle(last_pos, obj)
+                            last_pos = obj
+
                         # Add Sat Metrics
                         obj['num_sat'] = GPS_NUM_SAT
                         obj['num_used'] = GPS_NUM_USED
                         obj['hold'] = HOLD
+                        obj['odometer'] = ODOMETER
+                        obj['odir'] = ODIR
                         TPV = obj
 
                     # Log the Data

@@ -69,15 +69,16 @@ def handle_imu(self, _groups, _qsdict):
 
 MATCHES = [
     {
-        "pattern": re.compile(r"GET /imu/stream$"),
-        "handler": handle_imu_stream,
-    },
-    {
         "pattern": re.compile(r"GET /imu/att$"),
         "handler": handle_imu,
     },
     {
-        "pattern": re.compile(r"GET /imu/single$"),
+        "pattern": re.compile(r"GET /imu/$"),
+        "accept": "text/event-stream",
+        "handler": handle_imu_stream,
+    },
+    {
+        "pattern": re.compile(r"GET /imu/$"),
         "handler": handle_imu,
     },
 ]
@@ -95,6 +96,8 @@ class MyHandler(BaseHTTPRequestHandler):
         for match in MATCHES:
             groups = match['pattern'].match(self.command + " " + url.path)
             if groups is not None:
+                if 'accept' in match and match['accept'] != self.headers['Accept']:
+                    continue
                 match['handler'](self, groups, qsdict)
                 return
 
@@ -175,8 +178,9 @@ def imu_logger(output_directory):
             ATT = obj
 
             # Delay Loop
-            while (time.time() - now) < LOOP_DELAY:
-                time.sleep(SLEEP_TIME)
+            sleep_time = now + LOOP_DELAY - time.time()
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
 def imu_logger_wrapper(output_directory):
     """ Wrapper Around IMU Logger Function """
