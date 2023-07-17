@@ -185,7 +185,7 @@ class MyHandler(BaseHTTPRequestHandler):
                         break
                 return
 
-        elif self.path.startswith("/lidar/)":
+        elif self.path.startswith("/lidar/"):
             if CONFIG['lidar']['enable'] is False:
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
@@ -251,7 +251,7 @@ class MyHandler(BaseHTTPRequestHandler):
                         break
                 return
 
-        elif self.path.startswith("/sys/")
+        elif self.path.startswith("/sys/"):
             stream = self.headers['Accept'] == 'text/event-stream'
             if not stream:
                 content_type = "application/json"

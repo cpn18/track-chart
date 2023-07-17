@@ -33,6 +33,11 @@ MIN_MAG_Z = -1534
 LOOP_DELAY = 0.02
 SLEEP_TIME = 0.00001
 
+# Adjustements (Degrees)
+PITCH_ADJ = 7
+ROLL_ADJ = -15
+YAW_ADJ = 0
+
 # ATT Dictionary
 ATT = {}
 
@@ -157,11 +162,11 @@ def imu_logger(output_directory):
             cf_angle_y = AA*(cf_angle_y+obj['gyro_y']*delta_time) + (1-AA)*acc_y_angle
             cf_angle_z = AA*(cf_angle_z+obj['gyro_z']*delta_time) + (1-AA)*acc_z_angle
 
-            obj['pitch'] = cf_angle_x
+            obj['pitch'] = cf_angle_x + PITCH_ADJ
             obj['pitch_st'] = "N"
-            obj['roll'] = cf_angle_y - 90
+            obj['roll'] = cf_angle_y - 90 + ROLL_ADJ
             obj['roll_st'] = "N"
-            obj['yaw'] = cf_angle_z
+            obj['yaw'] = cf_angle_z + YAW_ADJ
             obj['yaw_st'] = "N"
 
             # Calculate Heading
