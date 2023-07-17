@@ -1,6 +1,17 @@
 var deg_to_rad = 0.0174533;
 var decay=10;
 
+function zero()
+{
+  $.ajax({
+    datatype: "json",
+    url: "/imu/zero",
+    success: function(obj) {
+      $('#msg').text(obj.message);
+    }
+  });
+}
+
 function imu_setup(viewport) {
 	var canvas = $("#"+viewport)[0];
 	var context = canvas.getContext("2d");

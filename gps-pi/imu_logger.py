@@ -33,9 +33,11 @@ MIN_MAG_Z = -1534
 LOOP_DELAY = 0.02
 SLEEP_TIME = 0.00001
 
+SAMPLES = 0
+
 # Adjustements (Degrees)
-PITCH_ADJ = 7
-ROLL_ADJ = -15
+PITCH_ADJ = 0
+ROLL_ADJ = 0
 YAW_ADJ = 0
 
 # ATT Dictionary
@@ -72,7 +74,18 @@ def handle_imu(self, _groups, _qsdict):
     """ IMU Data """
     do_json_output(self, ATT)
 
+def handle_zero(self, _groups, _qsdict):
+    """ Zero the IMU """
+    global SAMPLES
+    SAMPLES = 100
+    do_json_output(self, {"message": "Zeroing IMU..."})
+
+
 MATCHES = [
+    {
+        "pattern": re.compile(r"GET /imu/zero$"),
+        "handler": handle_zero,
+    },
     {
         "pattern": re.compile(r"GET /imu/att$"),
         "handler": handle_imu,
@@ -116,6 +129,9 @@ def _get_temp():
 def imu_logger(output_directory):
     """ IMU Logger """
     global ATT
+    global SAMPLES
+    global PITCH_ADJ, ROLL_ADJ, YAW_ADJ
+
     cf_angle_x = cf_angle_y = cf_angle_z = 0
 
     config = util.read_config()
@@ -176,6 +192,18 @@ def imu_logger(output_directory):
             obj["acc_len"] = math.sqrt(obj['acc_x']**2+obj['acc_y']**2+obj['acc_z']**2)
             obj["mag_len"] = math.sqrt(obj['mag_x']**2+obj['mag_y']**2+obj['mag_z']**2)
             obj["mag_st"] = "N"
+
+            if SAMPLES > 0:
+                saved_pitch.append(cf_angle_x)
+                saved_roll.append(cf_angle_y)
+                saved_yaw.append(cf_angle_y)
+                SAMPLES -= 1
+            elif len(saved_pitch) > 0:
+                PITCH_ADJ = -sum(saved_pitch)/len(saved_pitch)
+                ROLL_ADJ = -sum(saved_roll)/len(saved_roll)
+                YAW_ADJ = -sum(saved_yaw)/len(saved_yaw)
+                SAMPLES = 0
+
 
             # Log the output
             imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
