@@ -35,11 +35,6 @@ SLEEP_TIME = 0.00001
 
 SAMPLES = 0
 
-# Adjustements (Degrees)
-PITCH_ADJ = 0
-ROLL_ADJ = 0
-YAW_ADJ = 0
-
 # ATT Dictionary
 ATT = {}
 
@@ -132,9 +127,20 @@ def imu_logger(output_directory):
     global SAMPLES
     global PITCH_ADJ, ROLL_ADJ, YAW_ADJ
 
+    saved_pitch = []
+    saved_roll = []
+    saved_yaw = []
+
     cf_angle_x = cf_angle_y = cf_angle_z = 0
 
     config = util.read_config()
+
+    if 'pitch_adj' not in config['imu']:
+        config['imu']['pitch_adj'] = 0
+    if 'roll_adj' not in config['imu']:
+        config['imu']['roll_adj'] = 0
+    if 'yaw_adj' not in config['imu']:
+        config['imu']['yaw_adj'] = 0
 
     # Open the output file
     with open(os.path.join(output_directory,datetime.datetime.now().strftime("%Y%m%d%H%M")+"_imu.csv"), "w") as imu_output:
@@ -178,11 +184,11 @@ def imu_logger(output_directory):
             cf_angle_y = AA*(cf_angle_y+obj['gyro_y']*delta_time) + (1-AA)*acc_y_angle
             cf_angle_z = AA*(cf_angle_z+obj['gyro_z']*delta_time) + (1-AA)*acc_z_angle
 
-            obj['pitch'] = cf_angle_x + PITCH_ADJ
+            obj['pitch'] = cf_angle_x + config['imu']['pitch_adj']
             obj['pitch_st'] = "N"
-            obj['roll'] = cf_angle_y - 90 + ROLL_ADJ
+            obj['roll'] = cf_angle_y - 90 + config['imu']['roll_adj']
             obj['roll_st'] = "N"
-            obj['yaw'] = cf_angle_z + YAW_ADJ
+            obj['yaw'] = cf_angle_z + config['imu']['yaw_adj']
             obj['yaw_st'] = "N"
 
             # Calculate Heading
@@ -195,14 +201,16 @@ def imu_logger(output_directory):
 
             if SAMPLES > 0:
                 saved_pitch.append(cf_angle_x)
-                saved_roll.append(cf_angle_y)
+                saved_roll.append(cf_angle_y - 90)
                 saved_yaw.append(cf_angle_y)
                 SAMPLES -= 1
             elif len(saved_pitch) > 0:
-                PITCH_ADJ = -sum(saved_pitch)/len(saved_pitch)
-                ROLL_ADJ = -sum(saved_roll)/len(saved_roll)
-                YAW_ADJ = -sum(saved_yaw)/len(saved_yaw)
+                config['imu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
+                config['imu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
+                config['imu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
                 SAMPLES = 0
+                util.write_config(config)
+                util.write_header(imu_output, config)
 
 
             # Log the output
