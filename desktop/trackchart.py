@@ -42,13 +42,15 @@ def new(args):
             'G': gps_to_mileage.Gps2Miles(known_file),
     }
 
-def draw_title(track_chart, title="PiRail"):
+def draw_title(track_chart, title=None):
     """
     Draw the title
     """
     image = track_chart['image']
     margin = track_chart['margin']
     draw = ImageDraw.Draw(image)
+    if title is None:
+        title = datetime.datetime.now().strftime("PiRail %Y-%m-%d")
     (_x_size, y_size) = draw.textsize(title)
     xpixel = margin
     ypixel = image.size[1] - y_size - 1
