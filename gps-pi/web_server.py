@@ -193,7 +193,7 @@ class MyHandler(BaseHTTPRequestHandler):
             stream = self.headers['Accept'] == 'text/event-stream'
 
             response = requests.get(
-                "http://localhost:%d%s" % (CONFIG['imu']['port'], self.path),
+                "http://localhost:%d%s" % (CONFIG['lidar']['port'], self.path),
                 headers=self.headers,
                 stream=stream,
             )
@@ -219,14 +219,14 @@ class MyHandler(BaseHTTPRequestHandler):
                 return
                 
         elif self.path.startswith("/lpcm/"):
-            if CONFIG['lidar']['enable'] is False:
+            if CONFIG['lpcm']['enable'] is False:
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
             stream = self.headers['Accept'] == 'text/event-stream'
 
             response = requests.get(
-                "http://localhost:%d%s" % (CONFIG['imu']['port'], self.path),
+                "http://localhost:%d%s" % (CONFIG['lpcm']['port'], self.path),
                 headers=self.headers,
                 stream=stream,
             )

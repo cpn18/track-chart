@@ -75,7 +75,6 @@ class MyHandler(BaseHTTPRequestHandler):
         for match in MATCHES:
             groups = match['pattern'].match(self.command + " " + url.path)
             if groups is not None:
-                if groups is not None:
                 if 'accept' in match and match['accept'] != self.headers['Accept']:
                     continue
                 match['handler'](self, groups, qsdict)
