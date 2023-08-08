@@ -25,6 +25,11 @@
 	"cmd": ["lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
         "port": 8082
     },
+    "hpslidar": {
+	"enable": false,
+	"cmd": ["hps_lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
+        "port": 8082
+    },
     "lpcm": {
 	"enable": false,
 	"cmd": ["lpcm_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
