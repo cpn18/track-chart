@@ -21,16 +21,17 @@ function lidar_stream(name, imagedata)
 
   lidarStream.addEventListener("lidar", function(event) {
     var lidar = JSON.parse(event.data)
-    // console.log(lidar);
+    //console.log(lidar);
     if (lidar.class == 'LIDAR') {
       if (lidar.scan != undefined ) {
-          lidar_update(name, imagedata, lidar);
-          $("#lidar_status").text("ON");
+	  lidar_update(name, imagedata, lidar);
+	  $("#lidar_status").text("ON");
       }
     } else if (lidar.class == 'LIDAR3D') {
-        $("#lidar_status").text("Unsupported LIDAR3D class");
+	  lidar_update_3d(name, imagedata, lidar);
+	  $("#lidar_status").text("ON");
     } else {
-        $("#lidar_status").text("Unsupported LIDAR class");
+	$("#lidar_status").text("Unsupported LIDAR class");
     }
   });
 }
@@ -39,6 +40,48 @@ function lidar_setup(name) {
 	var canvas = $("#"+name)[0];
 	var context = canvas.getContext("2d");
 	return context.createImageData(canvas.width, canvas.height);
+}
+
+function is_valid(value) {
+	if (value == 0x000 || value == 0xFF14 || value == 0xFF78 || value == 0xFFDC || value == 0xFFFA) {
+		return false;
+	}
+	return true;
+}
+
+function lidar_update_3d(name, imagedata, obj) {
+	var canvas = $("#"+name)[0];
+	var context = canvas.getContext("2d");
+	max_value = 0;
+	for (var row=0; row < obj.depth.length; row++) {
+		for (var col=0; col < obj.depth[row].length; col++) {
+			value = obj.depth[row][col];
+			if (is_valid(value)) {
+				if (value > max_value) {
+					max_value = value;
+				}
+			}
+		}
+	}
+	for (var row=0; row < obj.depth.length; row++) {
+		for (var col=0; col < obj.depth[row].length; col++) {
+			value = obj.depth[row][col];
+			if (is_valid(value)) {
+				value = 256 - (256 * value / max_value);
+				draw_point(name, imagedata, 2*col, 2*row, [value, value, value, 255]);
+				draw_point(name, imagedata, 2*col+1, 2*row, [value, value, value, 255]);
+				draw_point(name, imagedata, 2*col, 2*row+1, [value, value, value, 255]);
+				draw_point(name, imagedata, 2*col+1, 2*row+1, [value, value, value, 255]);
+			} else {
+				draw_point(name, imagedata, 2*col, 2*row, [255, 0, 0, 255]);
+				draw_point(name, imagedata, 2*col+1, 2*row, [255, 0, 0, 255]);
+				draw_point(name, imagedata, 2*col, 2*row+1, [255, 0, 0, 255]);
+				draw_point(name, imagedata, 2*col+1, 2*row+1, [255, 0, 0, 255]);
+			}
+		}
+	}
+	// update the image
+	context.putImageData(imagedata, 0, 0);
 }
 
 function lidar_update(name, imagedata, obj) {
@@ -79,17 +122,17 @@ function lidar_update(name, imagedata, obj) {
 		// Try to group with the last pixel drawn
 		// similar to how a RADAR system groups points
 		// to create "bogie"
-                dy = last_y - y;      // rise
+		dy = last_y - y;      // rise
 		dx = last_x - x;      // run
 		distance = Math.sqrt(dx*dx+dy*dy);
 
 		// if distance between is less than 5% of the distance
 		if (distance < d*0.05) {
-                  draw_line(name, imagedata, last_x, last_y, x, y, [0, 0, 255, 255]);
-                }
+		  draw_line(name, imagedata, last_x, last_y, x, y, [0, 0, 255, 255]);
+		}
 
 		// Draw a black pixel
-	        draw_point(name, imagedata, x, y, [0, 0, 0, 255]);
+		draw_point(name, imagedata, x, y, [0, 0, 0, 255]);
 		
 		// keep track of the last point
 		last_x = x;
