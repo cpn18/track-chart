@@ -120,7 +120,8 @@ class MyHandler(BaseHTTPRequestHandler):
             })
             os.system("shutdown --reboot %s" % SHUTDOWN_DELAY)
         elif self.path.startswith("/gps/"):
-            if CONFIG['gps']['enable'] is False:
+            if CONFIG['gps']['enable'] is False and \
+               CONFIG['gpsimu']['enable'] is False:
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
@@ -153,7 +154,8 @@ class MyHandler(BaseHTTPRequestHandler):
                 return
 
         elif self.path.startswith("/imu/"):
-            if CONFIG['imu']['enable'] is False:
+            if CONFIG['imu']['enable'] is False and \
+               CONFIG['gpsimu']['enable'] is False:
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 
