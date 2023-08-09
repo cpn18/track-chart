@@ -249,10 +249,9 @@ class Hps3DLidar():
         Read Data from Serial Device
         """
 
+        # Try to sync
         h1 = self.ser.read(1)
         h2 = self.ser.read(1)
-
-        # Try to sync
         while h1 != b'\xf5' and h2 != b'\x5f':
             h1 = h2
             h2 = self.ser.read(1)
