@@ -22,15 +22,15 @@ function lidar_stream(name, imagedata)
   lidarStream.addEventListener("lidar", function(event) {
     var lidar = JSON.parse(event.data)
     // console.log(lidar);
-    if (lidar.scan != undefined ) {
-      if (lidar.class == 'LIDAR') {
+    if (lidar.class == 'LIDAR') {
+      if (lidar.scan != undefined ) {
           lidar_update(name, imagedata, lidar);
           $("#lidar_status").text("ON");
-      } else if (lidar.class == 'LIDAR3D') {
-          $("#lidar_status").text("Unsupported LIDAR3D class");
-      } else {
-          $("#lidar_status").text("Unsupported LIDAR class");
       }
+    } else if (lidar.class == 'LIDAR3D') {
+        $("#lidar_status").text("Unsupported LIDAR3D class");
+    } else {
+        $("#lidar_status").text("Unsupported LIDAR class");
     }
   });
 }
