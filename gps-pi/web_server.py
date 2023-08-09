@@ -186,7 +186,8 @@ class MyHandler(BaseHTTPRequestHandler):
                 return
 
         elif self.path.startswith("/lidar/"):
-            if CONFIG['lidar']['enable'] is False:
+            if CONFIG['lidar']['enable'] is False and \
+                CONFIG['hpslidar']['enable'] is False:
                 self.send_error(http.client.NOT_FOUND, "Not Enabled")
                 return
 

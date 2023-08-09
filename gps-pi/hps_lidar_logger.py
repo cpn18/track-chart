@@ -15,7 +15,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
 
-import hps_3d_160 as hps
+import hps_3d_160_lidar as hps
 
 import util
 
@@ -129,7 +129,7 @@ def lidar_logger_wrapper(output_directory):
     LIDAR_STATUS = False
     try:
         lidar_logger(output_directory)
-    except Exception as ex:
+    except TypeError as ex:
         print("LIDAR Logger Exception: %s" % ex)
     LIDAR_STATUS = False
     print("LIDAR Done")

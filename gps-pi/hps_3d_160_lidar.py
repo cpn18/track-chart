@@ -61,7 +61,7 @@ class Hps3DLidar():
         self.event = threading.Event()
         self.event.clear()
         if ttyname is not None:
-            self.ser = serial.Serial(ttyname)
+            self.ser = serial.Serial(ttyname, timeout=5)
             self.address = address
             self.thread = threading.Thread(target=self.read, args=())
             self.thread.start()
@@ -249,7 +249,7 @@ class Hps3DLidar():
         Read Data from Serial Device
         """
 
-        header = self.ser.read(2, timeout=5)
+        header = self.ser.read(2)
         if len(header) != 2:
             return None
         if header != b'\xf5\x5f':
@@ -311,7 +311,7 @@ class Hps3DLidar():
             retval.update({
                 'class': 'LIDAR3D',
                 'device': 'HPS3D160',
-                'time': lidartime,
+                'time': datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             })
             if self.outputfile is not None:
                 self.outputfile.write("%s %s %s *\n" % (retval['time'], retval['class'], json.dumps(retval)))
@@ -351,14 +351,14 @@ class Hps3DLidar():
 
 
 if __name__ == "__main__":
-    #lidar = Hps3DLidar("/dev/ttyACM0", 0)
-    #lidar.set_address(0)
-    #lidar.read_address()
-    #lidar.read_version()
-    #lidar.read_serial()
-    #lidar.read_group_id()
-    #lidar.set_working_mode(Hps3DLidar.MODE_SINGLE)
-    #time.sleep(10)
-    #lidar.done()
-    lidar = Hps3DLidar(None, 0)
-    print(lidar.read(filename=sys.argv[1]))
+    lidar = Hps3DLidar("/dev/ttyACM0", 0, None)
+    lidar.set_address(0)
+    lidar.read_address()
+    lidar.read_version()
+    lidar.read_serial()
+    lidar.read_group_id()
+    lidar.set_working_mode(Hps3DLidar.MODE_SINGLE)
+    time.sleep(10)
+    lidar.done()
+    #lidar = Hps3DLidar(None, 0)
+    #print(lidar.read(filename=sys.argv[1]))

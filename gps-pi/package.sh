@@ -15,6 +15,10 @@ files="adxl345.py \
     launcher.py \
     lidar_logger.py \
     lidar_logger.sh \
+    hps_lidar_logger.py \
+    hps_lidar_logger.sh \
+    hps_3d_160_lidar.py \
+    crc16.py \
     log.sh \
     lpcm_collect.sh \
     lpcm_logger.py \

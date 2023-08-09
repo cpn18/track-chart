@@ -15,6 +15,7 @@ function setup_reset()
       $('#imu_y').val(obj.imu.y);
       $('#imu_z').val(obj.imu.z);
       $('#lidar_enable').prop('checked', obj.lidar.enable);
+      $('#hpslidar_enable').prop('checked', obj.hpslidar.enable);
       $('#lpcm_enable').prop('checked', obj.lpcm.enable);
     }
   });
@@ -40,6 +41,9 @@ function setup_save()
 	  },
 	  lidar: {
 		  enable: $('#lidar_enable').is(":checked")
+	  },
+	  hpslidar: {
+		  enable: $('#hpslidar_enable').is(":checked")
 	  },
 	  lpcm: {
 		  enable: $('#lpcm_enable').is(":checked")
