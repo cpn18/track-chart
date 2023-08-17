@@ -80,7 +80,7 @@ function lidar_update_3d(name, imagedata, obj) {
 			value = obj.depth[row][col];
 			if (is_valid(value)) {
 				value = (256 * (value - min_value) / (max_value-min_value));
-			 	color = [255-value, value, 0, 255];
+			 	color = [255-value, 0, value, 255];
 			} else if (value == 65400 || value == 65500) {
 			 	color = [255, 255, 255, 255];
 			} else {
