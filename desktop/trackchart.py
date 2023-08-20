@@ -752,9 +752,10 @@ def plot_value(track_chart, field="acc_z", scale=1):
 
     # Read from file
     data_sum = data_count = 0
-    for _line_no, obj in pirail.read(track_chart['data_file'], classes=["ATT"]):
-        data_sum += obj[field]
-        data_count += 1
+    for _line_no, obj in pirail.read(track_chart['data_file'], classes=["TPV", "ATT"]):
+        if field in obj:
+            data_sum += obj[field]
+            data_count += 1
     # Normalize data by subtracting the average
     data_avg = data_sum / data_count
 
@@ -769,14 +770,14 @@ def plot_value(track_chart, field="acc_z", scale=1):
         if obj['class'] == "TPV":
             speed = obj['speed']
             eps = obj['eps']
-        elif obj['class'] == "ATT":
-            if speed < eps:
-                pass
-            else:
-                data_point = obj[field] - data_avg
-                # Look for maximum magnitude
-                if data[xpixel] is None or abs(data_point) > abs(data[xpixel]):
-                    data[xpixel] = data_point
+        #elif obj['class'] == "ATT":
+        elif speed < eps:
+            pass
+        elif field in obj:
+            data_point = obj[field] - data_avg
+            # Look for maximum magnitude
+            if data[xpixel] is None or abs(data_point) > abs(data[xpixel]):
+                data[xpixel] = data_point
 
     # Plot the data
     last_x = None
@@ -850,6 +851,9 @@ def accel(track_chart, scale=1, drawables=None):
                 'end-mileage': last,
             }):
             #print(obj)
+            if 'mileage' not in obj:
+                continue
+
             mileage = obj['mileage']
 
             xpixel = mile_to_pixel(track_chart, mileage-first)

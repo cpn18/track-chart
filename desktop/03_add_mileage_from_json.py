@@ -21,7 +21,7 @@ def add_mileage_and_gps(json_file, known_file, output_file):
     gps = gps_to_mileage.Gps2Miles(known_file)
     with open(output_file, "w") as output:
         for _line_no, obj in pirail.read(json_file):
-            if obj['class'] in ["SKY", "ATT", "LIDAR", "LPCM"]:
+            if obj['class'] in ["SKY", "ATT", "LIDAR", "LPCM", "LIDAR3D"]:
                 acclist.append(obj)
 
             if obj['class'] != "TPV":
