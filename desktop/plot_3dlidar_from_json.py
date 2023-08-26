@@ -5,12 +5,16 @@ import json
 from PIL import Image, ImageDraw, ImageOps
 
 import pirail
+import spectrum
 
 # Image Size
 WIDTH=160
 HEIGHT=60
+SCALE=2
 
-MIN_SPEED = 0.5
+MIN_SPEED = 0.0
+
+GREYSCALE = False
 
 def invalid_depth(depth):
     return depth in [0x0000, 0xFF14, 0xFF78, 0xFFDC, 0xFFFA]
@@ -19,6 +23,8 @@ def near(a, b, delta=10):
     return abs(a-b) <= delta
 
 def minmax(data):
+    WIDTH = len(data[0])
+    HEIGHT = len(data)
     mind = [0] * WIDTH
     maxd = [0] * WIDTH
     for x in range(WIDTH):
@@ -37,7 +43,10 @@ def minmax(data):
 
 def plot(data, slice_count):
 
-    image = Image.new("RGB", (WIDTH, HEIGHT), "white")
+    WIDTH = len(data[0])
+    HEIGHT = len(data)
+
+    image = Image.new("RGB", (SCALE*WIDTH, SCALE*HEIGHT), "black")
     draw = ImageDraw.Draw(image)
 
     mind, maxd = minmax(data)
@@ -60,23 +69,28 @@ def plot(data, slice_count):
         for y in range(HEIGHT):
 
             depth = data[y][x]
-            c = 255 - int(255.0 * (float(depth) - min_d) / (max_d - min_d))
 
-            xr = x
-            yr = y
+            xr = SCALE*x
+            yr = SCALE*y
 
             if invalid_depth(depth):
-                draw.point((xr, yr), (0, 0, 0))
-            elif near(depth, mind[x]):
-                draw.point((xr, yr), (c, 0, 0))
-            elif near(depth, maxd[x]):
-                draw.point((xr, yr), (0, c, 0))
-            else:
-                if 0 <= c <= 0xff:
-                    draw.point((xr, yr), (c, c, c))
+                if depth in [65400, 65500]:
+                    color = spectrum.WHITE
                 else:
-                    print(c)
-                    draw.point((xr, yr), (0, 0, 0xff))
+                    color = spectrum.BLACK
+            elif not GREYSCALE:
+                c = int((len(spectrum.SPECTRUM)-1) * (float(depth) - min_d) / (max_d - min_d))
+                color = spectrum.SPECTRUM[c]
+            else:
+                if near(depth, mind[x]):
+                    color = spectrum.RED
+                elif near(depth, maxd[x]):
+                    color = spectrum.GREEN
+                else:
+                    c = 255 - int(255.0 * (float(depth) - min_d) / (max_d - min_d))
+                    color = (c,c,c)
+
+            draw.point((xr, yr), color)
 
     image.save("slices/slice_%08d.png" % slice_count)
 
