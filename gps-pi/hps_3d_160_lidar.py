@@ -310,9 +310,14 @@ class Hps3DLidar():
             return retval
 
         while not self.event.isSet():
-            buff = self.read_data()
-            if buff is None:
+            try:
+                buff = self.read_data()
+                if buff is None:
+                    continue
+            except Exception as ex:
+                print("Exception: %s" % ex)
                 continue
+
             #print("in:", buff)
             retval = decoders[buff[5]](buff)
             retval.update({
