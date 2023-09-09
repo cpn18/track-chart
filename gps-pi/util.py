@@ -7,7 +7,7 @@ import json
 import datetime
 
 # Event-Stream Interval
-STREAM_DELAY = 1 # Seconds
+STREAM_DELAY = 2 # Seconds
 
 # Data File API Version
 DATA_API = 10
