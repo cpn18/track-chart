@@ -28,6 +28,8 @@ COLORS = {
     "orange": (255,165,0),
 }
 
+PRIVATE = "pvt"
+
 def new(args):
     """
     New Trackchart
@@ -262,15 +264,11 @@ def bridges_and_crossings(track_chart, xing_type=None):
             draw.line((xpixel-offset, ypixel-margin, xpixel+offset, ypixel+margin), fill=COLORS['black'])
 
         # Draw description
-        if 'name' in metadata:
-            text = metadata['name']
-        elif 'street' in metadata:
-            text = metadata['street']
-        else:
-            if xtype == 'X':
-                text = "pvt"
-            else:
-                text = ""
+        text = metadata.get('name', "")
+
+        if text = "" and xtype == 'X':
+            text = PRIVATE
+
         if 'crossing' in metadata:
             text += " (" + metadata['crossing'] + ")"
 
@@ -339,10 +337,7 @@ def stations(track_chart):
 
         xpixel = mile_to_pixel(track_chart, mileage-first)
         #print(obj)
-        if 'offset' in metadata:
-            offset = metadata['offset']
-        else:
-            offset = 0
+        offset = metadata.get('offset', 0)
 
         if offset != 0:
             if offset > 0:
@@ -361,15 +356,7 @@ def stations(track_chart):
                          ), fill=COLORS['black'], outline=COLORS['black'])
 
         # Draw description
-        if 'name' in metadata:
-            text = metadata['name']
-        elif 'street' in metadata:
-            text = metadata['street']
-        else:
-            text = "pvt"
-
-        if 'crossing' in metadata:
-            text += " (" + metadata['crossing'] + ")"
+        text = metadata.get('name', "")
 
         ypixel1 = int((image.size[1]-margin)*0.7)
         (x_size, y_size) = draw.textsize(text)

@@ -1,60 +1,60 @@
 #v9
-- K 42.8422549 -71.736836 16.400 X '{"street": "HOWARD ST", "crossing": "844301C"}' *
-- K 42.84445 -71.739628 16.57 X '{"street": "Burns Hill Rd/Island St", "crossing": "844302J"}' *
+- K 42.8422549 -71.736836 16.400 X '{"name": "HOWARD ST", "crossing": "844301C"}' *
+- K 42.84445 -71.739628 16.57 X '{"name": "Burns Hill Rd/Island St", "crossing": "844302J"}' *
 - K 42.848470 -71.746295 17 MP '{"name": "N17/K40"}' *
-- K 42.853138 -71.7597654 17.78 X '{"street": "FOREST RD", "crossing": "844303R"}' *
+- K 42.853138 -71.7597654 17.78 X '{"name": "FOREST RD", "crossing": "844303R"}' *
 - K 42.855433 -71.762382 18 MP '{"name": "N18/K39"}' *
 - K 42.862993 -71.766294 18.60 CRF '{"start": 0,"end": -1, "name": "Quarry"}' *
-- K 42.86422 -71.767263 18.68 O '{"crossing": "926746F", "street": "Bridge 18-68"}' *
-- K 42.865985 -71.768841 18.81 O '{"crossing": "975771W", "street": "Hickey\'s underpass"}' *
-- K 42.866529 -71.769264 18.95 X '{"street": "Quinns", "crossing": "975772D"}' *
+- K 42.86422 -71.767263 18.68 O '{"crossing": "926746F", "name": "Bridge 18-68"}' *
+- K 42.865985 -71.768841 18.81 O '{"crossing": "975771W", "name": "Hickey\'s underpass"}' *
+- K 42.866529 -71.769264 18.95 X '{"name": "Quinns", "crossing": "975772D"}' *
 - K 42.867863 -71.770159 19 MP '{"name": "N19/K38"}' *
 - K 42.867863 -71.770159 19 S '{"offset": 0, "name": "Pike"}' *
-- K 42.870021 -71.771461 19.01 X '{"street": "Quinns", "crossing": "975773K"}' *
-- K 42.8784353 -71.7768271 19.79 O '{"street": "CIDER MILL RD", "crossing": "844304X"}' *
+- K 42.870021 -71.771461 19.01 X '{"name": "Quinns", "crossing": "975773K"}' *
+- K 42.8784353 -71.7768271 19.79 O '{"name": "CIDER MILL RD", "crossing": "844304X"}' *
 - K 42.879136 -71.780552 20 MP '{"name": "N20/K37"}' *
-- K 42.8792412 -71.7807656 20.02 O '{"street": "GLASS FACTORY RD", "crossing": "844305E"}' *
-- K 42.8797314 -71.7835009 20.17 X '{"street": "FOREST RD", "crossing": "844306L"}' *
-- K 42.8800616 -71.7841125 20.22 X '{"street": "PETTINGILL HILL RD", "crossing": "844307T"}' *
-- K - - 20.43 X '{"street": "CATES", "crossing": "844308A"}' *
-- K 42.8831478 -71.788721 20.53 X '{"street": "BRANDY BROOK RD", "crossing": "844309G"}' *
+- K 42.8792412 -71.7807656 20.02 O '{"name": "GLASS FACTORY RD", "crossing": "844305E"}' *
+- K 42.8797314 -71.7835009 20.17 X '{"name": "FOREST RD", "crossing": "844306L"}' *
+- K 42.8800616 -71.7841125 20.22 X '{"name": "PETTINGILL HILL RD", "crossing": "844307T"}' *
+- K - - 20.43 X '{"name": "CATES", "crossing": "844308A"}' *
+- K 42.8831478 -71.788721 20.53 X '{"name": "BRANDY BROOK RD", "crossing": "844309G"}' *
 - K 42.885600 -71.797450 21 MP '{"name": "N21/K36"}' *
-- K 42.8904621 -71.8120638 21.85 X '{"street": "OLD TEMPLE RD", "crossing": "844310B"}' *
+- K 42.8904621 -71.8120638 21.85 X '{"name": "OLD TEMPLE RD", "crossing": "844310B"}' *
 - K 42.892730 -71.813402 22 MP '{"name": "N22/K35"}' *
-- K 42.9022158 -71.8226728 22.78 X '{"street": "GULF RD", "crossing": "844311H"}' *
+- K 42.9022158 -71.8226728 22.78 X '{"name": "GULF RD", "crossing": "844311H"}' *
 - K 42.903987 -71.825185 23 MP '{"name": "N23/K34"}' *
 - K  42.913146 -71.839808 24 MP '{"name": "N24/K33"}' *
-- K 42.9139021 -71.8412104 24.09 X '{"street": "SCHOOLHOUSE RD", "crossing": "844312P"}' *
-- K 42.915623 -71.843193 24.20 X '{"street": "private", "crossing": "975774S"}' *
-- K 42.9168319 -71.8445876 24.34 X '{"street": "RUSSEL STATION RD", "crossing": "844313W"}' *
-- K 42.92305 -71.851407 24.84 X '{"street": "private", "crossing": "975775Y"}' *
+- K 42.9139021 -71.8412104 24.09 X '{"name": "SCHOOLHOUSE RD", "crossing": "844312P"}' *
+- K 42.915623 -71.843193 24.20 X '{"name": "private", "crossing": "975774S"}' *
+- K 42.9168319 -71.8445876 24.34 X '{"name": "RUSSEL STATION RD", "crossing": "844313W"}' *
+- K 42.92305 -71.851407 24.84 X '{"name": "private", "crossing": "975775Y"}' *
 - K 42.924483 -71.852042 25 MP '{"name": "N25/K32"}' *
-- K 42.9313349 -71.8553846 25.52 X '{"street": "ZEPHER LAKE RD", "crossing": "844314D"}' *
-- K 42.923052 -71.851403 - X '{"street": "private"}' *
-- K 42.934469 -71.860070 - X '{"street": "Ice House Ln"}' *
+- K 42.9313349 -71.8553846 25.52 X '{"name": "ZEPHER LAKE RD", "crossing": "844314D"}' *
+- K 42.923052 -71.851403 - X '{"name": "private"}' *
+- K 42.934469 -71.860070 - X '{"name": "Ice House Ln"}' *
 - K 42.936273 -71.861798 26 MP '{"name": "N26/K31"}' *
-- K 42.9434802 -71.8695065 26.65 X '{"street": "SLIP RD", "crossing": "844316S"}' *
+- K 42.9434802 -71.8695065 26.65 X '{"name": "SLIP RD", "crossing": "844316S"}' *
 - K 42.940667 -71.866020 - O '{"name": "Otter Brook"}' *
-- K 42.950063 -71.877054 - X '{"street": "private"}' *
-- K 42.950110 -71.880959 - X '{"street": "NH-136"}' *
-- K 42.951300 -71.887799 - X '{"street": "Campground Rd"}' *
-- K 42.954983 -71.897509 - X '{"street": "private"}' *
+- K 42.950063 -71.877054 - X '{"name": "private"}' *
+- K 42.950110 -71.880959 - X '{"name": "NH-136"}' *
+- K 42.951300 -71.887799 - X '{"name": "Campground Rd"}' *
+- K 42.954983 -71.897509 - X '{"name": "private"}' *
 - K 42.948252 -71.872382 27 MP '{"name": "N27/K30"}' *
 - K 42.952230 -71.890538 28 MP '{"name": "N28/K29"}' *
-- K 42.958655 -71.905007 28.90 X '{"street": "private camp", "crossing": "975776F"}' *
-- K 42.967255 -71.911424 - X '{"street": "Muzzy Hill Rd"}' *
+- K 42.958655 -71.905007 28.90 X '{"name": "private camp", "crossing": "975776F"}' *
+- K 42.967255 -71.911424 - X '{"name": "Muzzy Hill Rd"}' *
 - K 42.959873 -71.906594 29 MP '{"name": "N29/K28"}' *
 - K 42.968300 -71.919823 30 MP '{"name": "N30/K27"}' *
-- K 42.9829277 -71.92129 30.12 X '{"street": "OLD BENNINGTON RD", "crossing": "844323C"}' *
+- K 42.9829277 -71.92129 30.12 X '{"name": "OLD BENNINGTON RD", "crossing": "844323C"}' *
 - K 42.980046 -71.931903 30.70 O '{"name": "Powder Mill Pond"}' *
 - K 42.980272 -71.919086 31 MP '{"name": "N31/K26"}' *
 - K 42.977283 -71.939241 31.15 S '{"name": "Magoons Curve", "offset": 0}' *
 - K 42.986304 -71.936522 31.5 MP '{"name": "W80/C25"}' *
-- K 42.983971 -71.937482 31.64 X '{"street": "private"}' *
-- K 42.997520 -71.925709 32.85 X '{"street": "private"}' *
-- K 43.0012528 -71.9263884 34.22 X '{"street": "OLD HANCOCK RD", "crossing": "844326X"}' *
-- K 43.0062932 -71.9274599 34.54 O '{"street": "ANTRIM RD", "crossing": "844327E"}' *
-- K 43.007309 -71.927811 35.25 X '{"street": "Water works", "crossing": "844328L"}' *
+- K 42.983971 -71.937482 31.64 X '{"name": "private"}' *
+- K 42.997520 -71.925709 32.85 X '{"name": "private"}' *
+- K 43.0012528 -71.9263884 34.22 X '{"name": "OLD HANCOCK RD", "crossing": "844326X"}' *
+- K 43.0062932 -71.9274599 34.54 O '{"name": "ANTRIM RD", "crossing": "844327E"}' *
+- K 43.007309 -71.927811 35.25 X '{"name": "Water works", "crossing": "844328L"}' *
 - K 42.842962 -71.738010 - O '{"name": "Soughan River"}' *
 - K 42.844009 -71.739179 - O '{"name": "Soughan River"}' *
 - K 42.852508 -71.757821 - O '{"name": "Stoney Brook"}' *

@@ -21,9 +21,17 @@ def export_to_kml(input_filename):
         out.write("    <description>(c)" + str(datetime.date.today().year) + " PiRail -- https://www.facebook.com/PiRailNH</description>\n")
 
         for point in G.points:
-            if point['class'] == 'MP' and 'lat' in point:
+            if 'lat' in point:
                 out.write("    <Placemark>\n")
-                out.write("      <name>" + point['metadata']['name'] + "/" + point['metadata']['alt_name'] + "</name>\n")
+                name = ""
+                if 'name' in point['metadata']:
+                    name += point['metadata']['name']
+                if 'alt_name' in point['metadata']:
+                    if name != "":
+                        name += " / "
+                    name += point['metadata']['alt_name']
+
+                out.write("      <name>" + name + "</name>\n")
                 out.write("      <description>"+json.dumps(point)+"</description>\n")
                 out.write("      <Point>\n")
                 out.write("        <coordinates>" + str(point['lon']) + "," + str(point['lat']) + "</coordinates>\n")
