@@ -55,16 +55,74 @@ def get_sys_data():
     }
     return sys_data
 
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
 class MyHandler(BaseHTTPRequestHandler):
     """ Web Handler """
+
+    def mini_proxy(self, url, verbose=False):
+        """ Mini Web Proxy """
+
+        # Try to establish the connection
+        stream = self.headers['Accept'] == 'text/event-stream'
+        try:
+            response = requests.get(
+                url,
+                headers=self.headers,
+                stream=stream,
+            )
+        except requests.exceptions.ConnectionError as ex:
+            self.send_error(http.client.SERVICE_UNAVAILABLE, str(ex))
+            return
+
+        # Error response
+        if response.status_code != http.client.OK:
+            self.send_error(response.status_code, response.reason)
+            return
+
+        if verbose:
+            print("url: %s, proxying: headers=%s" % (url, response.headers))
+
+        # Start the response
+        self.send_response(http.client.OK)
+
+        # Copy certain response headers
+        for header in ['Content-Type']:
+            self.send_header(header, response.headers[header])
+
+        # If not streaming, must send the content-length
+        if not stream:
+            output = response.content
+            if not isinstance(output, bytes):
+                output = output.encode('utf-8')
+            self.send_header("Content-Length", str(len(output)))
+
+        # End of HTTP Headers
+        self.end_headers()
+
+        if not stream:
+            # Not streaming, just send the data
+            self.wfile.write(output)
+        else:
+            # Streaming, send each line
+            try:
+                for line in response.iter_lines():
+                    line = (line.decode('utf-8') + "\n").encode('utf-8')
+                    self.wfile.write(line)
+            except (BrokenPipeError, ConnectionResetError) as ex:
+                if verbose:
+                    print("url: %s, exception=%s" % (url, ex))
+
+        if verbose:
+            print("url: %s, exiting" % url)
+
     def do_POST(self):
         """ POST Handler """
         if self.path.startswith("/setup"):
             data = json.loads(self.rfile.read(int(self.headers['content-length'])))
-            for field in ['gps', 'imu', 'lidar', 'lpcm']:
+            for field in ['gps', 'imu', 'lidar', 'hpslidar', 'lpcm']:
                 CONFIG[field].update(data[field])
             util.DONE = True
             util.write_config(CONFIG)
@@ -80,8 +138,8 @@ class MyHandler(BaseHTTPRequestHandler):
         # If we made it this far, then send output to the browser
         output = output.encode('utf-8')
         self.send_response(http.client.OK)
-        self.send_header("Content-type", content_type)
-        self.send_header("Content-length", str(len(output)))
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(output)))
         self.end_headers()
         self.wfile.write(output)
 
@@ -102,9 +160,11 @@ class MyHandler(BaseHTTPRequestHandler):
             content_type = MIME_MAP[extension]
             with open(pathname, 'rb') as j:
                 output = j.read()
+
         elif self.path == "/setup":
             content_type = "application/json"
             output = json.dumps(CONFIG)
+
         elif self.path == "/poweroff":
             util.DONE = True
             content_type = "application/json"
@@ -112,6 +172,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 "message": "Shutting down...",
             })
             os.system("shutdown --poweroff %s" % SHUTDOWN_DELAY)
+
         elif self.path == "/reset":
             util.DONE = True
             content_type = "application/json"
@@ -119,164 +180,88 @@ class MyHandler(BaseHTTPRequestHandler):
                 "message": "Rebooting...",
             })
             os.system("shutdown --reboot %s" % SHUTDOWN_DELAY)
+
         elif self.path.startswith("/gps/"):
             if CONFIG['gps']['enable'] is False and \
                CONFIG['gpsimu']['enable'] is False:
-                self.send_error(http.client.NOT_FOUND, "Not Enabled")
-                return
-
-            stream = self.headers['Accept'] == 'text/event-stream'
-
-            response = requests.get(
-                "http://localhost:%d%s" % (CONFIG['gps']['port'], self.path),
-                headers=self.headers,
-                stream=stream,
-            )
-            if response.status_code != http.client.OK:
-                self.send_error(response.status_code, response.reason)
-                return
-
-            content_type = response.headers['content-type']
-
-            if not stream:
-                output = response.content
+                self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
-                self.send_response(response.status_code)
-                self.send_header("Content-type", content_type)
-                self.end_headers()
-                while not util.DONE:
-                    try:
-                        for line in response.iter_lines():
-                            line = (line.decode('utf-8') + "\n").encode('utf-8')
-                            self.wfile.write(line)
-                    except (BrokenPipeError, ConnectionResetError):
-                        break
-                return
+                self.mini_proxy(
+                    "http://localhost:%d%s" % (CONFIG['gps']['port'], self.path),
+                )
+            return
 
         elif self.path.startswith("/imu/"):
             if CONFIG['imu']['enable'] is False and \
                CONFIG['gpsimu']['enable'] is False:
-                self.send_error(http.client.NOT_FOUND, "Not Enabled")
-                return
-
-            stream = self.headers['Accept'] == 'text/event-stream'
-
-            response = requests.get(
-                "http://localhost:%d%s" % (CONFIG['imu']['port'], self.path),
-                headers=self.headers,
-                stream=stream,
-            )
-            if response.status_code != http.client.OK:
-                self.send_error(response.status_code, response.reason)
-                return
-
-            content_type = response.headers['content-type']
-
-            if not stream:
-                output = response.content
+                self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
-                self.send_response(response.status_code)
-                self.send_header("Content-type", content_type)
-                self.end_headers()
-                while not util.DONE:
-                    try:
-                        for line in response.iter_lines():
-                            line = (line.decode('utf-8') + "\n").encode('utf-8')
-                            self.wfile.write(line)
-                    except (BrokenPipeError, ConnectionResetError):
-                        break
-                return
+                self.mini_proxy(
+                    "http://localhost:%d%s" % (CONFIG['imu']['port'], self.path),
+                )
+            return
 
         elif self.path.startswith("/lidar/"):
             if CONFIG['lidar']['enable'] is False and \
                 CONFIG['hpslidar']['enable'] is False:
-                self.send_error(http.client.NOT_FOUND, "Not Enabled")
-                return
-
-            stream = self.headers['Accept'] == 'text/event-stream'
-
-            response = requests.get(
-                "http://localhost:%d%s" % (CONFIG['lidar']['port'], self.path),
-                headers=self.headers,
-                stream=stream,
-            )
-            if response.status_code != http.client.OK:
-                self.send_error(response.status_code, response.reason)
-                return
-
-            content_type = response.headers['content-type']
-
-            if not stream:
-                output = response.content
+                self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
-                self.send_response(response.status_code)
-                self.send_header("Content-type", content_type)
-                self.end_headers()
-                while not util.DONE:
-                    try:
-                        for line in response.iter_lines():
-                            line = (line.decode('utf-8') + "\n").encode('utf-8')
-                            self.wfile.write(line)
-                    except (BrokenPipeError, ConnectionResetError):
-                        break
-                return
-                
+                self.mini_proxy(
+                    "http://localhost:%d%s" % (CONFIG['lidar']['port'], self.path),
+                )
+            return
+
         elif self.path.startswith("/lpcm/"):
             if CONFIG['lpcm']['enable'] is False:
-                self.send_error(http.client.NOT_FOUND, "Not Enabled")
+                self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
                 return
 
-            stream = self.headers['Accept'] == 'text/event-stream'
-
-            response = requests.get(
+            self.mini_proxy(
                 "http://localhost:%d%s" % (CONFIG['lpcm']['port'], self.path),
-                headers=self.headers,
-                stream=stream,
             )
-            if response.status_code != http.client.OK:
-                self.send_error(response.status_code, response.reason)
-                return
-
-            content_type = response.headers['content-type']
-
-            if not stream:
-                output = response.content
-            else:
-                self.send_response(response.status_code)
-                self.send_header("Content-type", content_type)
-                self.end_headers()
-                while not util.DONE:
-                    try:
-                        for line in response.iter_lines():
-                            line = (line.decode('utf-8') + "\n").encode('utf-8')
-                            self.wfile.write(line)
-                    except (BrokenPipeError, ConnectionResetError):
-                        break
-                return
+            return
 
         elif self.path.startswith("/sys/"):
             stream = self.headers['Accept'] == 'text/event-stream'
+
+            # Start the response
+            self.send_response(http.client.OK)
+
+            # If not streaming, must send the content-length
             if not stream:
                 content_type = "application/json"
                 output = json.dumps(get_sys_data())
+                self.send_header("Content-Length", str(len(output)))
             else:
-                self.send_response(http.client.OK)
-                self.send_header("Content-type", "text/event-stream")
-                self.end_headers()
-                while not util.DONE:
-                    sys_data = get_sys_data()
-                    try:
+                content_type = "text/event-stream"
+
+            # Send the content-type
+            self.send_header("Content-Type", content_type)
+
+            # End of HTTP Headers
+            self.end_headers()
+
+            if not stream:
+                # Not streaming, just send the data
+                self.wfile.write(output)
+            else:
+                # Streaming, generate new data each time
+                try:
+                    while not util.DONE:
+                        output = json.dumps(get_sys_data())
+
                         lines = [
                             "event: sys\n",
-                            "data: " + json.dumps(get_sys_data()) + "\n",
+                            "data: " + output + "\n",
                             "\n",
                         ]
                         for line in lines:
                             self.wfile.write(line.encode('utf-8'))
                         time.sleep(util.STREAM_DELAY)
-                    except (BrokenPipeError, ConnectionResetError):
-                        break
-                return
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+            return
+
         else:
             self.send_error(http.client.NOT_FOUND, self.path)
             return
@@ -285,8 +270,8 @@ class MyHandler(BaseHTTPRequestHandler):
         if not isinstance(output, bytes):
             output = output.encode('utf-8')
         self.send_response(http.client.OK)
-        self.send_header("Content-type", content_type)
-        self.send_header("Content-length", str(len(output)))
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(output)))
         self.end_headers()
         self.wfile.write(output)
 

@@ -44,6 +44,8 @@ function dashboard() {
     console.log(sysStream.readyState);
     console.log(sysStream.url);
 
+    hasTpv = hasSky = false;
+
     gpsStream.onopen = function() {
 	console.log("gps connection opened");
         $("#mode").text("...");
@@ -64,6 +66,11 @@ function dashboard() {
 	$("#gpstime").html(tpv.time.replace('T', '<br>'));
 	$("#ept").text("+/-"+tpv.ept+"s");
 	$("#mode").text(tpv.mode + "D ");
+	if (hasSky) {
+	    gpsStream.close();
+	} else {
+	    hasTpv = true;
+	}
     });
 
     gpsStream.addEventListener("sky", function(event) {
@@ -77,6 +84,11 @@ function dashboard() {
 	    }
 	}
 	$("#gps_count").text(used + "/" + sky.satellites.length);
+	if (hasTpv) {
+	    gpsStream.close();
+	} else {
+	    hasSky = true;
+	}
     });
 
     imuStream.onopen = function() {
@@ -97,6 +109,7 @@ function dashboard() {
 	$("#imu_status").text("ON");
 	$("#temp").text(Math.round(att.temp));
 	$("#time").text(att.time.replace('T', ' '));
+	imuStream.close();
     });
 
     lidarStream.onopen = function() {
@@ -115,6 +128,7 @@ function dashboard() {
 	var lidar = JSON.parse(event.data);
 	// console.log(lidar);
 	$("#lidar_status").text("ON");
+	lidarStream.close();
     });
 
     lpcmStream.onopen = function() {
@@ -133,6 +147,7 @@ function dashboard() {
 	var lpcm = JSON.parse(event.data);
 	// console.log(lpcm);
 	$("#lpcm_status").text("ON");
+	lpcmStream.close();
     });
 
     sysStream.onopen = function() {
@@ -152,6 +167,7 @@ function dashboard() {
 	// console.log(lpcm);
 	$("#used").text(sys.used_percent);
 	$("#sw_version").text(sys.sw_version);
+	sysStream.close();
     });
 
   $("#msg").html("&nbsp;");

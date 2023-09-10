@@ -13,6 +13,17 @@ import gps
 
 REPORT = {}
 
+HTML_TEMPLATE = """<html>
+  <head>
+    <meta http-equiv=\"refresh\" content=\"1;URL='/'\" />
+  </head>
+  <body>
+    <h1 align=center>Waiting for GPS Sync... Check Antenna!</h1>
+    <p>%s</p>
+  </body>
+</html>
+"""
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
@@ -23,21 +34,10 @@ class MyHandler(BaseHTTPRequestHandler):
         if self.path == "/favicon.ico":
             self.send_error(http.client.NOT_FOUND)
         else:
-            output="""
-<html>
-  <head>
-    <meta http-equiv=\"refresh\" content=\"1;URL='/'\" />
-  </head>
-  <body>
-    <h1 align=center>Waiting for GPS Sync... Check Antenna!</h1>
-    <p>%s</p>
-  </body>
-</html>
-""" % html.escape(str(REPORT))
-            output = output.encode('utf-8')
+            output = (HTML_TEMPLATE % html.escape(str(REPORT))).encode('utf-8')
             self.send_response(http.client.OK)
-            self.send_header("Content-type", "text/html")
-            self.send_header("Content-length", str(len(output)))
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Content-Length", str(len(output)))
             self.end_headers()
             self.wfile.write(output)
 
@@ -60,22 +60,28 @@ def wait_for_timesync():
     # Listen on port 2947 (gpsd) of localhost
     session = gps.gps(mode=gps.WATCH_ENABLE)
 
-    done = False
-    while not done:
-        try:
+    try:
+        while True:
             report = session.next()
             REPORT = str(report)
+
             if report['class'] != 'TPV':
                 continue
+
             if hasattr(report, 'mode') and report.mode == 1:
                 # can't trust a mode=1 time
                 continue
+
             if hasattr(report, 'time'):
                 set_date(report.time)
-                done = True
-        except Exception as ex:
-            print(ex)
-            sys.exit(1)
+                retval = 0
+                break
+
+    except Exception as ex:
+        print(ex)
+        retval = 1
+
+    return retval
 
 def web_server(pirail_httpd):
     """ Web Server Main Thread """
@@ -87,8 +93,9 @@ if __name__ == "__main__":
     Twww.start()
 
     # Make sure we have a time sync
-    wait_for_timesync()
+    status = wait_for_timesync()
     httpd.shutdown()
     httpd.server_close()
     Twww.join()
-    sys.exit(0)
+
+    sys.exit(status)

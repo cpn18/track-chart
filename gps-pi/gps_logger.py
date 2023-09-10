@@ -50,8 +50,8 @@ def do_json_output(self, output_dict):
     """ send back json text """
     output = json.dumps(output_dict).encode('utf-8')
     self.send_response(http.client.OK)
-    self.send_header("Content-type", "application/json;charset=utf-8")
-    self.send_header("Content-length", str(len(output)))
+    self.send_header("Content-Type", "application/json;charset=utf-8")
+    self.send_header("Content-Length", str(len(output)))
     self.end_headers()
     self.wfile.write(output)
 
@@ -95,10 +95,10 @@ def handle_sky(self, _groups, _qsdict):
 def handle_gps_stream(self, _groups, _qsdict):
     """ Stream GPS Response """
     self.send_response(http.client.OK)
-    self.send_header("Content-type", "text/event-stream")
+    self.send_header("Content-Type", "text/event-stream")
     self.end_headers()
-    while not util.DONE:
-        try:
+    try:
+        while not util.DONE:
             if TPV_SYS_TIME < SKY_SYS_TIME:
                 lines = [
                     "event: tpv\n",
@@ -120,8 +120,8 @@ def handle_gps_stream(self, _groups, _qsdict):
             for line in lines:
                 self.wfile.write(line.encode('utf-8'))
             time.sleep(util.STREAM_DELAY)
-        except (BrokenPipeError, ConnectionResetError):
-            break
+    except (BrokenPipeError, ConnectionResetError):
+        pass
 
 def handle_gps(self, _groups, _qsdict):
     """ Single GPS """
