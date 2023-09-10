@@ -108,9 +108,8 @@ class MyHandler(BaseHTTPRequestHandler):
         else:
             # Streaming, send each line
             try:
-                for line in response.iter_lines():
-                    line = (line.decode('utf-8') + "\n").encode('utf-8')
-                    self.wfile.write(line)
+                for output in response.iter_content():
+                    self.wfile.write(output)
             except (BrokenPipeError, ConnectionResetError) as ex:
                 if verbose:
                     print("url: %s, exception=%s" % (url, ex))
@@ -247,15 +246,9 @@ class MyHandler(BaseHTTPRequestHandler):
                 # Streaming, generate new data each time
                 try:
                     while not util.DONE:
-                        output = json.dumps(get_sys_data())
-
-                        lines = [
-                            "event: sys\n",
-                            "data: " + output + "\n",
-                            "\n",
-                        ]
-                        for line in lines:
-                            self.wfile.write(line.encode('utf-8'))
+                        output = "event: sys\ndata: " + json.dumps(get_sys_data()) + "\n\n"
+                        self.wfile.write(output.encode('utf-8'))
+                        self.wfile.flush()
                         time.sleep(util.STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     pass

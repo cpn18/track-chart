@@ -101,25 +101,11 @@ def handle_gps_stream(self, _groups, _qsdict):
     try:
         while not util.DONE:
             if TPV['time'] < SKY['time']:
-                lines = [
-                    "event: tpv\n",
-                    "data: "+json.dumps(TPV) + "\n",
-                    "\n",
-                    "event: sky\n",
-                    "data: "+json.dumps(SKY) + "\n",
-                    "\n",
-                ]
+                output = "event: tpv\ndata: " + json.dumps(TPV) + "\n\nevent: sky\ndata: " + json.dumps(SKY) + "\n\n"
             else:
-                lines = [
-                    "event: sky\n",
-                    "data: "+json.dumps(SKY) + "\n",
-                    "\n",
-                    "event: tpv\n",
-                    "data: "+json.dumps(TPV) + "\n",
-                    "\n",
-                ]
-            for line in lines:
-                self.wfile.write(line.encode('utf-8'))
+                output = "event: sky\ndata: " + json.dumps(SKY) + "\n\nevent: tpv\ndata: " + json.dumps(TPV) + "\n\n"
+            self.wfile.write(output.encode('utf-8'))
+            self.wfile.flush()
             time.sleep(util.STREAM_DELAY)
     except (BrokenPipeError, ConnectionResetError):
         pass
@@ -138,13 +124,9 @@ def handle_imu_stream(self, _groups, _qsdict):
     self.end_headers()
     try:
         while not util.DONE:
-            lines = [
-                "event: att\n",
-                "data: " + json.dumps(ATT) + "\n",
-                "\n",
-            ]
-            for line in lines:
-                self.wfile.write(line.encode('utf-8'))
+            output = "event: att\ndata: " + json.dumps(ATT) + "\n\n"
+            self.wfile.write(output.encode('utf-8'))
+            self.wfile.flush()
             time.sleep(util.STREAM_DELAY)
     except (BrokenPipeError, ConnectionResetError):
         pass

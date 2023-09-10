@@ -38,13 +38,9 @@ def handle_lidar_stream(self, _groups, _qsdict):
     self.end_headers()
     try:
         while not util.DONE:
-            lines = [
-                    "event: lidar\n",
-                    "data: " + json.dumps(LIDAR_DATA) + "\n",
-                    "\n",
-                    ]
-            for line in lines:
-                self.wfile.write(line.encode('utf-8'))
+            output = "event: lidar\ndata: " + json.dumps(LIDAR_DATA) + "\n\n"
+            self.wfile.write(output.encode('utf-8'))
+            self.wfile.flush()
             time.sleep(util.STREAM_DELAY)
     except (BrokenPipeError, ConnectionResetError):
         pass
