@@ -214,11 +214,10 @@ class MyHandler(BaseHTTPRequestHandler):
         elif self.path.startswith("/lpcm/"):
             if CONFIG['lpcm']['enable'] is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
-                return
-
-            self.mini_proxy(
-                "http://localhost:%d%s" % (CONFIG['lpcm']['port'], self.path),
-            )
+            else:
+                self.mini_proxy(
+                    "http://localhost:%d%s" % (CONFIG['lpcm']['port'], self.path),
+                )
             return
 
         elif self.path.startswith("/sys/"):
