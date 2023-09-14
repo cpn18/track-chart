@@ -9,7 +9,16 @@ import html
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
-import gps
+import util
+
+# PyLint doesn't like this
+config = util.read_config()
+if config['gps']['enable']:
+    import gps
+elif config['gpsimu']['enable']:
+    import witmotionjygpsimu as gps
+else:
+    sys.exit(0)
 
 REPORT = {}
 
@@ -23,14 +32,6 @@ HTML_TEMPLATE = """<html>
   </body>
 </html>
 """
-
-config = util.read_config()
-if config['gps']['enable']:
-    import gps
-elif config['gpsimu']['enable']:
-    import witmotionjygpsimu as gps
-else:
-    sys.exit(0)
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
@@ -74,25 +75,37 @@ def wait_for_timesync():
     try:
         while True:
             report = session.next()
-            REPORT = str(report)
+            if config['gps']['enable']:
+                REPORT = str(report)
 
-            if report['class'] != 'TPV':
-                continue
+                if report['class'] != 'TPV':
+                    continue
 
-            if hasattr(report, 'mode') and report.mode == 1:
-                # can't trust a mode=1 time
-                continue
+                if hasattr(report, 'mode') and report.mode == 1:
+                    # can't trust a mode=1 time
+                    continue
 
-            if hasattr(report, 'time'):
-                set_date(report.time)
-                retval = 0
-                break
+                if hasattr(report, 'time'):
+                    set_date(report.time)
+                    return 0
+            else:
+                for lines in report:
+                    for timestamp, typeclass, obj in lines:
+                        print(timestamp, typeclass, obj )
+                        if typeclass != 'TPV':
+                            continue
+                        if 'mode' in obj and obj['mode'] == 1:
+                            continue
+                        if 'time' in obj:
+                            set_date(obj['time'])
+                            session.done()
+                            return 0
+
 
     except Exception as ex:
         print(ex)
-        retval = 1
 
-    return retval
+    return 1
 
 def web_server(pirail_httpd):
     """ Web Server Main Thread """
