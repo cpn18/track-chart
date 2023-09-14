@@ -24,6 +24,14 @@ HTML_TEMPLATE = """<html>
 </html>
 """
 
+config = util.read_config()
+if config['gps']['enable']:
+    import gps
+elif config['gpsimu']['enable']:
+    import witmotionjygpsimu as gps
+else:
+    sys.exit(0)
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
 
@@ -57,8 +65,11 @@ def wait_for_timesync():
     """ Wait for Time Sync """
     global REPORT
 
-    # Listen on port 2947 (gpsd) of localhost
-    session = gps.gps(mode=gps.WATCH_ENABLE)
+    if config['gps']['enable']:
+        # Listen on port 2947 (gpsd) of localhost
+        session = gps.gps(mode=gps.WATCH_ENABLE)
+    else:
+        session = gps.WitMotionJyGpsImu(config['gpsimu']['serial'])
 
     try:
         while True:
