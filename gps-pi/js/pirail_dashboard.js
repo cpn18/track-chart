@@ -64,7 +64,11 @@ function dashboard() {
 	var tpv = JSON.parse(event.data);
         // console.log(tpv);
 	$("#gpstime").html(tpv.time.replace('T', '<br>'));
-	$("#ept").text("+/-"+tpv.ept+"s");
+	if (tpv.ept != undefined) {
+	    $("#ept").text("+/-"+tpv.ept+"s");
+	} else {
+	    $("#ept").text("");
+	}
 	$("#mode").text(tpv.mode + "D ");
 	if (hasSky) {
 	    gpsStream.close();
