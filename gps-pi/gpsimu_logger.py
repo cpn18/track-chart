@@ -225,7 +225,7 @@ def gpsimu_logger(output_directory):
         os.mkdir(output_directory)
 
     # Listen
-    session = gps.WitMotionJyGpsImu("/dev/ttyUSB0")
+    session = gps.WitMotionJyGpsImu(config['serial'])
 
     # Open the output file
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")

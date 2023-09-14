@@ -185,8 +185,12 @@ class MyHandler(BaseHTTPRequestHandler):
                CONFIG['gpsimu']['enable'] is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
+                if CONFIG['gps']['enable']:
+                    port = CONFIG['gps']['port']
+                else:
+                    port = CONFIG['gpsimu']['port']
                 self.mini_proxy(
-                    "http://localhost:%d%s" % (CONFIG['gps']['port'], self.path),
+                    "http://localhost:%d%s" % (port, self.path),
                 )
             return
 
@@ -195,8 +199,12 @@ class MyHandler(BaseHTTPRequestHandler):
                CONFIG['gpsimu']['enable'] is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
+                if CONFIG['imu']['enable']:
+                    port = CONFIG['imu']['port']
+                else:
+                    port = CONFIG['gpsimu']['port']
                 self.mini_proxy(
-                    "http://localhost:%d%s" % (CONFIG['imu']['port'], self.path),
+                    "http://localhost:%d%s" % (port, self.path),
                 )
             return
 
@@ -205,8 +213,12 @@ class MyHandler(BaseHTTPRequestHandler):
                 CONFIG['hpslidar']['enable'] is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
+                if CONFIG['lidar']['enable']:
+                    port = CONFIG['lidar']['port']
+                else:
+                    port = CONFIG['hpslidar']['port']
                 self.mini_proxy(
-                    "http://localhost:%d%s" % (CONFIG['lidar']['port'], self.path),
+                    "http://localhost:%d%s" % (port, self.path),
                 )
             return
 

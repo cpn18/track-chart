@@ -10,6 +10,7 @@
     },
     "gpsimu": {
        	"x": "x", "y": "y", "z": "z",
+        "serial": "/dev/ttyUSB0",
 	"enable": false,
 	"cmd": ["gpsimu_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
         "port": 8080
