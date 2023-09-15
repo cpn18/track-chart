@@ -89,7 +89,7 @@ def lidar_logger(output_directory):
 
     # Configure
     config = util.read_config()
-    port_name = config.get('serial', '/dev/lidar')
+    port_name = config['lidar'].get('serial', '/dev/lidar')
 
     while not util.DONE:
         try:

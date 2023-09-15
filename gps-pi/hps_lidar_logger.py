@@ -90,7 +90,7 @@ def lidar_logger(output_directory):
     # Configure
     config = util.read_config()
 
-    port_name = config.get('serial', '/dev/ttyACM0')
+    port_name = config['hpslidar'].get('serial', '/dev/ttyACM0')
 
     while not util.DONE:
         try:

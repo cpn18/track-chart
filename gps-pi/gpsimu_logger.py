@@ -100,7 +100,7 @@ def handle_gps_stream(self, _groups, _qsdict):
     self.end_headers()
     try:
         while not util.DONE:
-            if TPV['time'] < SKY['time']:
+            if 'time' in TPV and 'time' in SKY and TPV['time'] < SKY['time']:
                 output = "event: tpv\ndata: " + json.dumps(TPV) + "\n\nevent: sky\ndata: " + json.dumps(SKY) + "\n\n"
             else:
                 output = "event: sky\ndata: " + json.dumps(SKY) + "\n\nevent: tpv\ndata: " + json.dumps(TPV) + "\n\n"
@@ -225,7 +225,7 @@ def gpsimu_logger(output_directory):
         os.mkdir(output_directory)
 
     # Listen
-    session = gps.WitMotionJyGpsImu(config['serial'])
+    session = gps.WitMotionJyGpsImu(config['gpsimu']['serial'])
 
     # Open the output file
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
