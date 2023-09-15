@@ -85,11 +85,12 @@ def lidar_logger(output_directory):
     """ LIDAR Logger """
     global LIDAR_STATUS, LIDAR_DATA
 
-    port_name = '/dev/ttyACM0'
     lidar = None
 
     # Configure
     config = util.read_config()
+
+    port_name = config.get('serial', '/dev/ttyACM0')
 
     while not util.DONE:
         try:
