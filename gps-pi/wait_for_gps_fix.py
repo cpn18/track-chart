@@ -80,18 +80,15 @@ def wait_for_timesync():
 
                 if report['class'] != 'TPV':
                     continue
-
                 if hasattr(report, 'mode') and report.mode == 1:
-                    # can't trust a mode=1 time
                     continue
-
                 if hasattr(report, 'time'):
                     set_date(report.time)
                     return 0
             else:
                 for lines in report:
                     for timestamp, typeclass, obj in lines:
-                        print(timestamp, typeclass, obj )
+                        REPORT = str(obj)
                         if typeclass != 'TPV':
                             continue
                         if 'mode' in obj and obj['mode'] == 1:
@@ -100,7 +97,6 @@ def wait_for_timesync():
                             set_date(obj['time'])
                             session.done()
                             return 0
-
 
     except Exception as ex:
         print(ex)
