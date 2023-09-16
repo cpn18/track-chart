@@ -79,8 +79,12 @@ def plot(data, slice_count):
                 else:
                     color = spectrum.BLACK
             elif not GREYSCALE:
-                c = int((len(spectrum.SPECTRUM)-1) * (float(depth) - min_d) / (max_d - min_d))
-                color = spectrum.SPECTRUM[c]
+                if max_d == min_d:
+                    # Protect Against Divide by Zero
+                    color = spectrum.WHITE
+                else:
+                    c = int((len(spectrum.SPECTRUM)-1) * (float(depth) - min_d) / (max_d - min_d))
+                    color = spectrum.SPECTRUM[c]
             else:
                 if near(depth, mind[x]):
                     color = spectrum.RED

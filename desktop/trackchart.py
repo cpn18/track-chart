@@ -266,7 +266,7 @@ def bridges_and_crossings(track_chart, xing_type=None):
         # Draw description
         text = metadata.get('name', "")
 
-        if text = "" and xtype == 'X':
+        if text == "" and xtype == 'X':
             text = PRIVATE
 
         if 'crossing' in metadata:

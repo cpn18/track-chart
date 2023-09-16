@@ -24,10 +24,12 @@ def add_mileage_and_gps(json_file, known_file, output_file):
             if obj['class'] in ["SKY", "ATT", "LIDAR", "LPCM", "LIDAR3D"]:
                 acclist.append(obj)
 
-            if obj['class'] != "TPV":
+            if obj['class'] != "TPV" or 'lat' not in obj or 'lon' not in obj:
                 continue
 
+            # We have a TPV with Latitude/Longitude
             obj['mileage'], obj['certainty'] = gps.find_mileage(obj['lat'], obj['lon'])
+
             if len(last_tpv) != 0:
                 if obj['time'] == last_tpv['time']:
                     continue
