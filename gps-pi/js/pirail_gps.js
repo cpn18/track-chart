@@ -64,7 +64,7 @@ function gps_stream(viewport, imagedata) {
 	if (tpv.time != undefined) {
 	    $("#gpstime").html(tpv.time.replace('T', '<br>'));
 	} else {
-	    $("#gpstime").text("It's Five O'clock Somewhere"));
+	    $("#gpstime").text("It's Five O'clock Somewhere");
 	}
 	if (tpv.ept != undefined) {
 	    $("#ept").html("&plusmn;"+tpv.ept+"s");
@@ -95,6 +95,7 @@ function gps_stream(viewport, imagedata) {
 	    $("#alt").html(tpv.alt.toLocaleString('en-US',{minimumFractionDigits:1, maximumFractionDigits: 1})+"&rsquo;");
 	} else {
 	  $("#alt").text("");
+	}
 	if (tpv.epv != undefined) {
 	    $("#epv").html("&plusmn;"+Math.round(tpv.epv*m_to_ft)+"ft");
 	} else {
