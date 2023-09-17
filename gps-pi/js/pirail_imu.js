@@ -43,11 +43,26 @@ function imu_stream(viewport, imagedata) {
 	var att = JSON.parse(event.data);
 	// console.log(att);
 	$("#imu_status").text("ON");
-	// $("#yaw").text(Math.round(att.yaw));
-	$("#pitch").text(Math.round(att.pitch));
-	$("#roll").text(Math.round(att.roll));
-	$("#temp").text(Math.round(att.temp));
-	$("#time").text(att.time.replace('T', ' '));
+	if (att.pitch != undefined) {
+	  $("#pitch").text(Math.round(att.pitch));
+	} else {
+	  $("#pitch").text("");
+	}
+	if (att.roll != undefined) {
+	  $("#roll").text(Math.round(att.roll));
+	} else {
+	  $("#roll").text("");
+	}
+	if (att.temp != undefined) {
+	  $("#temp").text(Math.round(att.temp));
+	} else {
+	  $("#temp").text("");
+	}
+	if (att.time != undefined) {
+	  $("#time").text(att.time.replace('T', ' '));
+	} else {
+	  $("#time").text("");
+	}
 
 	// Fade Out
 	fade_points(viewport, imagedata, decay);
@@ -58,36 +73,44 @@ function imu_stream(viewport, imagedata) {
 	draw_circle(viewport, imagedata, cx, cy, 100, [0,0,0,255]);
 	draw_line(viewport, imagedata, 10, cy, canvas.width-10, cy, [0,0,0,255]);
 	draw_line(viewport, imagedata, cx, 10, cx, canvas.height-10, [0,0,0,255]);
-	
-	// Roll
-	a1 = att.roll - 180;
-	d1 = 100;
-	a2 = att.roll;
-	d2 = 100;
 
-	// Pitch
-	py = 10*att.pitch;
+	if (att.roll != undefined && att.pitch != undefined) {
+	  // Roll
+	  a1 = att.roll - 180;
+	  d1 = 100;
+	  a2 = att.roll;
+	  d2 = 100;
 
-	x1 = cx + Math.cos(a1*deg_to_rad) * d1;
-	y1 = cy + Math.sin(a1*deg_to_rad) * d1 + py;
-	x2 = cx + Math.cos(a2*deg_to_rad) * d2;
-	y2 = cy + Math.sin(a2*deg_to_rad) * d2 + py;
-	draw_line(viewport, imagedata, x1, y1, x2, y2, [0,0,255,255]);
+	  // Pitch
+	  py = 10*att.pitch;
 
-	// Yaw
-	// yx = (canvas.width + att.yaw) / 2;
-	// draw_line(viewport, imagedata, yx, cy-10, yx, cy+10, [0,255,0,255]);
+	  x1 = cx + Math.cos(a1*deg_to_rad) * d1;
+	  y1 = cy + Math.sin(a1*deg_to_rad) * d1 + py;
+	  x2 = cx + Math.cos(a2*deg_to_rad) * d2;
+	  y2 = cy + Math.sin(a2*deg_to_rad) * d2 + py;
+	  draw_line(viewport, imagedata, x1, y1, x2, y2, [0,0,255,255]);
+	}
 
-	// ACC X
-	ax = cx + 2*att.acc_x
-	draw_line(viewport, imagedata, ax, cy-10, ax, cy+10, [255,0,0,255]);
+	if (att.acc_x != undefined) {
+	  // ACC X
+	  ax = cx + 2*att.acc_x
+	  draw_line(viewport, imagedata, ax, cy-10, ax, cy+10, [255,0,0,255]);
+	} else {
+		ax = cx;
+	}
 
-	// ACC Y
-	ay = cy + 2*att.acc_y
-	draw_line(viewport, imagedata, cx-10, ay, cx+10, ay, [255,0,0,255]);
+	if (att.acc_y != undefined) {
+	  // ACC Y
+	  ay = cy + 2*att.acc_y
+	  draw_line(viewport, imagedata, cx-10, ay, cx+10, ay, [255,0,0,255]);
+	} else {
+	  ay = cy;
+	}
 
-	// ACC_Z
-	draw_circle(viewport, imagedata, ax, ay, 2*att.acc_z, [255,0,0,255]);
+	if (att.acc_z != undefined) {
+	  // ACC_Z
+	  draw_circle(viewport, imagedata, ax, ay, 2*att.acc_z, [255,0,0,255]);
+	}
 
 	context.putImageData(imagedata, 0, 0);
     });
