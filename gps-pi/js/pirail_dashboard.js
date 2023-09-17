@@ -63,13 +63,21 @@ function dashboard() {
         // console.log(event);
 	var tpv = JSON.parse(event.data);
         // console.log(tpv);
-	$("#gpstime").html(tpv.time.replace('T', '<br>'));
-	if (tpv.ept != undefined) {
-	    $("#ept").text("+/-"+tpv.ept+"s");
+	if (tpv.time != undefined) {
+	  $("#gpstime").html(tpv.time.replace('T', '<br>'));
 	} else {
-	    $("#ept").text("");
+	  $("#gpstime").text("");
 	}
-	$("#mode").text(tpv.mode + "D ");
+	if (tpv.ept != undefined) {
+	   $("#ept").text("+/-"+tpv.ept+"s");
+	} else {
+	   $("#ept").text("");
+	}
+	if (tpv.mode != undefined) {
+	  $("#mode").text(tpv.mode + "D ");
+	} else {
+	  $("#mode").text("?D");
+	}
 	if (hasSky) {
 	    gpsStream.close();
 	} else {
@@ -81,13 +89,17 @@ function dashboard() {
         // console.log(event);
 	var sky = JSON.parse(event.data);
 	// console.log(sky);
-	var used = 0;
-	for (var i=0; i<sky.satellites.length; i++) {
-	    if (sky.satellites[i].used) {
-	        used ++;
-	    }
+	if (sky.satellites != undefined) {
+	  var used = 0;
+	  for (var i=0; i<sky.satellites.length; i++) {
+	      if (sky.satellites[i].used) {
+	          used ++;
+	      }
+	  }
+	  $("#gps_count").text(used + "/" + sky.satellites.length);
+	} else {
+	  $("#gps_count").text("?/?");
 	}
-	$("#gps_count").text(used + "/" + sky.satellites.length);
 	if (hasTpv) {
 	    gpsStream.close();
 	} else {
@@ -111,8 +123,16 @@ function dashboard() {
 	var att = JSON.parse(event.data);
 	// console.log(att);
 	$("#imu_status").text("ON");
-	$("#temp").text(Math.round(att.temp));
-	$("#time").text(att.time.replace('T', ' '));
+	if (att.temp != undefined) {
+	  $("#temp").text(Math.round(att.temp));
+	} else {
+	  $("#temp").text("?");
+	}
+	if (att.time != undefined) {
+	  $("#time").text(att.time.replace('T', ' '));
+	} else {
+	  $("#time").text("Five O'clock Somewhere");
+	}
 	imuStream.close();
     });
 
