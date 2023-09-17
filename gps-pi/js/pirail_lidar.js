@@ -24,12 +24,18 @@ function lidar_stream(name, imagedata)
     //console.log(lidar);
     if (lidar.class == 'LIDAR') {
       if (lidar.scan != undefined ) {
-	lidar_update(name, imagedata, lidar);
 	$("#lidar_status").text("ON");
+	lidar_update(name, imagedata, lidar);
+      } else {
+	$("#lidar_status").text("No 360 Scan");
       }
     } else if (lidar.class == 'LIDAR3D') {
-	lidar_update_3d(name, imagedata, lidar);
-	$("#lidar_status").text("ON");
+	    if (lidar.depth != undefined) {
+	        $("#lidar_status").text("ON");
+	        lidar_update_3d(name, imagedata, lidar);
+		   } else {
+	$("#lidar_status").text("No 3D Scan");
+		   }
     } else {
 	$("#lidar_status").text("Unsupported LIDAR class");
     }
