@@ -40,7 +40,7 @@ function gps_stream(viewport, imagedata) {
     console.log(gpsStream.url);
 
     var canvas = $("#"+viewport)[0];
-    var context = canvas.getContext("2d"); 
+    var context = canvas.getContext("2d");
 
     gpsStream.onopen = function() {
       console.log("connection opened");
@@ -61,48 +61,73 @@ function gps_stream(viewport, imagedata) {
 	var tpv = JSON.parse(event.data);
         // console.log(tpv);
 
-	if (typeof tpv.time != 'undefined') {
+	if (tpv.time != undefined) {
 	    $("#gpstime").html(tpv.time.replace('T', '<br>'));
+	} else {
+	    $("#gpstime").text("It's Five O'clock Somewhere"));
 	}
-	if (typeof tpv.ept != 'undefined') {
+	if (tpv.ept != undefined) {
 	    $("#ept").html("&plusmn;"+tpv.ept+"s");
+	} else {
+	    $("#ept").text("");
 	}
-	if (typeof tpv.lat != 'undefined') {
+	if (tpv.lat != undefined) {
 	    $("#lat").html(tpv.lat.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;");
+	} else {
+	  $("#lat").text("");
 	}
-	if (typeof tpv.epv != 'undefined') {
+	if (tpv.epv != undefined) {
 	    $("#epy").html("&plusmn;"+Math.round(tpv.epy*m_to_ft)+"ft");
-	}
-	if (typeof tpv.lon != 'undefined') {
+	} else {
+	    $("#epy").text("");
+        }
+	if (tpv.lon != undefined) {
 	    $("#lon").html(tpv.lon.toLocaleString('en-US',{minimumFractionDigits:6, maximumFractionDigits: 6})+"&#xb0;");
+	} else {
+	  $("#lon").text("");
 	}
-	if (typeof tpv.epx != 'undefined') {
+	if (tpv.epx != undefined) {
 	    $("#epx").html("&plusmn;"+Math.round(tpv.epx*m_to_ft)+"ft");
+	} else {
+	    $("#epx").text("");
 	}
-	if (typeof tpv.alt != 'undefined') {
+	if (tpv.alt != undefined) {
 	    $("#alt").html(tpv.alt.toLocaleString('en-US',{minimumFractionDigits:1, maximumFractionDigits: 1})+"&rsquo;");
-	}
-	if (typeof tpv.epv != 'undefined') {
+	} else {
+	  $("#alt").text("");
+	if (tpv.epv != undefined) {
 	    $("#epv").html("&plusmn;"+Math.round(tpv.epv*m_to_ft)+"ft");
+	} else {
+		$("#epv").text("");
 	}
-	if (typeof tpv.speed != 'undefined') {
+	if (tpv.speed != undefined) {
 	    $("#speed").text(Math.round(tpv.speed*ms_to_mph));
+	} else {
+		$("#speed").text("");
 	}
-	if (typeof tpv.eps != 'undefined') {
+	if (tpv.eps != undefined) {
 	    $("#eps").html("&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph");
+	} else {
+		$("#eps").text("");
 	}
-	if (typeof tpv.odometer != 'undefined') {
+	if (tpv.odometer != undefined) {
 	    $("#odometer").text(tpv.odometer.toFixed(3)+"mi");
+	} else {
+		$("#odometer").text("");
 	}
-	if (typeof tpv.mode != 'undefined') {
+	if (tpv.mode != undefined) {
 	    $("#mode").text(tpv.mode + "D ");
+	} else {
+	    $("#mode").text("?D ");
 	}
-	if (typeof tpv.hold != 'undefined') {
+	if (tpv.hold != undefined) {
 	    if (tpv.hold == -1) {
 	        $("#hold").text("OFF");
 	    } else {
 	        $("#hold").text(tpv.hold);
 	    }
+	} else {
+	        $("#hold").text("OFF");
 	}
     });
 
@@ -124,30 +149,34 @@ function gps_stream(viewport, imagedata) {
 	draw_line(viewport, imagedata, cx, cy+45, cx, canvas.height, [0,0,0,255]);
 	draw_line(viewport, imagedata, cx, cy-45, cx, 0, [0,0,0,255]);
 
-	for (var i=0; i<sky.satellites.length; i++) {
-	    az = sky.satellites[i].az;
-	    el = 90 - sky.satellites[i].el;
-	    //console.log(az, el);
-	    az = az * deg_to_rad;
-	    if (sky.satellites[i].used) {
-	        used ++;
-		color = [0, 255, 0, 255];
-	    } else {
-	        color = [255, 0, 0, 255];
+	if (sky.satellites != undefined) {
+	  for (var i=0; i<sky.satellites.length; i++) {
+	      az = sky.satellites[i].az;
+	      el = 90 - sky.satellites[i].el;
+	      //console.log(az, el);
+	      az = az * deg_to_rad;
+	      if (sky.satellites[i].used) {
+	          used ++;
+		  color = [0, 255, 0, 255];
+	      } else {
+	          color = [255, 0, 0, 255];
+	      }
+
+	      x = el * Math.sin(az) + cx;
+	      y = el * Math.cos(az) + cy;
+
+	      draw_point(viewport, imagedata, x+1, y, color);
+	      draw_point(viewport, imagedata, x-1, y, color);
+	      draw_point(viewport, imagedata, x, y, color);
+	      draw_point(viewport, imagedata, x, y+1, color);
+	      draw_point(viewport, imagedata, x, y-1, color);
+
+	      draw_line(viewport, imagedata, 0.5*canvas.width, 0.5*canvas.height, x, y, color);
 	    }
-
-	    x = el * Math.sin(az) + cx;
-	    y = el * Math.cos(az) + cy;
-
-	    draw_point(viewport, imagedata, x+1, y, color);
-	    draw_point(viewport, imagedata, x-1, y, color);
-	    draw_point(viewport, imagedata, x, y, color);
-	    draw_point(viewport, imagedata, x, y+1, color);
-	    draw_point(viewport, imagedata, x, y-1, color);
-
-	    draw_line(viewport, imagedata, 0.5*canvas.width, 0.5*canvas.height, x, y, color);
+	  $("#gps_count").text(used + "/" + sky.satellites.length);
+	  context.putImageData(imagedata, 0, 0);
+	} else {
+	  $("#gps_count").text("?/?");
 	}
-	$("#gps_count").text(used + "/" + sky.satellites.length);
-	context.putImageData(imagedata, 0, 0);
     });
 }
