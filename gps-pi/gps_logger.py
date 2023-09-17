@@ -210,11 +210,14 @@ def gps_logger(output_directory):
                 obj = nmea.tpv_to_json(report)
 
                 # Update Odometer
-                if 'speed' in obj and \
-                    'eps' in obj and \
-                    obj['speed'] > obj['eps']:
-                    ODOMETER += ODIR * great_circle(last_pos, obj)
-                    last_pos = obj
+                if 'speed' in obj:
+                    if 'eps' in obj and obj['speed'] < obj['eps']:
+                        # Skip it... we might not be moving
+                        pass
+                    else:
+                        ODOMETER += ODIR * great_circle(last_pos, obj)
+                        last_pos = obj
+
 
                 # Add Sat Metrics
                 obj['num_sat'] = GPS_NUM_SAT
