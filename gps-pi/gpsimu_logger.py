@@ -144,6 +144,14 @@ MATCHES = [
         "pattern": re.compile(r"GET /gps/hold$"),
         "handler": handle_hold,
     },
+        {
+        "pattern": re.compile(r"GET /gps/odometer-reset$"),
+        "handler": handle_reset,
+    },
+    {
+        "pattern": re.compile(r"GET /gps/odometer-reverse$"),
+        "handler": handle_reverse,
+    },
     {
         "pattern": re.compile(r"GET /gps/tpv$"),
         "handler": handle_tpv,
