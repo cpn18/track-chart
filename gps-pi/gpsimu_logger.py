@@ -21,11 +21,13 @@ import witmotionjygpsimu as gps
 import nmea
 import util
 import geo
+from gps_common import update_odometer
 
 
 ALWAYS_LOG = True
 
 ATT = TPV = SKY = {}
+TPV_SYS_TIME = SKY_SYS_TIME = 0
 HOLD = -1
 MEMO = ""
 
@@ -34,18 +36,6 @@ GPS_NUM_USED = 0
 
 ODOMETER = 0.0
 ODIR = 1
-
-def great_circle(last, now):
-    """ Great Circle Calculation """
-    try:
-        return geo.great_circle(
-            last['lat'],
-            last['lon'],
-            now['lat'],
-            now['lon']
-        )
-    except KeyError:
-        return 0
 
 def do_json_output(self, output_dict):
     """ send back json text """
@@ -100,7 +90,7 @@ def handle_gps_stream(self, _groups, _qsdict):
     self.end_headers()
     try:
         while not util.DONE:
-            if 'time' in TPV and 'time' in SKY and TPV['time'] < SKY['time']:
+            if TPV_SYS_TIME < SKY_SYS_TIME:
                 output = "event: tpv\ndata: " + json.dumps(TPV) + "\n\nevent: sky\ndata: " + json.dumps(SKY) + "\n\n"
             else:
                 output = "event: sky\ndata: " + json.dumps(SKY) + "\n\nevent: tpv\ndata: " + json.dumps(TPV) + "\n\n"
@@ -112,7 +102,7 @@ def handle_gps_stream(self, _groups, _qsdict):
 
 def handle_gps(self, _groups, _qsdict):
     """ Single GPS """
-    if TPV['time'] < SKY['time']:
+    if TPV_SYS_TIME < SKY_SYS_TIME:
         do_json_output(self, [TPV, SKY])
     else:
         do_json_output(self, [SKY, TPV])
@@ -215,7 +205,7 @@ def _get_temp():
 
 def gpsimu_logger(output_directory):
     """ GPS Data Logger """
-    global SKY, TPV, ATT
+    global SKY, TPV, ATT, SKY_SYS_TIME, TPV_SYS_TIME
     global HOLD
     global GPS_NUM_SAT, GPS_NUM_USED
     global ODOMETER
@@ -253,15 +243,16 @@ def gpsimu_logger(output_directory):
                     if typeclass == "SKY":
                         (GPS_NUM_USED, GPS_NUM_SAT) = nmea.calc_used(obj)
                         SKY = obj
+                        SKY_SYS_TIME = time.time()
                     elif typeclass == "TPV":
+
                         # Update Odometer
-                        if 'speed' in obj:
-                            if 'eps' in obj and obj['speed'] < obj['eps']:
-                                # Skip it... we might not be moving
-                                pass
-                            else:
-                                ODOMETER += ODIR * great_circle(last_pos, obj)
-                                last_pos = obj
+                        ODOMETER, last_pos = update_odometer(
+                            ODOMETER,
+                            ODIR,
+                            last_pos,
+                            obj
+                        )
 
                         # Add Sat Metrics
                         obj['num_sat'] = GPS_NUM_SAT
@@ -270,6 +261,7 @@ def gpsimu_logger(output_directory):
                         obj['odometer'] = ODOMETER
                         obj['odir'] = ODIR
                         TPV = obj
+                        TPV_SYS_TIME = time.time()
 
                     # Log the Data
                     if 'time' in obj:

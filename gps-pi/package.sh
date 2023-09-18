@@ -14,6 +14,7 @@ files="adxl345.py \
     gpsimu_logger.py \
     gpsimu_logger.sh \
     witmotionjygpsimu.py \
+    gps_common.py \
     IMU.py \
     launcher.py \
     lidar_logger.py \
