@@ -30,6 +30,7 @@ ATT = TPV = SKY = {}
 TPV_SYS_TIME = SKY_SYS_TIME = 0
 HOLD = -1
 MEMO = ""
+SAMPLES = 0
 
 GPS_NUM_SAT = 0
 GPS_NUM_USED = 0
@@ -234,12 +235,12 @@ def gpsimu_logger(output_directory):
 
     config = util.read_config()
 
-    if 'pitch_adj' not in config['imu']:
-        config['imu']['pitch_adj'] = 0
-    if 'roll_adj' not in config['imu']:
-        config['imu']['roll_adj'] = 0
-    if 'yaw_adj' not in config['imu']:
-        config['imu']['yaw_adj'] = 0
+    if 'pitch_adj' not in config['gpsimu']:
+        config['gpsimu']['pitch_adj'] = 0
+    if 'roll_adj' not in config['gpsimu']:
+        config['gpsimu']['roll_adj'] = 0
+    if 'yaw_adj' not in config['gpsimu']:
+        config['gpsimu']['yaw_adj'] = 0
 
     # Create the output directory
     if not os.path.isdir(output_directory):
@@ -303,11 +304,11 @@ def gpsimu_logger(output_directory):
                                 "mag_x": acc['MAG'+config['gpsimu']['x']],
                                 "mag_y": acc['MAG'+config['gpsimu']['y']],
                                 "mag_z": acc['MAG'+config['gpsimu']['z']],
-                                "pitch": acc['ANG'+config['gpsimu']['x']] + config['imu']['pitch_adj'],
+                                "pitch": acc['ANG'+config['gpsimu']['x']] + config['gpsimu']['pitch_adj'],
                                 "pitch_st": "N",
-                                "roll": acc['ANG'+config['gpsimu']['y']] + config['imu']['roll_adj'],
+                                "roll": acc['ANG'+config['gpsimu']['y']] + config['gpsimu']['roll_adj'],
                                 "roll_st": "N",
-                                "yaw": acc['ANG'+config['gpsimu']['z']] + config['imu']['yaw_adj'],
+                                "yaw": acc['ANG'+config['gpsimu']['z']] + config['gpsimu']['yaw_adj'],
                                 "yaw_st": "N",
                                 "temp": acc['temp'],
                             }
@@ -320,17 +321,18 @@ def gpsimu_logger(output_directory):
                             obj["mag_st"] = "N"
 
                             if SAMPLES > 0:
-                                saved_pitch.append(cf_angle_x)
-                                saved_roll.append(cf_angle_y - 90)
-                                saved_yaw.append(cf_angle_y)
+                                saved_pitch.append(acc['ANG'+config['gpsimu']['x']])
+                                saved_roll.append(acc['ANG'+config['gpsimu']['y']])
+                                saved_yaw.append(acc['ANG'+config['gpsimu']['z']])
                                 SAMPLES -= 1
                             elif len(saved_pitch) > 0:
-                                config['imu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
-                                config['imu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
-                                config['imu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
+                                config['gpsimu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
+                                config['gpsimu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
+                                config['gpsimu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
                                 SAMPLES = 0
+                                saved_pitch = saved_roll = saved_yaw = []
                                 util.write_config(config)
-                                util.write_header(imu_output, config)`
+                                util.write_header(imu_output, config)
 
                             imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
                             imu_output.flush()

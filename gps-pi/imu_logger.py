@@ -204,6 +204,7 @@ def imu_logger(output_directory):
                 config['imu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
                 config['imu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
                 SAMPLES = 0
+                saved_pitch = saved_roll = saved_yaw = []
                 util.write_config(config)
                 util.write_header(imu_output, config)
 
