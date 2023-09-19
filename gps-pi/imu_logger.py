@@ -121,7 +121,6 @@ def imu_logger(output_directory):
     """ IMU Logger """
     global ATT
     global SAMPLES
-    global PITCH_ADJ, ROLL_ADJ, YAW_ADJ
 
     saved_pitch = []
     saved_roll = []
@@ -207,7 +206,6 @@ def imu_logger(output_directory):
                 SAMPLES = 0
                 util.write_config(config)
                 util.write_header(imu_output, config)
-
 
             # Log the output
             imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))

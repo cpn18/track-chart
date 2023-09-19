@@ -113,5 +113,6 @@ function imu_stream(viewport, imagedata) {
 	}
 
 	context.putImageData(imagedata, 0, 0);
+      $("#msg").html("&nbsp;");
     });
 }

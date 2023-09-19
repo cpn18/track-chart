@@ -57,6 +57,8 @@ function gps_stream(viewport, imagedata) {
 	}
 	if (tpv.eps != undefined) {
 	    $("#eps").html("&plusmn;"+Math.round(tpv.eps*ms_to_mph)+"mph");
+	} else {
+	    $("#eps").text("mph");
 	}
 	if (tpv.odometer != undefined) {
 		var mileage = tpv.odometer.toFixed(3);
