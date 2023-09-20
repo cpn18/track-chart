@@ -17,8 +17,12 @@ if [ "$_IP" ]; then
   printf "My IP address is %s\n" "$_IP"
 fi
 
-iptables-restore < /etc/iptables.ipv4.nat
+# Enable Network Address Translation
+if [ -f /etc/iptables.ipv4.natv ]; then
+  iptables-restore < /etc/iptables.ipv4.nat
+fi
 
-/root/gps-pi/log.sh &
+# Uncomment to start automatically
+#/root/gps-pi/log.sh &
 
 exit 0
