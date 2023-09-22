@@ -23,6 +23,13 @@ def export_to_csv(input_filename):
                 out.write(str(point['lat']) + "," + str(point['lon']) + ",")
                 out.write(point['metadata']['name'] + "/" + point['metadata']['alt_name'] + "\n")
 
+            if point['class'] == 'O':
+                if 'lat' in point:
+                    out.write(str(point['lat']) + "," + str(point['lon']) + ",")
+                else:
+                    out.write(",,")
+                out.write(str(point['mileage']) + "," + point['metadata'].get('name','') + "\n")
+
 if __name__ == "__main__":
     input_filename = sys.argv[1]
     export_to_csv(input_filename)
