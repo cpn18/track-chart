@@ -12,7 +12,11 @@ def survey_to_ft(survey):
     """
     Convert survey string to feet
     """
-    whole, feet = survey.split('+')
+    try:
+        whole, feet = survey.split('+')
+    except ValueError as ex:
+        print(survey)
+        raise ex
     return int(whole)*100 + float(feet)
 
 def ft_to_survey(feet):

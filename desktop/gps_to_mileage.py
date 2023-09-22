@@ -271,6 +271,29 @@ class Gps2Miles:
 
         return retval
 
+    def survey_to_mileage(self, survey):
+        survey_ft = util.survey_to_ft(survey)
+        i = 0
+        try:
+            while True:
+                while self.points[i]['class'] != "MP":
+                    i += 1
+                j = i + 1
+                while self.points[j]['class'] != "MP":
+                    j += 1
+
+                survey_ft_1 = self.points[i]['survey']
+                mileage_1 = self.points[i]['mileage']
+                survey_ft_2 = self.points[j]['survey']
+                mileage_2 = self.points[j]['mileage']
+                if survey_ft_1 <= survey_ft <= survey_ft_2:
+                    return mileage_1 + (mileage_2 - mileage_1) * (survey_ft - survey_ft_1) / (survey_ft_2 - survey_ft_1)
+                i = j
+        except IndexError:
+            pass
+
+        return None
+
 if __name__ == "__main__":
     try:
         filename = sys.argv[1]
