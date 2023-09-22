@@ -1,67 +1,106 @@
 #Type,Latitude,Longitude,Mileage,Description,
 #Magic Number between Boston and Sanbornville Mileage is 97.70
-- K - - 0 S '{"name": "Sanbornville", "offset": 0}' *
-- K - - 0 MP '{"name": "S0", "alt_name": "W12", "survey": "0+0"}' *
+- K - - 0.00 S '{"name": "Sanbornville", "offset": 0}' *
+- K - - 0.00 MP '{"name": "S0", "alt_name": "W12", "survey": "0+0"}' *
 - K - - 0.97 S '{"name": "Wakefield", "offset": 0}' *
 - K 43.563042 -71.041276 0.98 X '{"name": "White Mountain (845297T)"}' *
-- K - - 0.98 E *
-- K 43.563478 -71.041782 1 MP '{"name": "S1", "alt_name": "W11", "survey": "53+44.8", "val": "V04-6_02"}' *
-- K 43.566942 -71.04681 1.18 TL '{"name": "Wakefield/Brookfield"}' *
-- K 43.573819 -71.055427 2 MP '{"name": "S2", "alt_name": "W10", "survey": "106+16.0", "val": "V04-6_03"}' *
+- K - - 0.98 E '{}' *
+- K 43.563478 -71.041782 1.00 MP '{"name": "S1", "alt_name": "W11", "survey": "53+44.8", "val": "V04-6_02"}' *
+- K - - 1.10 O '{"survey": "58+89", "name": "Culv 98.81", "val": "V04-6_02"}' *
+- K - - 1.17 O '{"survey": "62+29", "name": "Culv 98.87", "val": "V04-6_02"}' *
+- K 43.566942 -71.04681 1.18 TL '{"name": "Wakefield/Brookfield", "survey": "76+83.2", "val": "V04_6_02"}' *
+- K - - 1.46 O '{"survey": "77+62", "name": "Culv 99.17", "val": "V04-6_02"}' *
+- K 43.573819 -71.055427 2.00 MP '{"name": "S2", "alt_name": "W10", "survey": "106+16.0", "val": "V04-6_03"}' *
 - K - - 2.04 S '{"name": "Brookfield", "offset": 0}' *
 - K 43.574309 -71.056023 2.05 X '{"name": "Clark Rd (845298A)", "survey": "108+54.6", "val": "V04-6_03"}' *
 - K 43.574773 -71.05647 2.09 O '{"name": "Pike Brook (99.79)", "survey": "110+84", "val": "V04-6_03"}' *
-- K 43.585201 -71.067623 3 MP '{"name": "S3", "alt_name": "W9", "survey": "158+87", "val": "V04-6_04"}' *
-- K 43.597058 -71.078355 4 MP '{"name": "S4", "alt_name": "W8", "survey": "211+47", "val": "V04-6_05"}' *
+- K - - 2.50 O '{"survey": "132+43", "name": "Culv 100.20", "val": "V04-6_03"}' *
+- K - - 2.87 O '{"survey": "152+07", "name": "Culv 100.53", "val": "V04-6_03"}' *
+- K 43.585201 -71.067623 3.00 MP '{"name": "S3", "alt_name": "W9", "survey": "158+87", "val": "V04-6_04"}' *
+- K - - 3.21 O '{"survey": "170+03", "name": "Culv 100.92", "val": "V04-6_04"}' *
+- K - - 3.25 O '{"survey": "171+91", "name": "Culv 100.95", "val": "V04-6_04"}' *
+- K - - 3.37 O '{"survey": "178+20", "name": "Culv 101.07", "val": "V04-6_04"}' *
+- K - - 3.44 O '{"survey": "181+90", "name": "Culv 101.14", "val": "V04-6_04"}' *
+- K - - 3.51 O '{"survey": "185+74", "name": "Culv 101.21", "val": "V04-6_04"}' *
+- K - - 3.91 O '{"survey": "206+95", "name": "Culv 101.61", "val": "V04-6_04"}' *
+- K - - 3.92 O '{"survey": "207+41", "name": "Culv 101.62", "val": "V04-6_04"}' *
+- K 43.597058 -71.078355 4.00 MP '{"name": "S4", "alt_name": "W8", "survey": "211+47", "val": "V04-6_05"}' *
+- K - - 4.37 O '{"survey": "230+86", "name": "Culv 102.06", "val": "V04-6_05"}' *
+- K - - 4.68 O '{"survey": "247+33", "name": "Culv 102.37", "val": "V04-6_05"}' *
+- K - - 4.94 O '{"survey": "260+92", "name": "Culv 102.63", "val": "V04-6_05"}' *
 - K 43.606223 -71.091933 4.94 TL '{"name": "Brookfield/Wolfeboro", "survey": "261+33.1", "val": "V04-6_05"}' *
-- K 43.606853 -71.092933 5 MP '{"name": "S5", "alt_name": "W7", "survey": "264+09", "val": "V04-6_06"}' *
+- K 43.606853 -71.092933 5.00 MP '{"name": "S5", "alt_name": "W7", "survey": "264+09", "val": "V04-6_06"}' *
+- K - - 5.18 O '{"survey": "273+72", "name": "Culv 102.87", "val": "V04-6_06"}' *
+- K - - 5.26 O '{"survey": "277+74", "name": "Culv 102.94", "val": "V04-6_06"}' *
+- K - - 5.66 O '{"survey": "298+93", "name": "Culv 103.35", "val": "V04-6_06"}' *
+- K - - 5.82 O '{"survey": "307+08", "name": "Culv 103.50", "val": "V04-6_06"}' *
 - K 43.61031 -71.108749 5.85 X '{"name": "Cotton Valley Rd (845299G)"}' *
 - K - - 5.85 CLF '{"start": 0, "end": 1}' *
-- K - - 5.99 CRT '{"start": 0, "end": 1}' *
 - K - - 5.87 ST '{"end": 5.98, "offset": 1}' *
 - K 43.610288 -71.10906 5.88 S '{"name": "Cotton Valley", "offset": 0}' *
-- K 43.610742 -71.111327 6 MP '{"name": "S6", "alt_name": "W6", "survey": "316+77.7", "val": "V04-6_06"}' *
+- K - - 5.96 O '{"survey": "314+50", "name": "Culv 103.64", "val": "V04-6_06"}' *
+- K - - 5.99 CRT '{"start": 0, "end": 1, "survey": "314+24", "val": "V04-6_06"}' *
+- K 43.610742 -71.111327 6.00 MP '{"name": "S6", "alt_name": "W6", "survey": "316+77.7", "val": "V04-6_06"}' *
+- K - - 6.19 O '{"survey": "327+02", "name": "Culv 103.88", "val": "V04-6_07"}' *
 - K 43.611744 -71.112957 6.21 X '{"name": ""}' *
+- K - - 6.26 O '{"survey": "330+49", "name": "Culv 103.95", "val": "V04-6_07"}' *
+- K - - 6.45 O '{"survey": "340+34", "name": "Culv 104.14", "val": "V04-6_07"}' *
 - K 43.615582 -71.123064 6.69 O '{"name": "Frost Brook"}' *
-- K 43.61597 -71.126754 6.80 O '{"name": "Frost Brook (104.50)"}' *
+- K - - 6.70 O '{"survey": "353+58", "name": "Culv 104.38", "val": "V04-6_07"}' *
+- K 43.61597 -71.126754 6.80 O '{"name": "Frost Brook (104.50)", "val": "V04-6_07"}' *
+- K - - 6.94 O '{"survey": "366+39", "name": "Culv 104.62", "val": "V04-6_07"}' *
 - K 43.61655 -71.128761 6.96 X '{"name": "Bryant Rd (845300Y)"}' *
-- K 43.616032 -71.129243 7 MP '{"name": "S7", "alt_name": "W5", "survey": "369+42.0", "val": "V04-6_07"}' *
-- K 43.617788 -71.140895 7.58 O '{"name": "Clay Pit Brook (105.28)"}' *
-- K 43.617841 -71.14875 8 MP '{"name": "S8", "alt_name": "W4", "survey": "422+05.1", "val": "V04-6_08"}' *
+- K 43.616032 -71.129243 7.00 MP '{"name": "S7", "alt_name": "W5", "survey": "369+42.0", "val": "V04-6_07"}' *
+- K - - 7.07 O '{"survey": "373+10", "name": "Culv 104.75", "val": "V04-6_08"}' *
+- K - - 7.20 O '{"survey": "379+76", "name": "Culv 104.88", "val": "V04-6_08"}' *
+- K - - 7.31 O '{"survey": "385+62", "name": "Culv 104.99", "val": "V04-6_08"}' *
+- K - - 7.43 O '{"survey": "392+16", "name": "Culv 105.13", "val": "V04-6_08"}' *
+- K - - 7.54 O '{"survey": "398+07", "name": "Culv 105.22", "val": "V04-6_08"}' *
+- K 43.617788 -71.140895 7.58 O '{"name": "Clay Pit Brook (105.28)", "survey": "401+23", "val": "V04-6_07"}' *
+- K 43.617841 -71.14875 8.00 MP '{"name": "S8", "alt_name": "W4", "survey": "422+05.1", "val": "V04-6_08"}' *
 - K 43.617966 -71.149306 8.02 X '{"name": "Tennis Ct Ln"}' *
 - K 43.617688 -71.156015 8.34 S '{"offset": 0, "name": "Ice House", "survey": "440+00", "val": "V04-6_09"}' *
-- K - - 8.46 O *
-- K 43.617364 -71.162353 8.66 O '{"name": "Wiley Brook (106.36)"}' *
-- K 43.616980 -71.165440 8.81 O *
+- K - - 8.46 O '{}' *
+- K - - 8.48 O '{"survey": "447+36", "name": "Culv 106.16", "val": "V04-6_09"}' *
+- K 43.617364 -71.162353 8.66 O '{"name": "Wiley Brook (106.36)", "survey": "458+11", "val": "V04-6_09"}' *
+- K 43.61698 -71.16544 8.81 O '{}' *
+- K - - 8.84 O '{"survey": "466+09", "name": "Culv 106.51", "val": "V04-6_09"}' *
 - K 43.616956 -71.165495 8.84 CLF '{"name": "(106.83)", "start": 0, "end": 1, "survey": "466+41", "val": "V04-6_09"}' *
 - K 43.616866 -71.165784 8.86 CLF '{"name": "", "start": 1, "end": 1}' *
 - K - - 8.86 ST '{"end": 8.89, "offset": 1}' *
 - K - - 8.87 ST '{"end": 8.89, "offset": 2}' *
 - K 43.616668 -71.166426 8.89 S '{"offset": -1, "name": "Fernald"}' *
 - K 43.616528 -71.166909 8.92 X '{"name": "Gov Wentworth (845301F)"}' *
-- K 43.615957 -71.168217 9 MP '{"name": "S9", "alt_name": "W3", "survey": "474+71"}' *
-- K 43.613834 -71.171381 9.19 O '{"name": "Fernald Brook (106.89)"}' *
+- K 43.615957 -71.168217 9.00 MP '{"name": "S9", "alt_name": "W3", "survey": "474+71"}' *
+- K - - 9.10 O '{"survey": "480+08.7", "name": "Culv", "val": "V04-6_10"}' *
+- K 43.613834 -71.171381 9.19 O '{"name": "Fernald Brook (106.89)", "survey": "486+08", "val": "V04-6_10"}' *
 - K 43.61148 -71.174727 9.42 X '{"name": "Kenney Shore Rd (845302M)"}' *
+- K - - 9.46 O '{"survey": "499+10", "name": "Culv 107.14", "val": "V04-6_10"}' *
+- K - - 9.66 O '{"survey": "509+28", "name": "Culv 107.33", "val": "V04-6_10"}' *
 - K 43.608381 -71.179363 9.72 X '{"name": "S Hodge Shore Rd (845303U)"}' *
-- K 43.60621 -71.18307 10 MP '{"name": "S10", "alt_name": "W2", "survey": "527+37"}' *
-- K 43.606077 -71.183311 10.01 O '{"name": "Hersey Brook (107.71)": "survey": "529+76", "val": "V4_6_11"}' *
+- K 43.60621 -71.18307 10.00 MP '{"name": "S10", "alt_name": "W2", "survey": "527+37"}' *
+- K 43.606077 -71.183311 10.01 O '{}' *
 - K 43.606625 -71.182394 10.09 X '{"name": "Hersey Point Rd (845304B)"}' *
 - K 43.605429 -71.184325 10.18 X '{"name": "Albee Beach Rd (845305H)"}' *
-- K 43.603556 -71.187206 10.27 O '{"name": "Harvey Brook (107.97)": "survey": "542+38", "val": "V4_6_11"}' *
+- K 43.603556 -71.187206 10.27 O '{}' *
 - K 43.603933 -71.186632 10.30 X '{"name": "Moose Point Rd (845306P)"}' *
 - K 43.602675 -71.188424 10.42 X '{"name": "Sandbox Dr (845307W)"}' *
+- K - - 10.65 O '{"survey": "561+82", "name": "Culv 108.33", "val": "V04-6_11"}' *
 - K - - 10.66 S '{"name": "Lake Wentworth", "offset": 0}' *
+- K - - 10.87 O '{"survey": "573+19", "name": "Culv 108.55", "val": "V04-6_11"}' *
 - K 43.597409 -71.195434 10.88 X '{"name": "Whitten Neck Rd (845308D)"}' *
-- K 43.59612 -71.19723 11 MP '{"name": "S11", "alt_name": "W1", "survey": "580+04"}' *
+- K 43.59612 -71.19723 11.00 MP '{"name": "S11", "alt_name": "W1", "survey": "580+04", "val": "V04-6_11"}' *
+- K - - 11.13 O '{"survey": "586+66", "name": "Culv 108.81", "val": "V04-6_12"}' *
 - K - - 11.17 X '{"name": "(845309K)"}' *
 - K 43.593392 -71.200885 11.23 X '{"name": "Silver St/Mast Landing (845310E)"}' *
+- K - - 11.25 O '{"survey": "593+32", "name": "Culv 108.93", "val": "V04-6_12"}' *
+- K - - 11.27 O '{"survey": "594+05", "name": "Culv 108.93", "val": "V04-6_12"}' *
 - K 43.590703 -71.203545 11.49 X '{"name": "River St (845311L)"}' *
-- K - - 11.60 E *
+- K - - 11.60 E '{}' *
 - K - - 11.60 S '{"offset": 1, "name": "Wolfeboro Falls"}' *
 - K 43.590427 -71.205971 11.60 X '{"name": "Center St (845312T)"}' *
 - K 43.589596 -71.206894 11.70 X '{"name": "Willow St (845313A)"}' *
 - K 43.586961 -71.211945 11.96 X '{"name": "Railroad Ave"}' *
 - K 43.585632 -71.212849 11.98 S '{"offset": 1, "name": "Wolfeboro"}' *
 - K 43.584492 -71.212873 11.99 X '{"name": "S Main St"}' *
-- K 43.58687 -71.21219 12 MP '{"name": "S12", "alt_name": "W0", "survey": "632+75.3"}' *
-- K - - 12.10 S '{"name": "Wolfeboro Lake", "offset": 0}' * 
+- K 43.58687 -71.21219 12.00 MP '{"name": "S12", "alt_name": "W0", "survey": "632+75.3"}' *
