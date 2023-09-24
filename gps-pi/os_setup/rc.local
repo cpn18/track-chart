@@ -23,6 +23,6 @@ if [ -f /etc/iptables.ipv4.natv ]; then
 fi
 
 # Uncomment to start automatically
-#/root/gps-pi/log.sh &
+#/root/gps-pi/launcher.sh &
 
 exit 0
