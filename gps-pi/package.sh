@@ -17,13 +17,13 @@ files="adxl345.py \
     gps_common.py \
     IMU.py \
     launcher.py \
+    launcher.sh \
     lidar_logger.py \
     lidar_logger.sh \
     hps_lidar_logger.py \
     hps_lidar_logger.sh \
     hps_3d_160_lidar.py \
     crc16.py \
-    log.sh \
     lpcm_collect.sh \
     lpcm_logger.py \
     lpcm_logger.sh \
