@@ -2,6 +2,7 @@
 import sys
 import math
 import json
+import base64
 from PIL import Image, ImageDraw, ImageOps
 
 import pirail
@@ -12,7 +13,7 @@ WIDTH=160
 HEIGHT=60
 SCALE=2
 
-MIN_SPEED = 0.0
+MIN_SPEED = -10.0
 
 GREYSCALE = False
 
@@ -110,7 +111,21 @@ def main(filename):
             if 'depth' not in obj:
                 continue
 
-            report = plot(obj['depth'], slice_count)
+            if isinstance(obj['depth'], str):
+                # Convert from Base64 to Array of Short Int
+                raw_string = base64.b64decode(obj['depth'])
+                depth = []
+                for row in range(0, HEIGHT):
+                    depth_row = []
+                    for col in range(0, WIDTH):
+                        index = 2*(row*WIDTH+col)
+                        depth_row.append(raw_string[index] + raw_string[index+1] * 256)
+                    depth.append(depth_row)
+                report = plot(depth, slice_count)
+
+            else:
+                # Legacy JSON array
+                report = plot(obj['depth'], slice_count)
 
             slice_count += 1
 
