@@ -8,6 +8,7 @@ import signal
 import datetime
 import json
 import serial
+import base64
 
 import crc16
 
@@ -260,7 +261,7 @@ class Hps3DLidar():
         if len(header) != 2:
             return None
         if header != b'\xf5\x5f':
-            raise Exception("Bad Header")
+            raise Exception("Bad Header: " + str(header))
         length = self.ser.read(2)
         data = self.ser.read(bytes_to_short(length)-4)
         crc = self.ser.read(2)
@@ -334,7 +335,7 @@ class Hps3DLidar():
             #time.sleep(1)
         return retval
 
-    def decode_detailed(self, data):
+    def decode_detailed(self, data, encode_base64=True):
         """
         Decode Detailed Data Frame
         """
@@ -352,13 +353,16 @@ class Hps3DLidar():
             'depth': [],
         }
         index = 30
-        for row in range(Hps3DLidar.HEIGHT):
-            depth_array = []
-            for pixel in range(Hps3DLidar.WIDTH):
-                depth = bytes_to_short(data[index:index+2])
-                index += 2
-                depth_array.append(depth)
-            retval['depth'].append(depth_array)
+        if encode_base64:
+            retval['depth'] = base64.b64encode(data[index:index+Hps3DLidar.HEIGHT*Hps3DLidar.WIDTH*2]).decode('ascii')
+        else:
+            for row in range(Hps3DLidar.HEIGHT):
+                depth_array = []
+                for pixel in range(Hps3DLidar.WIDTH):
+                    depth = bytes_to_short(data[index:index+2])
+                    index += 2
+                    depth_array.append(depth)
+                retval['depth'].append(depth_array)
         return retval
 
 

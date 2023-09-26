@@ -99,8 +99,8 @@ def lidar_logger(output_directory):
             with open(os.path.join(output_directory,timestamp+"_lidar.csv"), "w") as lidar_output:
                 util.write_header(lidar_output, config)
                 lidar = hps.Hps3DLidar(port_name, 0, lidar_output)
-                print(lidar.read_version())
-                print(lidar.read_serial())
+                #print(lidar.read_version())
+                #print(lidar.read_serial())
 
                 while True:
                     lidar.set_working_mode(hps.Hps3DLidar.MODE_SINGLE)
