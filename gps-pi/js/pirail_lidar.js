@@ -201,31 +201,70 @@ function lidar_update_3d(name, imagedata, obj) {
 	var context = canvas.getContext("2d");
 	max_value = 0;
 	min_value = 99999;
-	for (var row=0; row < obj.depth.length; row++) {
-		for (var col=0; col < obj.depth[row].length; col++) {
-			value = obj.depth[row][col];
-			if (is_valid(value)) {
-				if (value > max_value) {
-					max_value = value;
-				}
-				if (value < min_value) {
-					min_value = value;
+	if (typeof(obj.depth) == 'string') {
+		rawString = atob(obj.depth);
+		depth = new Uint8Array(rawString.length);
+		for (var i=0; i<rawString.length; i++) {
+			depth[i] = rawString.charCodeAt(i);
+		}
+		for (var row=0; row < 60; row++) {
+			for (var col=0; col < 160; col++) {
+				index = 2*(row*160+col);
+				value = depth[index] + depth[index+1] * 256;
+				console.log(value);
+				if (is_valid(value)) {
+					if (value > max_value) {
+						max_value = value;
+					}
+					if (value < min_value) {
+						min_value = value;
+					}
 				}
 			}
 		}
-	}
-	for (var row=0; row < obj.depth.length; row++) {
-		for (var col=0; col < obj.depth[row].length; col++) {
-			value = obj.depth[row][col];
-			if (is_valid(value)) {
-				value = parseInt(spectrum_length * (value - min_value) / (max_value-min_value));
-			 	color = spectrum[value];
-			} else if (value == 65400 || value == 65500) {
-			 	color = white;
-			} else {
-				color = black;
+		for (var row=0; row < 60; row++) {
+			for (var col=0; col < 160; col++) {
+				index = 2*(row*160+col);
+				value = depth[index] + depth[index+1] * 256;
+				if (is_valid(value)) {
+					cindex = parseInt(spectrum_length * (value - min_value) / (max_value-min_value));
+			 		color = spectrum[cindex];
+				} else if (value == 65400 || value == 65500) {
+			 		color = white;
+				} else {
+					color = black;
+				}
+				console.log(color);
+				quad_point(name, imagedata, col, row, color);
 			}
-			quad_point(name, imagedata, col, row, color);
+		}
+	} else {
+		for (var row=0; row < obj.depth.length; row++) {
+			for (var col=0; col < obj.depth[row].length; col++) {
+				value = obj.depth[row][col];
+				if (is_valid(value)) {
+					if (value > max_value) {
+						max_value = value;
+					}
+					if (value < min_value) {
+						min_value = value;
+					}
+				}
+			}
+		}
+		for (var row=0; row < obj.depth.length; row++) {
+			for (var col=0; col < obj.depth[row].length; col++) {
+				value = obj.depth[row][col];
+				if (is_valid(value)) {
+					value = parseInt(spectrum_length * (value - min_value) / (max_value-min_value));
+			 		color = spectrum[value];
+				} else if (value == 65400 || value == 65500) {
+			 		color = white;
+				} else {
+					color = black;
+				}
+				quad_point(name, imagedata, col, row, color);
+			}
 		}
 	}
 	// update the image
