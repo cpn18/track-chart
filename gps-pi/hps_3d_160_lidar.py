@@ -354,6 +354,8 @@ class Hps3DLidar():
         }
         index = 30
         if encode_base64:
+            retval['rows'] = Hps3DLidar.HEIGHT
+            retval['columns'] = Hps3DLidar.WIDTH
             retval['depth'] = base64.b64encode(data[index:index+Hps3DLidar.HEIGHT*Hps3DLidar.WIDTH*2]).decode('ascii')
         else:
             for row in range(Hps3DLidar.HEIGHT):
