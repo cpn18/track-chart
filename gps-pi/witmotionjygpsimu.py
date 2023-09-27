@@ -140,26 +140,97 @@ class WitMotionJyGpsImu():
         #ser.flush()
         while not event.isSet():
             s = ser.read(1)
-            if s == b'\x55':
-                t = ser.read(1)
-                d = ser.read(8)
-                c = ser.read(1)
+            if s != b'\x55':
+                continue
 
-                chksum = s[0] + t[0]
-                for i in d:
-                    chksum += i
-                chksum %= 256
+            t = ser.read(1)
+            d = ser.read(8)
+            c = ser.read(1)
 
-                if int.from_bytes(c,"little") != chksum:
-                    #print("chksum bad")
-                    pass
-                else:
-                    #print("chksum ok")
-                    self.decode(s,t,d,c)
+            chksum = s[0] + t[0]
+            for i in d:
+                chksum += i
+            chksum %= 256
+
+            if int.from_bytes(c,"little") == chksum:
+                #print("chksum ok")
+                self.decode(s,t,d,c)
             else:
-                #print(s.hex())
+                #print("chksum bad")
                 pass
+
         ser.close()
+
+    def get_sky(self):
+        sky = {
+            'class': 'SKY',
+        }
+        try:
+            sky.update({
+                'device': self.gpsimu['device'],
+                'time': self.gpsimu['time'],
+                'pdop': self.gpsimu['pdop'],
+                'hdop': self.gpsimu['hdop'],
+                'vdop': self.gpsimu['vdop'],
+                'nSat': self.gpsimu['sn'],
+                'uSat': self.gpsimu['sn'],
+                'satellites': [{'used': True}] * self.gpsimu['sn'],
+            })
+        except KeyError:
+            pass
+        return sky
+
+    def get_tpv(self):
+        tpv = {
+            'class': 'TPV',
+            'mode': 0,
+            'status': 0,
+        }
+        try:
+            tpv.update({
+                'device': self.gpsimu['device'],
+                'time': self.gpsimu['time'],
+                'lat': self.gpsimu['lat'],
+                'lon': self.gpsimu['lon'],
+                'alt': self.gpsimu['alt'],
+                'track': self.gpsimu['track'],
+                'speed': self.gpsimu['speed'],
+            })
+            if 'sn' in self.gpsimu:
+                tpv['status'] = 1
+                if self.gpsimu['sn'] > 0:
+                    tpv['mode'] = min(3, self.gpsimu['sn'])
+                else:
+                    tpv['mode'] = 1
+        except KeyError:
+            pass
+        return tpv
+
+    def get_att(self):
+        att = {
+            'class': 'ATT',
+        }
+        try:
+            att.update({
+                'device': self.imu_device,
+                'time': self.gpsimu['time'],
+                'ACCx': self.gpsimu['ACCx'],
+                'ACCy': self.gpsimu['ACCy'],
+                'ACCz': self.gpsimu['ACCz'],
+                'GYRx': self.gpsimu['GYRx'],
+                'GYRy': self.gpsimu['GYRy'],
+                'GYRz': self.gpsimu['GYRz'],
+                'MAGx': self.gpsimu['MAGx'],
+                'MAGy': self.gpsimu['MAGy'],
+                'MAGz': self.gpsimu['MAGz'],
+                'ANGx': self.gpsimu['ANGx'],
+                'ANGy': self.gpsimu['ANGy'],
+                'ANGz': self.gpsimu['ANGz'],
+                'temp': self.gpsimu['temp'],
+            })
+        except KeyError:
+            pass
+        return att
 
     def next(self):
         """ Yield the Next Result """
@@ -176,61 +247,13 @@ class WitMotionJyGpsImu():
                         last_lon = self.gpsimu['lon']
                         last_alt = self.gpsimu['alt']
 
-                        sky = {
-                            'class': 'SKY',
-                            'time': self.gpsimu['time'],
-                            'device': self.gpsimu['device'],
-                            'pdop': self.gpsimu['pdop'],
-                            'hdop': self.gpsimu['hdop'],
-                            'vdop': self.gpsimu['vdop'],
-                            'nSat': self.gpsimu['sn'],
-                            'uSat': self.gpsimu['sn'],
-                            'satellites': [{'used': True}] * self.gpsimu['sn'],
-                        }
+                        sky = self.get_sky()
                         yield_data.append((sky['time'], "SKY", sky))
 
-                        tpv = {
-                            'class': 'TPV',
-                            'device': self.gpsimu['device'],
-                            'mode': 0,
-                            'status': 0,
-                            'time': self.gpsimu['time'],
-                            'lat': self.gpsimu['lat'],
-                            'lon': self.gpsimu['lon'],
-                            'alt': self.gpsimu['alt'],
-                            'track': self.gpsimu['track'],
-                            'speed': self.gpsimu['speed'],
-                        }
-                        if 'sn' in self.gpsimu:
-                            tpv['status'] = 1
-                            if self.gpsimu['sn'] > 0:
-                                tpv['mode'] = min(3, self.gpsimu['sn']) 
-                            else:
-                                tpv['mode'] = 1
-
+                        tpv = self.get_tpv()
                         yield_data.append((tpv['time'], "TPV", tpv))
 
-                    att = {
-                        'class': 'ATT',
-                        'device': self.imu_device,
-                        'time': self.gpsimu['time'],
-                        'ACCx': self.gpsimu['ACCx'],
-                        'ACCy': self.gpsimu['ACCy'],
-                        'ACCz': self.gpsimu['ACCz'],
-                        'GYRx': self.gpsimu['GYRx'],
-                        'GYRy': self.gpsimu['GYRy'],
-                        'GYRz': self.gpsimu['GYRz'],
-                        'MAGx': self.gpsimu['MAGx'],
-                        'MAGy': self.gpsimu['MAGy'],
-                        'MAGz': self.gpsimu['MAGz'],
-                        'ANGx': self.gpsimu['ANGx'],
-                        'ANGy': self.gpsimu['ANGy'],
-                        'ANGz': self.gpsimu['ANGz'],
-                        'temp': self.gpsimu['temp'],
-                        #'lat': self.gpsimu['lat'],
-                        #'lon': self.gpsimu['lon'],
-                        #'alt': self.gpsimu['alt'],
-                    }
+                    att = self.get_att()
                     yield_data.append((att['time'], "ATT", att))
                     yield yield_data
             else:
@@ -241,12 +264,18 @@ if __name__ == "__main__":
 
     try:
         count=0
-        for lines in W.next():
-            for line in lines:
-                print("%s %s %s *" % (line[0], line[1], line[2]))
+        #for lines in W.next():
+        #    for line in lines:
+        #        print("%s %s %s *" % (line[0], line[1], line[2]))
+        #    count += 1
+        #    if count > 50:
+        #        break
+        while True:
+            print(W.get_sky())
+            print(W.get_tpv())
+            print(W.get_att())
             count += 1
-            if count > 50:
-                break
+            time.sleep(1)
     except KeyboardInterrupt:
         pass
 
