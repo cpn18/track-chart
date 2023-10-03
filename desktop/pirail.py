@@ -43,7 +43,7 @@ def parse_cmd_line_args():
             i += 1
     return args
 
-def read(filename, handlers=None, classes=None, args=None):
+def read(filename, handlers=None, classes=None, args=None, raw=False):
     """
     Read File
         filename = name of JSON files, or URL
@@ -152,7 +152,9 @@ def read(filename, handlers=None, classes=None, args=None):
                 continue
 
         # Handle base64 LIDAR
-        if obj['class'] == "LIDAR3D" and isinstance(obj['depth'], str):
+        if not raw and \
+            obj['class'] == "LIDAR3D" and \
+            isinstance(obj['depth'], str):
             # Convert from Base64 to Array of Short Int
             raw_string = base64.b64decode(obj['depth'])
             depth = []
