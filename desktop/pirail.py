@@ -9,6 +9,7 @@ import datetime
 import sys
 import math
 import wave
+import base64
 import requests
 
 # Number of Satellites
@@ -149,6 +150,20 @@ def read(filename, handlers=None, classes=None, args=None):
                 continue
             if end_longitude is not None and obj['lon'] > end_longitude:
                 continue
+
+        # Handle base64 LIDAR
+        if obj['class'] == "LIDAR3D" and isinstance(obj['depth'], str):
+            # Convert from Base64 to Array of Short Int
+            raw_string = base64.b64decode(obj['depth'])
+            depth = []
+            index = 0
+            for _row in range(0, obj['rows']):
+                depth_row = []
+                for _col in range(0, obj['columns']):
+                    depth_row.append(raw_string[index] + raw_string[index+1] * 256)
+                    index += 2
+                depth.append(depth_row)
+            obj['depth'] = depth
 
         # Call the handler, or yield the result
         if handlers is not None:

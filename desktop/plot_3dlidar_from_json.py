@@ -111,22 +111,7 @@ def main(filename):
             if 'depth' not in obj:
                 continue
 
-            if isinstance(obj['depth'], str):
-                # Convert from Base64 to Array of Short Int
-                raw_string = base64.b64decode(obj['depth'])
-                depth = []
-                index = 0
-                for row in range(0, obj['rows']):
-                    depth_row = []
-                    for col in range(0, obj['columns']):
-                        depth_row.append(raw_string[index] + raw_string[index+1] * 256)
-                        index += 2
-                    depth.append(depth_row)
-                report = plot(depth, slice_count)
-
-            else:
-                # Legacy JSON array
-                report = plot(obj['depth'], slice_count)
+            report = plot(obj['depth'], slice_count)
 
             slice_count += 1
 
