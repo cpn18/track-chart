@@ -154,6 +154,7 @@ def read(filename, handlers=None, classes=None, args=None, raw=False):
         # Handle base64 LIDAR
         if not raw and \
             obj['class'] == "LIDAR3D" and \
+            'depth' in obj and \
             isinstance(obj['depth'], str):
             # Convert from Base64 to Array of Short Int
             raw_string = base64.b64decode(obj['depth'])
