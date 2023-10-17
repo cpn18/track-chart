@@ -13,6 +13,10 @@ class Gps2Miles:
 
     def __init__(self, known_points):
         self.points = []
+        self.min_lat = 99
+        self.max_lat = -99
+        self.min_lon = 180
+        self.max_lon = -180
         if known_points == "-":
             return
 
@@ -41,9 +45,15 @@ class Gps2Miles:
                     obj.update({'metadata': {}})
 
                 try:
+                    lat = float(line[2])
+                    lon = float(line[3])
+                    self.min_lat = min(self.min_lat, lat)
+                    self.max_lat = max(self.max_lat, lat)
+                    self.min_lon = min(self.min_lon, lon)
+                    self.max_lon = max(self.max_lon, lon)
                     obj.update({
-                        'lat': float(line[2]),
-                        'lon': float(line[3]),
+                        'lat': lat,
+                        'lon': lon,
                     })
                 except ValueError:
                     pass
