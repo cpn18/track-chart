@@ -97,7 +97,12 @@ def plot(data, slice_count):
 
             draw.point((xr, yr), color)
 
-    image.save("slices/slice_%08d.png" % slice_count)
+    title = "%08d" % slice_count
+    (x_size, y_size) = draw.textsize(title)
+    draw.rectangle((0,0,x_size+2,y_size+2), fill=spectrum.WHITE)
+    draw.text((1, 1), title, fill=spectrum.BLACK)
+
+    image.save("slices/slice_%s.png" % title)
 
 def main(filename):
     last_lat = last_lon = speed = 0
@@ -111,7 +116,7 @@ def main(filename):
             if 'depth' not in obj:
                 continue
 
-            report = plot(obj['depth'], slice_count)
+            report = plot(obj['depth'], obj['data_frame_counter'])
 
             slice_count += 1
 
