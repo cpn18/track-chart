@@ -36,11 +36,16 @@ for root, dirnames, filenames in os.walk(rootdir):
         if not (filename.endswith(".json") or filename.endswith("_gps.csv")):
             continue
         fullpathname = os.path.join(root,filename)
+        min_lat = 90
+        max_lat = -90
+        min_lon = 180
+        max_lon = -180
         with open(fullpathname) as infile:
             for line in infile:
+                line = line.strip()
                 try:
-                    if line[0] == "#":
-                        # Ignore comments
+                    if len(line) == 0 or line[0] == "#":
+                        # Ignore blank and comments
                         continue
                     elif line[0] == "{":
                         # New style JSON
@@ -61,13 +66,19 @@ for root, dirnames, filenames in os.walk(rootdir):
                     not 'lat' in obj:
                     continue
 
+                min_lat = min(min_lat, obj['lat'])
+                max_lat = max(max_lat, obj['lat'])
+                min_lon = min(min_lon, obj['lon'])
+                max_lon = max(max_lon, obj['lon'])
+
                 # Is the point inside a geo-fence?
                 place = contains(obj['lat'], obj['lon'])
                 if place is None:
                     continue
 
-                print(fullpathname, place)
+                if place != "office":
+                    print(fullpathname, place)
                 break
 
         if place is None:
-            print(fullpathname, "UNKNOWN")
+            print(fullpathname, "UNKNOWN", min_lat, min_lon, max_lat, max_lon)
