@@ -10,35 +10,73 @@ FILES = [
         ]
 
 def avg(data):
+    """ Average of the Dataset """
     return sum(data) / len(data)
 
 def avg_exclude_bounds(data):
+    """ Average after discarding the lowest and highest values """
     try:
         return avg(sorted(data)[1:-1])
     except ZeroDivisionError:
         return avg(data)
 
+def max_magnitude(data):
+    """ Returns the maximum magnitude of the dataset """
+    value = 0
+    for item in data:
+        if abs(item) > abs(value):
+            value = item
+    return value
 
-def downsample(data, function=avg, window=0.001):
+def delta(data):
+    """ Returns the difference between high and low """
+    return max(data) - min(data)
+
+def downsample(data, function=avg, window=0.01, stride=0.5):
+    """
+    Downsample the Data.
+
+    Function is any function takes an array of numbers, and returns one
+    Window is in miles... 0.01 is 52ft
+    Stride is a fraction of the Window, so .5 is half the window
+    """
     outdata = []
-    x = data[0]['x']
-    i = 0
-    y = []
-    while i < len(data):
-        if data[i]['x'] > x + window:
-            outdata.append({
-                "x": x,
-                "y": function(y)
-            })
-            y = [data[i]['y']]
-            x += window
-        else:
-            y.append(data[i]['y'])
-        i += 1
+
+    index_start = 0
+    while index_start < len(data):
+        window_start = data[index_start]['x']
+        window_end = window_start + window
+        next_stride = window_start + (window * stride)
+
+        # Slide across the window, build array of values
+        index = index_start
+        y = []
+        while index < len(data) and data[index]['x'] < window_end:
+            y.append(data[index]['y'])
+            index += 1
+
+        # Output one value
+        outdata.append({
+            "x": (window_start + window_end) / 2.0,
+            "y": function(y)
+        })
+
+        # Advance the window by one stride
+        while index_start < len(data) and data[index_start]['x'] < next_stride:
+            index_start += 1
+
     return outdata
 
+def build_axis(data):
+    """ Convert x/y object into two arrays """
+    xaxis = []
+    yaxis = []
+    for obj in data:
+        xaxis.append(obj['x'])
+        yaxis.append(obj['y'])
+    return xaxis, yaxis
 
-def plot_datasets(files, field):
+def plot_datasets(files, field, outbound=1, inbound=-1):
     fig, plots = plt.subplots(nrows=len(files), sharex=True)
 
     plot = 0
@@ -57,35 +95,34 @@ def plot_datasets(files, field):
             if obj['mileage'] > last_mileage:
                 # Outbound data
                 data.append({
-                    "y": -obj[field],
+                    "y": outbound * obj[field],
                     "x": obj['mileage']
                 })
             else:
                 # Inbound data
                 data.append({
-                    "y": obj[field],
+                    "y": inbound * obj[field],
                     "x": obj['mileage']
                 })
 
             last_mileage = obj['mileage']
 
+        data = sorted(data, key=lambda k: k['x'], reverse=False)
+
         # Sort by x axis values and Downsample
-        data = downsample(
-            sorted(data, key=lambda k: k['x'], reverse=False),
-            function=avg_exclude_bounds,
-            window=0.005
+        downdata = downsample(
+            data,
+            function=delta,
+            window=0.005,
+            stride=0.5,
         )
 
         # Build the arrays for PLT
-        xaxis = []
-        yaxis = []
-        for obj in data:
-            xaxis.append(obj['x'])
-            yaxis.append(obj['y'])
-        plots[plot].plot(xaxis,yaxis)
-
-        # Next
+        xaxis1, yaxis1 = build_axis(data)
+        xaxis2, yaxis2 = build_axis(downdata)
+        plots[plot].plot(xaxis1,yaxis1,xaxis2,yaxis2)
         plot += 1
+
 
 if __name__ == "__main__":
     plot_datasets(FILES, "roll")
