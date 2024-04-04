@@ -50,10 +50,12 @@ def calc_used(sky):
     if 'uSat' in sky and 'nSat' in sky:
         num_used = sky['uSat']
         num_sat = sky['nSat']
-    else:
+    elif 'satellites' in sky:
         num_sat = len(sky['satellites'])
         num_used = 0
         for i in range(num_sat):
             if sky['satellites'][i]['used'] is True:
                 num_used += 1
+    else:
+        num_used = num_sat = 0
     return (num_used, num_sat)
