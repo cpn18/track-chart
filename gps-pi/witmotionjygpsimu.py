@@ -277,6 +277,81 @@ class WitMotionJyGpsImu():
             pass
         return att
 
+    def next(self):
+        """ Yield the Next Result """
+        last_time = ""
+        last_lat = last_lon = last_alt = 0
+        while True:
+            if 'time' in self.gpsimu:
+                if last_time != self.gpsimu['time']:
+                    last_time = self.gpsimu['time']
+                    yield_data = []
+
+                    if self.gpsimu['lat'] != last_lat or self.gpsimu['lon'] != last_lon or self.gpsimu['alt'] != last_alt:
+                        last_lat = self.gpsimu['lat']
+                        last_lon = self.gpsimu['lon']
+                        last_alt = self.gpsimu['alt']
+
+                        sky = {
+                            'class': 'SKY',
+                            'time': self.gpsimu['time'],
+                            'device': self.gpsimu['device'],
+                            'pdop': self.gpsimu['pdop'],
+                            'hdop': self.gpsimu['hdop'],
+                            'vdop': self.gpsimu['vdop'],
+                            'nSat': self.gpsimu['nsat'],
+                            'uSat': self.gpsimu['usat'],
+                            'satellites': [{'used': True}] * self.gpsimu['usat'],
+                        }
+                        yield_data.append((sky['time'], "SKY", sky))
+
+                        tpv = {
+                            'class': 'TPV',
+                            'device': self.gpsimu['device'],
+                            'mode': 0,
+                            'status': 0,
+                            'time': self.gpsimu['time'],
+                            'lat': self.gpsimu['lat'],
+                            'lon': self.gpsimu['lon'],
+                            'alt': self.gpsimu['alt'],
+                            'track': self.gpsimu['track'],
+                            'speed': self.gpsimu['speed'],
+                        }
+                        if 'sn' in self.gpsimu:
+                            tpv['status'] = 1
+                            if self.gpsimu['usat'] > 0:
+                                tpv['mode'] = min(3, self.gpsimu['usat']) 
+                            else:
+                                tpv['mode'] = 1
+
+                        yield_data.append((tpv['time'], "TPV", tpv))
+
+                    att = {
+                        'class': 'ATT',
+                        'device': self.imu_device,
+                        'time': self.gpsimu['time'],
+                        'ACCx': self.gpsimu['ACCx'],
+                        'ACCy': self.gpsimu['ACCy'],
+                        'ACCz': self.gpsimu['ACCz'],
+                        'GYRx': self.gpsimu['GYRx'],
+                        'GYRy': self.gpsimu['GYRy'],
+                        'GYRz': self.gpsimu['GYRz'],
+                        'MAGx': self.gpsimu['MAGx'],
+                        'MAGy': self.gpsimu['MAGy'],
+                        'MAGz': self.gpsimu['MAGz'],
+                        'ANGx': self.gpsimu['ANGx'],
+                        'ANGy': self.gpsimu['ANGy'],
+                        'ANGz': self.gpsimu['ANGz'],
+                        'temp': self.gpsimu['temp'],
+                        #'lat': self.gpsimu['lat'],
+                        #'lon': self.gpsimu['lon'],
+                        #'alt': self.gpsimu['alt'],
+                    }
+                    yield_data.append((att['time'], "ATT", att))
+                    yield yield_data
+            else:
+                time.sleep(5)
+
 if __name__ == "__main__":
     config = {}
     with open("gpslog.csv", "w") as gpsout:
