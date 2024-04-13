@@ -129,7 +129,7 @@ def handle_imu(self, _groups, _qsdict):
 def handle_zero(self, _groups, _qsdict):
     """ Zero the IMU """
     global SAMPLES
-    SAMPLES = 100
+    SAMPLES = 15
     do_json_output(self, {"message": "Zeroing IMU..."})
 
 MATCHES = [
@@ -206,14 +206,6 @@ class MyHandler(BaseHTTPRequestHandler):
 
         self.send_error(http.client.NOT_FOUND, self.path)
 
-def _get_temp():
-    """ Get Device Temperature """
-    try:
-        with open("/sys/class/thermal/thermal_zone0/temp", "r") as temp:
-            return float(temp.read())/1000
-    except:
-        return 0.0
-
 def gpsimu_logger(output_directory):
     """ GPS Data Logger """
     global SKY, TPV, SKY_SYS_TIME, TPV_SYS_TIME
@@ -246,9 +238,6 @@ def gpsimu_logger(output_directory):
     if not os.path.isdir(output_directory):
         os.mkdir(output_directory)
 
-    # Listen
-    session = gps.WitMotionJyGpsImu(config['gpsimu']['serial'])
-
     # Open the output file
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
     with open(os.path.join(output_directory,timestamp+"_gps.csv"), "w") as gps_output, \
@@ -257,119 +246,78 @@ def gpsimu_logger(output_directory):
         util.write_header(gps_output, config)
         util.write_header(imu_output, config)
 
+        # Listen
+        session = gps.WitMotionJyGpsImu(
+            config['gpsimu']['serial'],
+            gps_output, imu_output, config
+        )
+
         while not util.DONE:
-            # GPS
-            report = session.next()
-            # To see all report data, uncomment the line below
-            #print(report)
-            for lines in report:
-                for timestamp, typeclass, obj in lines:
-                    if typeclass == "SKY":
-                        (GPS_NUM_USED, GPS_NUM_SAT) = nmea.calc_used(obj)
-                        SKY = obj
-                        SKY_SYS_TIME = time.time()
-                    elif typeclass == "TPV":
+            time.sleep(1)
 
-                        # Update Odometer
-                        ODOMETER, last_pos = update_odometer(
-                            ODOMETER,
-                            ODIR,
-                            last_pos,
-                            obj
-                        )
+            SKY = session.get_sky()
+            (GPS_NUM_USED, GPS_NUM_SAT) = nmea.calc_used(SKY)
+            SKY_SYS_TIME = time.time()
+            TPV = session.get_tpv()
+            ATT = session.get_att()
+            # Update Odometer
+            ODOMETER, last_pos = update_odometer(
+                ODOMETER,
+                ODIR,
+                last_pos,
+                TPV
+            )
+            TPV['num_sat'] = GPS_NUM_SAT
+            TPV['num_used'] = GPS_NUM_USED
+            TPV['hold'] = HOLD
+            TPV['odometer'] = ODOMETER
+            TPV['odir'] = ODIR
+            TPV_SYS_TIME = time.time()
 
-                        # Add Sat Metrics
-                        obj['num_sat'] = GPS_NUM_SAT
-                        obj['num_used'] = GPS_NUM_USED
-                        obj['hold'] = HOLD
-                        obj['odometer'] = ODOMETER
-                        obj['odir'] = ODIR
-                        TPV = obj
-                        TPV_SYS_TIME = time.time()
+            if SAMPLES > 0:
+                saved_pitch.append(ATT['pitch'])
+                saved_roll.append(ATT['roll'])
+                saved_yaw.append(ATT['yaw'])
+                SAMPLES -= 1
+            elif len(saved_pitch) > 0:
+                config['gpsimu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
+                config['gpsimu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
+                config['gpsimu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
+                SAMPLES = 0
+                saved_pitch = saved_roll = saved_yaw = []
+                util.write_config(config)
+                util.write_header(imu_output, config)
+                session.update_config(config)
 
-                    # Log the Data
-                    if 'time' in obj:
-                        if typeclass == "ATT":
-                            acc = obj
-                            obj = {
-                                "class": "ATT",
-                                "device": acc['device'],
-                                "time": acc['time'],
-                                "acc_x": acc['ACC'+config['gpsimu']['x']],
-                                "acc_y": acc['ACC'+config['gpsimu']['y']],
-                                "acc_z": acc['ACC'+config['gpsimu']['z']],
-                                "gyro_x": acc['GYR'+config['gpsimu']['x']],
-                                "gyro_y": acc['GYR'+config['gpsimu']['y']],
-                                "gyro_z": acc['GYR'+config['gpsimu']['z']],
-                                "mag_x": acc['MAG'+config['gpsimu']['x']],
-                                "mag_y": acc['MAG'+config['gpsimu']['y']],
-                                "mag_z": acc['MAG'+config['gpsimu']['z']],
-                                "pitch": acc['ANG'+config['gpsimu']['x']] + config['gpsimu']['pitch_adj'],
-                                "pitch_st": "N",
-                                "roll": acc['ANG'+config['gpsimu']['y']] + config['gpsimu']['roll_adj'],
-                                "roll_st": "N",
-                                "yaw": acc['ANG'+config['gpsimu']['z']] + config['gpsimu']['yaw_adj'],
-                                "yaw_st": "N",
-                                "temp": acc['temp'],
-                            }
-                            # Calculate Heading
-                            obj['heading'] = (math.degrees(math.atan2(obj['mag_y'], obj['mag_x'])) - 90) % 360.0
+            # Short Circuit the rest of the checks
+            if HOLD == -1:
+                continue
 
-                            # Calculate vector length
-                            obj["acc_len"] = math.sqrt(obj['acc_x']**2+obj['acc_y']**2+obj['acc_z']**2)
-                            obj["mag_len"] = math.sqrt(obj['mag_x']**2+obj['mag_y']**2+obj['mag_z']**2)
-                            obj["mag_st"] = "N"
-
-                            if SAMPLES > 0:
-                                saved_pitch.append(acc['ANG'+config['gpsimu']['x']])
-                                saved_roll.append(acc['ANG'+config['gpsimu']['y']])
-                                saved_yaw.append(acc['ANG'+config['gpsimu']['z']])
-                                SAMPLES -= 1
-                            elif len(saved_pitch) > 0:
-                                config['gpsimu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
-                                config['gpsimu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
-                                config['gpsimu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
-                                SAMPLES = 0
-                                saved_pitch = saved_roll = saved_yaw = []
-                                util.write_config(config)
-                                util.write_header(imu_output, config)
-
-                            imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
-                            imu_output.flush()
-                            ATT = obj
-                        elif typeclass in ["TPV", "SKY"]:
-                            gps_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
-                            gps_output.flush()
-
-                    # Short Circuit the rest of the checks
-                    if HOLD == -1:
-                        continue
-
-                    if obj['class'] == 'TPV' and 'lat' in obj and 'lon' in obj and 'time' in obj:
-                        if HOLD > 0:
-                            hold_lat.append(obj['lat'])
-                            hold_lon.append(obj['lon'])
-                            if 'alt' in obj:
-                                hold_alt.append(obj['alt'])
-                            HOLD -= 1
-                        elif HOLD == 0:
-                            with open(os.path.join(output_directory,timestamp+"_marks.csv"), "a") as mark:
-                                mark_obj = {
-                                    "class": "MARK",
-                                    "lat": statistics.mean(hold_lat),
-                                    "lon": statistics.mean(hold_lon),
-                                    "nSat": GPS_NUM_SAT,
-                                    "uSat": GPS_NUM_USED,
-                                    "time": obj['time'],
-                                    "memo": MEMO,
-                                }
-                                if len(hold_alt) > 0:
-                                    mark_obj['alt'] = statistics.mean(hold_alt)
-                                mark.write("%s %s %s *\n" % (mark_obj['time'], mark_obj['class'], json.dumps(mark_obj)))
-                            hold_lat = []
-                            hold_lon = []
-                            hold_alt = []
-                            HOLD = -1
+            if 'lat' in TPV and 'lon' in TPV and 'time' in TPV:
+                if HOLD > 0:
+                    hold_lat.append(TPV['lat'])
+                    hold_lon.append(TPV['lon'])
+                    if 'alt' in TPV:
+                        hold_alt.append(TPV['alt'])
+                    HOLD -= 1
+                elif HOLD == 0:
+                    with open(os.path.join(output_directory,timestamp+"_marks.csv"),"a") as mark:
+                        mark_obj = {
+                            "class": "MARK",
+                            "lat": statistics.mean(hold_lat),
+                            "lon": statistics.mean(hold_lon),
+                            "nSat": GPS_NUM_SAT,
+                            "uSat": GPS_NUM_USED,
+                            "time": TPV['time'],
+                            "memo": MEMO,
+                        }
+                        if len(hold_alt) > 0:
+                            mark_obj['alt'] = statistics.mean(hold_alt)
+                        mark.write("%s %s %s *\n" % (mark_obj['time'], mark_obj['class'], json.dumps(mark_obj)))
+                        hold_lat = []
+                        hold_lon = []
+                        hold_alt = []
+                        HOLD = -1
 
 def gpsimu_logger_wrapper(output_directory):
     """ Wrapper Around GPS Logger Function """
