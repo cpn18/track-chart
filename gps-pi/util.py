@@ -74,3 +74,11 @@ def write_header(filehandle, config):
     """ Common Routine to Output Configuation Information """
     filehandle.write("%s %s %s *\n" % (config['time'], "VERSION", json.dumps({"class": "VERSION", "version": DATA_API})))
     filehandle.write("%s %s %s *\n" % (config['time'], config['class'], json.dumps(config)))
+
+def get_cpu_temp():
+    """ Get Device Temperature """
+    try:
+        with open("/sys/class/thermal/thermal_zone0/temp", "r") as temp:
+            return float(temp.read())/1000
+    except:
+        return 0.0
