@@ -40,6 +40,7 @@ MIME_MAP = {
     ".html": "text/html",
     ".txt": "text/plain",
     ".js": "text/javascript",
+    ".css": "text/css",
     ".json": "application/json",
     "default": "application/octet-stream",
 }
