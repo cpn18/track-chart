@@ -15,6 +15,7 @@ import util
 
 DOCUMENT_MAP = {
     "/": "htdocs/index.html",
+    "/pirail.css": "htdocs/pirail.css",
     "/index.html": "htdocs/index.html",
     "/setup.html": "htdocs/setup.html",
     "/gps.html": "htdocs/gps.html",
