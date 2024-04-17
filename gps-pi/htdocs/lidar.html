@@ -6,6 +6,7 @@
 	<script type="text/javascript" src="/jquery.js"></script>
 	<script type="text/javascript" src="/pirail_lidar.js"></script>
 	<script type="text/javascript" src="/pirail_draw.js"></script>
+	<link rel="stylesheet" href="/pirail.css">
 </head>
 <body>
 <h1>LIDAR</h1>
@@ -17,9 +18,9 @@
 <!-- <button onclick="window.location.href='/lidar.html'">&#x26a1;LIDAR</button> --!>
 <button onclick="window.location.href='/lpcm.html'">&#x1f3a4;LPCM</button>
 <table>
-<tr><td id="msg">Loading...</td></tr>
-<tr><td align="left">LIDAR:</td><td id="lidar_status"></td><td></td></tr>
-<tr><td><canvas id="viewport" width="512" height="512"></canvas></td></tr>
+<tr><td id="msg" colspan=2>Loading...</td></tr>
+<tr><td align="left">LIDAR:</td><td id="lidar_status" align="right"></td></tr>
+<tr><td colspan=2><canvas id="viewport" width="512" height="512"></canvas></td></tr>
 </table>
 <script>
     $(document).ready(function()
