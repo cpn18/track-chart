@@ -188,12 +188,20 @@ function is_valid(value) {
 	return true;
 }
 
-function quad_point(name, imagedata, x, y, color)
+function big_point(name, imagedata, x, y, color)
 {
-	draw_point(name, imagedata, 2*x, 2*y, color);
-	draw_point(name, imagedata, 2*x+1, 2*y, color);
-	draw_point(name, imagedata, 2*x, 2*y+1, color);
-	draw_point(name, imagedata, 2*x+1, 2*y+1, color);
+	// 2x2 point
+	draw_point(name, imagedata, 3*x, 3*y, color);
+	draw_point(name, imagedata, 3*x+1, 3*y, color);
+	draw_point(name, imagedata, 3*x, 3*y+1, color);
+	draw_point(name, imagedata, 3*x+1, 3*y+1, color);
+
+	// fill in the rest of the 3x3 area
+	draw_point(name, imagedata, 3*x, 3*y+2, black);
+	draw_point(name, imagedata, 3*x+1, 3*y+2, black);
+	draw_point(name, imagedata, 3*x+2, 3*y, black);
+	draw_point(name, imagedata, 3*x+2, 3*y+1, black);
+	draw_point(name, imagedata, 3*x+2, 3*y+2, black);
 }
 
 function lidar_update_3d(name, imagedata, obj) {
@@ -225,7 +233,7 @@ function lidar_update_3d(name, imagedata, obj) {
 			} else {
 				color = black;
 			}
-			quad_point(name, imagedata, col, row, color);
+			big_point(name, imagedata, col, row, color);
 		}
 	}
 	// update the image
