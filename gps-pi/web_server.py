@@ -189,10 +189,12 @@ class MyHandler(BaseHTTPRequestHandler):
             else:
                 if CONFIG['gps']['enable']:
                     port = CONFIG['gps']['port']
+                    host = CONFIG['gps']['host']
                 else:
                     port = CONFIG['gpsimu']['port']
+                    host = CONFIG['gpsimu']['host']
                 self.mini_proxy(
-                    "http://localhost:%d%s" % (port, self.path),
+                    "http://%s:%d%s" % (host, port, self.path),
                 )
             return
 
@@ -203,10 +205,12 @@ class MyHandler(BaseHTTPRequestHandler):
             else:
                 if CONFIG['imu']['enable']:
                     port = CONFIG['imu']['port']
+                    host = CONFIG['imu']['host']
                 else:
                     port = CONFIG['gpsimu']['port']
+                    host = CONFIG['gpsimu']['host']
                 self.mini_proxy(
-                    "http://localhost:%d%s" % (port, self.path),
+                    "http://%s:%d%s" % (host, port, self.path),
                 )
             return
 
@@ -217,10 +221,12 @@ class MyHandler(BaseHTTPRequestHandler):
             else:
                 if CONFIG['lidar']['enable']:
                     port = CONFIG['lidar']['port']
+                    host = CONFIG['lidar']['host']
                 else:
                     port = CONFIG['hpslidar']['port']
+                    host = CONFIG['hpslidar']['host']
                 self.mini_proxy(
-                    "http://localhost:%d%s" % (port, self.path),
+                    "http://%s:%d%s" % (host, port, self.path),
                 )
             return
 
@@ -228,8 +234,10 @@ class MyHandler(BaseHTTPRequestHandler):
             if CONFIG['lpcm']['enable'] is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
+                port = CONFIG['lpcm']['port']
+                host = CONFIG['lpcm']['host']
                 self.mini_proxy(
-                    "http://localhost:%d%s" % (CONFIG['lpcm']['port'], self.path),
+                    "http://%s:%d%s" % (host, port, self.path),
                 )
             return
 

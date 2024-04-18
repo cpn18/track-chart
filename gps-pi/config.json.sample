@@ -1,11 +1,13 @@
 {
     "web": {
 	"cmd": ["web_server.sh", "%PORT%", "%OUTPUT_DIR%"],
+	"host": "localhost",
         "port": 80
     },
     "gps": {
 	"enable": true,
 	"cmd": ["gps_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
+	"host": "localhost",
         "port": 8080
     },
     "gpsimu": {
@@ -13,28 +15,33 @@
         "serial": "/dev/ttyUSB0",
 	"enable": false,
 	"cmd": ["gpsimu_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
+	"host": "localhost",
         "port": 8080
     },
     "imu": {
        	"x": "x", "y": "y", "z": "z",
 	"enable": true,
 	"cmd": ["imu_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
+	"host": "localhost",
         "port": 8081
     },
     "lidar": {
 	"enable": false,
 	"cmd": ["lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
+	"host": "localhost",
         "port": 8082
     },
     "hpslidar": {
 	"enable": false,
 	"cmd": ["hps_lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
+	"host": "localhost",
         "port": 8082
     },
     "lpcm": {
 	"enable": false,
 	"cmd": ["lpcm_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
         "arecord": "--format S16_LE --rate=44100 --channels=1 --duration=60",
+	"host": "localhost",
         "port": 8083
     }
 }
