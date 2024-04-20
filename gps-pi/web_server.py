@@ -2,7 +2,9 @@
 """
 Web Server
 """
-
+#pylint: disable=too-many-return-statements
+#pylint: disable=too-many-branches
+#pylint: disable=too-many-statements
 import os
 import sys
 import time
@@ -57,6 +59,12 @@ def get_sys_data():
     }
     return sys_data
 
+def check_enabled(configs):
+    """ Determine if enabled """
+    for config in configs:
+        if config['enable'] or config['host'] not in ['localhost', '127.0.0.1']:
+            return (config['host'], config['port'])
+    return False
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
@@ -183,61 +191,42 @@ class MyHandler(BaseHTTPRequestHandler):
             os.system("shutdown --reboot %s" % SHUTDOWN_DELAY)
 
         elif self.path.startswith("/gps/"):
-            if CONFIG['gps']['enable'] is False and \
-               CONFIG['gpsimu']['enable'] is False:
+            enabled = check_enabled([CONFIG['gps'], CONFIG['gpsimu']])
+            if enabled is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
-                if CONFIG['gps']['enable']:
-                    port = CONFIG['gps']['port']
-                    host = CONFIG['gps']['host']
-                else:
-                    port = CONFIG['gpsimu']['port']
-                    host = CONFIG['gpsimu']['host']
                 self.mini_proxy(
-                    "http://%s:%d%s" % (host, port, self.path),
+                    "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
                 )
             return
 
         elif self.path.startswith("/imu/"):
-            if CONFIG['imu']['enable'] is False and \
-               CONFIG['gpsimu']['enable'] is False:
+            enabled = check_enabled([CONFIG['imu'], CONFIG['gpsimu']])
+            if enabled is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
-                if CONFIG['imu']['enable']:
-                    port = CONFIG['imu']['port']
-                    host = CONFIG['imu']['host']
-                else:
-                    port = CONFIG['gpsimu']['port']
-                    host = CONFIG['gpsimu']['host']
                 self.mini_proxy(
-                    "http://%s:%d%s" % (host, port, self.path),
+                    "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
                 )
             return
 
         elif self.path.startswith("/lidar/"):
-            if CONFIG['lidar']['enable'] is False and \
-                CONFIG['hpslidar']['enable'] is False:
+            enabled = check_enabled([CONFIG['lidar'], CONFIG['hpslidar']])
+            if enabled is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
-                if CONFIG['lidar']['enable']:
-                    port = CONFIG['lidar']['port']
-                    host = CONFIG['lidar']['host']
-                else:
-                    port = CONFIG['hpslidar']['port']
-                    host = CONFIG['hpslidar']['host']
                 self.mini_proxy(
-                    "http://%s:%d%s" % (host, port, self.path),
+                    "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
                 )
             return
 
         elif self.path.startswith("/lpcm/"):
-            if CONFIG['lpcm']['enable'] is False:
+            enabled = check_enabled([CONFIG['lpcm']])
+            if enabled is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
-                port = CONFIG['lpcm']['port']
-                host = CONFIG['lpcm']['host']
                 self.mini_proxy(
-                    "http://%s:%d%s" % (host, port, self.path),
+                    "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
                 )
             return
 
