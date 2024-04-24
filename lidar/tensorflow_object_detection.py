@@ -1,3 +1,9 @@
+"""
+UNH Capstone Project Teams
+
+2024
+Jay Bazenas, Theo DiMambro, Will Morong
+"""
 # For running inference on the TF-Hub module.
 import tensorflow as tf
 import tensorflow_hub as hub
