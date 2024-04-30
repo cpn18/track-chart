@@ -5,6 +5,9 @@ Libraries to create railroad track charts
 
 # UNH Capstone Project Teams
 
+## 2024
+Jay Bazenas, Theo DiMambro, Will Morong
+
 ## 2023
 Matthew Cusack, Joshua Knauer, Luke Knedeisen
 

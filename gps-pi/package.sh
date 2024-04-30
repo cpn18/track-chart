@@ -36,6 +36,7 @@ files="adxl345.py \
     web_server.sh \
     util.py \
     htdocs \
+    css \
     js \
     os_setup"
 

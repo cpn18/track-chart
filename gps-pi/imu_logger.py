@@ -112,11 +112,6 @@ class MyHandler(BaseHTTPRequestHandler):
 
         self.send_error(http.client.NOT_FOUND, self.path)
 
-def _get_temp():
-    """ Get Device Temperature """
-    with open("/sys/class/thermal/thermal_zone0/temp", "r") as temp:
-        return float(temp.read())/1000
-
 def imu_logger(output_directory):
     """ IMU Logger """
     global ATT
@@ -165,7 +160,7 @@ def imu_logger(output_directory):
                 "mag_x": acc['MAG'+config['imu']['x']],
                 "mag_y": acc['MAG'+config['imu']['y']],
                 "mag_z": acc['MAG'+config['imu']['z']],
-                "temp": _get_temp(),
+                "temp": util.get_cpu_temp(),
             }
 
             delta_time = now - last_time

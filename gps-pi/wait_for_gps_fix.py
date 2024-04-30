@@ -70,7 +70,7 @@ def wait_for_timesync():
         # Listen on port 2947 (gpsd) of localhost
         session = gps.gps(mode=gps.WATCH_ENABLE)
     else:
-        session = gps.WitMotionJyGpsImu(config['gpsimu']['serial'])
+        session = gps.WitMotionJyGpsImu(config['gpsimu']['serial'], None, None, config)
 
     try:
         while True:
