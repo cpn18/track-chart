@@ -54,6 +54,7 @@ def get_sys_data():
     stat = os.statvfs(OUTPUT)
 
     sys_data = {
+        "output": OUTPUT,
         "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
         "sw_version": CONFIG['sw_version'],
     }

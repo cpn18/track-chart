@@ -189,6 +189,7 @@ function dashboard() {
         // console.log(event);
 	var sys = JSON.parse(event.data);
 	// console.log(lpcm);
+	$("#output").text(sys.output);
 	$("#used").text(sys.used_percent);
 	$("#sw_version").text(sys.sw_version);
 	sysStream.close();
