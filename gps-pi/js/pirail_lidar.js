@@ -216,7 +216,7 @@ function base64_to_bytes(inData, rows, cols)
 	index = 0;
 	for (var row=0; row < rows; row++) {
 		depthRow = [];
-		for (var col=0; col < columns; col++) {
+		for (var col=0; col < cols; col++) {
 			depthRow.push(outData[index] + outData[index+1] * 256);
 			index += 2;
 		}
