@@ -126,7 +126,7 @@ def read(filename, handlers=None, classes=None, args=None, raw=False):
 
         # Check Quality
         if 'num_used' in obj:
-            if obj['num_used'] < gps_threshold:
+            if obj['num_used'] < gps_threshold and obj['class'] != "MARK":
                 continue
 
         # Check Bounds
