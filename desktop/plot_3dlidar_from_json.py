@@ -42,10 +42,22 @@ def minmax(data):
 
     return (mind, maxd)
 
-def plot(data, slice_count):
+def plot(data, slice_count, mask=None):
 
     WIDTH = len(data[0])
     HEIGHT = len(data)
+
+    box_x_min = 9999
+    box_x_max = 0
+    box_y_min = 9999
+    box_y_max = 0
+
+    if mask is not None:
+        for point in mask:
+            box_y_min = min(box_y_min, point[0])
+            box_y_max = max(box_y_max, point[0])
+            box_x_min = min(box_x_min, point[1])
+            box_x_max = max(box_x_max, point[1])
 
     image = Image.new("RGB", (SCALE*WIDTH, SCALE*HEIGHT), "black")
     draw = ImageDraw.Draw(image)
@@ -74,7 +86,9 @@ def plot(data, slice_count):
             xr = SCALE*x
             yr = SCALE*y
 
-            if invalid_depth(depth):
+            if False and mask is not None and (x,y) not in mask:
+                color = spectrum.BLACK
+            elif invalid_depth(depth):
                 if depth in [65400, 65500]:
                     color = spectrum.WHITE
                 else:
@@ -96,6 +110,13 @@ def plot(data, slice_count):
                     color = (c,c,c)
 
             draw.point((xr, yr), color)
+
+    if mask is not None:
+        draw.line((mask[-1][1], mask[-1][0],box_x_max,box_y_max), fill=spectrum.WHITE)
+        draw.line((mask[-1][1], mask[-1][0],box_x_max,box_y_min), fill=spectrum.WHITE)
+        draw.line((mask[-1][1], mask[-1][0],box_x_min,box_y_max), fill=spectrum.WHITE)
+        draw.line((mask[-1][1], mask[-1][0],box_x_min,box_y_min), fill=spectrum.WHITE)
+        draw.rectangle((box_x_min, box_y_min,box_x_max,box_y_max), outline=spectrum.WHITE)
 
     title = "%08d" % slice_count
     (x_size, y_size) = draw.textsize(title)
@@ -120,10 +141,11 @@ def main(filename):
 
             slice_count += 1
 
-try:
-    datafile = sys.argv[-1]
-except:
-    print("USAGE: %s [args] data_file.json" % sys.argv[0])
-    sys.exit(1)
+if __name__ == "__main__":
+    try:
+        datafile = sys.argv[-1]
+    except:
+        print("USAGE: %s [args] data_file.json" % sys.argv[0])
+        sys.exit(1)
 
-main(datafile)
+    main(datafile)
