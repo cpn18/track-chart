@@ -72,14 +72,13 @@ def check_enabled(configs):
 PACKETS = {}
 
 def udp_receiver(ip, port):
-    sock = ocket.socket(socket.AF_INET, # Internet
+    sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
-    sock.bind((UDP_IP, UDP_PORT))
+    sock.bind((ip, port))
 
     while True:
         data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
         payload = json.loads(data.decode())
-        print(addr, payload)
         PACKETS[payload['class']] = payload
 
 
@@ -315,7 +314,7 @@ if __name__ == "__main__":
 
     # UDP Listener
     Tudp = threading.Thread(name="U", target=udp_receiver, args=(CONFIG['udp']['ip'], CONFIG['udp']['port']))
-    Tudp.start
+    Tudp.start()
 
     # Web Server
     util.web_server(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler)
