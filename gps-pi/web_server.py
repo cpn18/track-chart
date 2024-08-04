@@ -14,6 +14,8 @@ from socketserver import ThreadingMixIn
 import http.client
 import requests
 import util
+import socket
+import threading
 
 DOCUMENT_MAP = {
     "/": "htdocs/index.html",
@@ -66,6 +68,20 @@ def check_enabled(configs):
         if config['enable'] or config['host'] not in ['localhost', '127.0.0.1']:
             return (config['host'], config['port'])
     return False
+
+PACKETS = {}
+
+def udp_receiver(ip, port):
+    sock = ocket.socket(socket.AF_INET, # Internet
+                     socket.SOCK_DGRAM) # UDP
+    sock.bind((UDP_IP, UDP_PORT))
+
+    while True:
+        data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+        payload = json.loads(data.decode())
+        print(addr, payload)
+        PACKETS[payload['class']] = payload
+
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """ Threaded HTTP Server """
@@ -174,6 +190,10 @@ class MyHandler(BaseHTTPRequestHandler):
         elif self.path == "/setup":
             content_type = "application/json"
             output = json.dumps(CONFIG)
+
+        elif self.path == "/packets":
+            content_type = "application/json"
+            output = json.dumps(PACKETS)
 
         elif self.path == "/poweroff":
             util.DONE = True
@@ -292,6 +312,10 @@ if __name__ == "__main__":
         OUTPUT = "/root/gps-data"
 
     CONFIG = util.read_config()
+
+    # UDP Listener
+    Tudp = threading.Thread(name="U", target=udp_receiver, args=(CONFIG['udp']['ip'], CONFIG['udp']['port']))
+    Tudp.start
 
     # Web Server
     util.web_server(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler)

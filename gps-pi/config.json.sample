@@ -1,4 +1,8 @@
 {
+    "udp": {
+        "ip": "127.0.0.1",
+        "port": 5005,
+    },
     "web": {
 	"cmd": ["web_server.sh", "%PORT%", "%OUTPUT_DIR%"],
 	"host": "localhost",

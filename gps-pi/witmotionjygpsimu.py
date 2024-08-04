@@ -8,6 +8,7 @@ import time
 import serial
 import json
 import math
+import socket
 
 RETURN_CONTEXT = b'\xFF\xAA\x02\xFF\x07'
 SAVE = b'\xFF\xAA\x00\x00\x00'
@@ -33,6 +34,10 @@ def do_output(fileptr, obj):
         except ValueError:
             pass
 
+def send_udp(sock, ip, port, obj):
+    """ Send Packet """
+    sock.sendto(json.dumps(obj).encode(), (ip, port))
+
 class WitMotionJyGpsImu():
     """ Wit-Motion JY-GPSIMU Class """
 
@@ -48,6 +53,7 @@ class WitMotionJyGpsImu():
         self.thread.start()
         self.gpsimu = {}
         self.config = config
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def update_config(self, config):
         self.config = config
@@ -70,9 +76,17 @@ class WitMotionJyGpsImu():
             #print("Time",year,month,day,hh,mm,ss,ms)
             self.gpsimu['time'] = "%4d-%02d-%02dT%02d:%02d:%02d.%03dZ" % (year+2000, month, day, hh, mm, ss, ms)
             #outfile.write("Time %s\n" % self.gpsimu['time'])
-            do_output(self.gpsout,self.get_sky())
-            do_output(self.gpsout,self.get_tpv())
-            do_output(self.imuout,self.get_att())
+            obj = self.get_sky()
+            do_output(self.gpsout,obj)
+            send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], obj)
+
+            obj = self.get_tpv()
+            do_output(self.gpsout,obj)
+            send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], obj)
+
+            obj = self.get_att()
+            do_output(self.imuout,obj)
+            send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], obj)
         elif t == b'\x51':
             ax = 9.8*16*float(int.from_bytes(d[0:2],"little", signed=True))/32768.0
             ay = 9.8*16*float(int.from_bytes(d[2:4],"little", signed=True))/32768.0
