@@ -15,7 +15,7 @@ def main(filename):
 
     last_tpv = None
     print("Time Latitude Longitude Used Count Delta")
-    for line_no, obj in pirail.read(filename, classes=['SKY', 'TPV']):
+    for line_no, obj in pirail.read(filename, classes=['SKY', 'TPV'], args={"gps-threshold": 0}):
         if obj['class'] == "SKY":
             used=count=0
             for s in obj['satellites']:
