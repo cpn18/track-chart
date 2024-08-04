@@ -14,6 +14,7 @@ from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
+import socket
 
 from rplidar import RPLidar
 
@@ -21,6 +22,10 @@ import util
 
 LIDAR_STATUS = False
 LIDAR_DATA = {}
+
+def send_udp(sock, ip, port, obj):
+    """ Send Packet """
+    sock.sendto(json.dumps(obj).encode(), (ip, port))
 
 def do_json_output(self, output_dict):
     """ send back json text """
@@ -91,6 +96,9 @@ def lidar_logger(output_directory):
     config = util.read_config()
     port_name = config['lidar'].get('serial', '/dev/lidar')
 
+    # UDP Socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
     while not util.DONE:
         try:
             lidar = RPLidar(port_name)
@@ -106,15 +114,16 @@ def lidar_logger(output_directory):
                     for (_, angle, distance) in scan:
                         if distance > 0:
                             data.append((int(angle)%360, int(distance)))
-                    lidar_data = {
+                    obj = {
                         'class': 'LIDAR',
                         'device': 'A1M8',
                         'time': lidartime,
                         'scan': data,
                     }
-                    lidar_output.write("%s %s %s *\n" % (lidar_data['time'], lidar_data['class'], json.dumps(lidar_data)))
+                    send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
+                    lidar_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
                     lidar_output.flush()
-                    LIDAR_DATA = lidar_data
+                    LIDAR_DATA = obj
                     LIDAR_STATUS = True
                     if util.DONE:
                         break

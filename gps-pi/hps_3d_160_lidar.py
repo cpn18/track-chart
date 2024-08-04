@@ -9,9 +9,13 @@ import datetime
 import json
 import serial
 import base64
+import socket
 
 import crc16
 
+def send_udp(sock, ip, port, obj):
+    """ Send Packet """
+    sock.sendto(json.dumps(obj).encode(), (ip, port))
 
 def bytes_to_hex(buff):
     """
@@ -53,7 +57,7 @@ class Hps3DLidar():
     OUT_OF_RANGE2 = 0xffdc # 65500
     INVALID_RANGE = 0xfffa # 65530
 
-    def __init__(self, ttyname, address, outputfile=None):
+    def __init__(self, config, ttyname, address, outputfile=None):
         """
         Initialize and start reading thread
         """
@@ -61,6 +65,8 @@ class Hps3DLidar():
         self.outputfile = outputfile
         self.event = threading.Event()
         self.event.clear()
+        self.config = config
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if ttyname is not None:
             self.ser = serial.Serial(ttyname, timeout=5)
             self.address = address
@@ -327,6 +333,7 @@ class Hps3DLidar():
                 'time': datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             })
             if self.outputfile is not None:
+                send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], retval)
                 self.outputfile.write("%s %s %s *\n" % (retval['time'], retval['class'], json.dumps(retval)))
                 self.outputfile.flush()
                 self.data = retval

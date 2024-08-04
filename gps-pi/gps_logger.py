@@ -15,6 +15,7 @@ from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
+import socket
 
 import gps
 import nmea
@@ -35,6 +36,10 @@ GPS_NUM_USED = 0
 
 ODOMETER = 0.0
 ODIR = 1
+
+def send_udp(sock, ip, port, obj):
+    """ Send Packet """
+    sock.sendto(json.dumps(obj).encode(), (ip, port))
 
 def do_json_output(self, output_dict):
     """ send back json text """
@@ -178,6 +183,9 @@ def gps_logger(output_directory):
 
     config = util.read_config()
 
+    # UDP Socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
     # Create the output directory
     if not os.path.isdir(output_directory):
         os.mkdir(output_directory)
@@ -227,6 +235,7 @@ def gps_logger(output_directory):
 
             # Log the Data
             if 'time' in obj:
+                send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
                 gps_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
                 gps_output.flush()
 

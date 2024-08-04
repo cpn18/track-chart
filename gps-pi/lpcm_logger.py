@@ -14,10 +14,15 @@ from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
+import socket
 
 import util
 
 LPCM_DATA = {}
+
+def send_udp(sock, ip, port, obj):
+    """ Send Packet """
+    sock.sendto(json.dumps(obj).encode(), (ip, port))
 
 def do_json_output(self, output_dict):
     """ send back json text """
@@ -85,6 +90,9 @@ def lpcm_logger(output_directory):
     # Configure
     config = util.read_config()
 
+    # UDP Socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
     with open(os.path.join(output_directory,timestamp+"_lpcm.csv"), "w") as lpcm_output:
         util.write_header(lpcm_output, config)
@@ -106,6 +114,8 @@ def lpcm_logger(output_directory):
                         if os.path.isfile(os.path.join(output_directory, capture_file)):
                             LPCM_DATA[channel] = capture_file
 
+                    # Log the output
+                    send_udp(sock, config['udp']['ip'], config['udp']['port'], LPCM_DATA)
                     lpcm_output.write(
                         "%s %s %s *\n" % (
                             LPCM_DATA['time'],

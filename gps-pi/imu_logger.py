@@ -15,6 +15,7 @@ from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 import http.client
+import socket
 
 import berryimu_shim as accel
 
@@ -37,6 +38,10 @@ SAMPLES = 0
 
 # ATT Dictionary
 ATT = {}
+
+def send_udp(sock, ip, port, obj):
+    """ Send Packet """
+    sock.sendto(json.dumps(obj).encode(), (ip, port))
 
 def do_json_output(self, output_dict):
     """ send back json text """
@@ -125,6 +130,9 @@ def imu_logger(output_directory):
 
     config = util.read_config()
 
+    # UDP Socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    
+
     if 'pitch_adj' not in config['imu']:
         config['imu']['pitch_adj'] = 0
     if 'roll_adj' not in config['imu']:
@@ -204,6 +212,7 @@ def imu_logger(output_directory):
                 util.write_header(imu_output, config)
 
             # Log the output
+            send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
             imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
             imu_output.flush()
             ATT = obj
