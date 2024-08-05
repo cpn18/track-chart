@@ -377,7 +377,10 @@ class Hps3DLidar():
 
 
 if __name__ == "__main__":
-    lidar = Hps3DLidar("/dev/ttyACM0", 0, None)
+    with open("config.json") as infile:
+        config = json.loads(infile.read())
+
+    lidar = Hps3DLidar(config, "/dev/ttyACM0", 0, None)
     lidar.set_address(0)
     lidar.read_address()
     lidar.read_version()
