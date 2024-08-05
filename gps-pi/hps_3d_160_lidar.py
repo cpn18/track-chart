@@ -296,6 +296,7 @@ class Hps3DLidar():
         """
         Read Thread
         """
+        retval = {}
         decoders = {
                 0x18: self.decode_detailed,
                 0xa0: self.decode_read_version,

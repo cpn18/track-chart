@@ -77,7 +77,7 @@ def udp_receiver(ip, port):
     sock.bind((ip, port))
 
     while True:
-        data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+        data, addr = sock.recvfrom(65535) # UDP buffer size
         payload = json.loads(data.decode())
         PACKETS[payload['class']] = payload
 
