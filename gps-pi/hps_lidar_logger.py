@@ -98,6 +98,12 @@ def lidar_logger(output_directory):
             timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
             with open(os.path.join(output_directory,timestamp+"_lidar.csv"), "w") as lidar_output:
                 util.write_header(lidar_output, config)
+
+                # Make sure the port exists
+                if not os.path.exists(port_name):
+                    time.sleep(util.ERROR_DELAY)
+                    continue
+
                 lidar = hps.Hps3DLidar(config, port_name, 0, lidar_output)
                 #print(lidar.read_version())
                 #print(lidar.read_serial())
