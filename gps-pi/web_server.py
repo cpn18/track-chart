@@ -191,8 +191,43 @@ class MyHandler(BaseHTTPRequestHandler):
             output = json.dumps(CONFIG)
 
         elif self.path == "/packets":
-            content_type = "application/json"
-            output = json.dumps(PACKETS)
+            # UNH_CAPSTONE_2025
+            # See: https://docs.google.com/document/d/18RhnY7mhhvA0fA2-fiZChrwZWYRcukbJWfoN5YnYBk0/edit?usp=sharing
+
+            # Get the query string dictionary from the URL
+            # The qsdict will contain the class, delay and count parameters
+            # url = urlparse(self.path)
+            # qsdict = parse_qs(url.query)
+
+
+            # Output your HTTP Header
+            self.send_response(http.client.OK)
+
+            # You want to check the self.headers
+            # If Accept is application/json then return all the packets
+
+            # This blindly returns all the packets in one shot
+            self.send_header("Content-Type", "application/json")
+
+            output = json.dumps(PACKETS).encode('utf-8')
+            self.send_header("Content-Length", str(len(output)))
+            self.end_headers()
+
+            self.wfile.write(output)
+
+            # If Accept is text/event-stream
+            #self.send_header("Content-Type", "text/event-stream")
+            #self.end_headers()
+            # while xxxxx:
+            # Each time through, output the packets
+            #     output="event: xxxxx\ndata: xxxxx\n\n"
+            #     self.wfile.write(output.encode('utf-8'))
+            #     self.wfile.flush()
+            # and then sleep.
+            #     time.sleep(xxxxx)
+
+            # Need to return here!
+            return
 
         elif self.path == "/poweroff":
             util.DONE = True

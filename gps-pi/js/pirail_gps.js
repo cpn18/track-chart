@@ -34,6 +34,10 @@ function gps_setup(viewport) {
 }
 
 function gps_stream(viewport, imagedata) {
+	// UNH_CAPSTONE_2025
+	// Need to change the source to be /packets
+	// Need to change the event names below, but
+	// otherwise not much work needed
     const gpsStream = new EventSource("/gps/");
 
     console.log(gpsStream.readyState);
@@ -56,6 +60,7 @@ function gps_stream(viewport, imagedata) {
       $("#gps_count").text("");
     };
 
+	// change listen to pirail_TPV
     gpsStream.addEventListener("tpv", function(event) {
         // console.log(event);
 	var tpv = JSON.parse(event.data);
@@ -132,6 +137,7 @@ function gps_stream(viewport, imagedata) {
 	}
     });
 
+	// change listen to pirail_SKY
     gpsStream.addEventListener("sky", function(event) {
         // console.log(event);
 	var sky = JSON.parse(event.data);
