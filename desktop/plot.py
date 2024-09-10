@@ -30,7 +30,7 @@ class Plot():
         if font[0] != "/":
             font = os.path.join("/usr/share/fonts/", font)
 
-        size = int(params.get('fontsize', 10)) 
+        size = int(params.get('fontsize', 10))
 
         self.font = [
             ImageFont.truetype(font, size=size),
@@ -77,7 +77,7 @@ class Plot():
         for _line_no, obj in pirail.read(params['filename']):
             try:
                 if self.xaxis == "time":
-                    midpoint = pirail.parse_time(obj[self.xaxis]) 
+                    midpoint = pirail.parse_time(obj[self.xaxis])
                 else:
                     midpoint = obj[self.xaxis]
                 if self.start <= midpoint <= self.end:
@@ -92,20 +92,21 @@ class Plot():
         baseline = int(params['y'] + params['height'] / 2.0)
 
         draw = ImageDraw.Draw(self.image)
-        last_x = data[0]['x']
-        last_y = baseline - data[0]['y']
-        for point in data:
-            this_x = point['x']
-            this_y = baseline - point['y']
-            if self.type == "scatter": 
-                draw.point((this_x, this_y), fill=params['fill'])
-            elif self.type == "line":
-                draw.line((last_x, last_y, this_x, this_y), fill=params['fill'])
-            elif self.type == "bar":
-                draw.line((this_x, baseline, this_x, this_y), fill=params['fill'])
+        if len(data) > 0:
+            last_x = data[0]['x']
+            last_y = baseline - data[0]['y']
+            for point in data:
+                this_x = point['x']
+                this_y = baseline - point['y']
+                if self.type == "scatter":
+                    draw.point((this_x, this_y), fill=params['fill'])
+                elif self.type == "line":
+                    draw.line((last_x, last_y, this_x, this_y), fill=params['fill'])
+                elif self.type == "bar":
+                    draw.line((this_x, baseline, this_x, this_y), fill=params['fill'])
 
-            last_x = this_x
-            last_y = this_y
+                last_x = this_x
+                last_y = this_y
 
         # Add filename
         if title is False:
@@ -130,12 +131,12 @@ def unit_test():
     myplot = Plot({
         "width": 1024*4,
         "height": 768*4,
-        #"xaxis": "mileage",
-        #"start": 0.73,
-        #"end": 0.86,
-        "xaxis": "time",
-        "start": "2024-06-01T11:32:05.000000Z",
-        "end": "2024-06-01T11:40:17.000000Z",
+        "xaxis": "mileage",
+        "start": 0.0,
+        "end": 1.5,
+        #"xaxis": "time",
+        #"start": "2024-06-01T11:32:05.000000Z",
+        #"end": "2024-06-01T11:40:17.000000Z",
         "type": "bar",
 #        "font": "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf",
 #        "fontsize": 12,
@@ -199,6 +200,26 @@ def unit_test():
         "key": "pitch",
         "scale": 20,
         "fill": (255, 0, 0),
+        "y": y,
+        "height": height,
+    })
+    y += height
+
+    myplot.add_plot({
+        "filename": "../data/stm_20240908_with_mileage_sort_by_time.json",
+        "key": "acc_z",
+        "scale": 20,
+        "fill": (0, 255, 0),
+        "y": y,
+        "height": height,
+    })
+    y += height
+
+    myplot.add_plot({
+        "filename": "../data/stm_20240908_with_mileage_sort_by_time.json",
+        "key": "pitch",
+        "scale": 20,
+        "fill": (0, 255, 0),
         "y": y,
         "height": height,
     })
