@@ -27,6 +27,8 @@ files="adxl345.py \
     lpcm_collect.sh \
     lpcm_logger.py \
     lpcm_logger.sh \
+    LIS3MDL.py \
+    LSM6DSL.py \
     LSM9DS0.py \
     LSM9DS1.py \
     nmea.py \
