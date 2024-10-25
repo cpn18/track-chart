@@ -217,6 +217,13 @@ function time_to_mileage(timescale, ts) {
 function plot_both_data(chartname, lpcm_result, imu_result, by_mileage) {
 
   // convert the JSON to arrays for JChart
+  console.log("LPCM", lpcm_result.length)
+  console.log("IMU", imu_result.length)
+
+  if (imu_result.length == 0 || lpcm_result.length == 0) {
+	  alert("No data")
+	  return
+  }
 
   // populate imu values
   imu_values = [];

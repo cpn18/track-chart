@@ -68,7 +68,7 @@ def thin(data, qsdict, data_key="acc_z", window_key="mileage", window_size=0.01,
                 end += 1
 
             # escape clause
-            if end >= len(data):
+            if end > len(data):
                 break
 
             # Stats
