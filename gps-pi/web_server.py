@@ -174,6 +174,11 @@ class MyHandler(BaseHTTPRequestHandler):
 
         content_type = "text/html"
 
+        # Get the query string dictionary from the URL
+        # The qsdict will contain the class, delay and count parameters
+        url = urlparse(self.path)
+        qsdict = parse_qs(url.query)
+
         if self.path in DOCUMENT_MAP:
             pathname = DOCUMENT_MAP[self.path]
             _, extension = os.path.splitext(pathname)
@@ -191,14 +196,9 @@ class MyHandler(BaseHTTPRequestHandler):
             content_type = "application/json"
             output = json.dumps(CONFIG)
 
-        elif self.path == "/packets":
+        elif url.path == "/packets":
             # UNH_CAPSTONE_2025
             # See: https://docs.google.com/document/d/18RhnY7mhhvA0fA2-fiZChrwZWYRcukbJWfoN5YnYBk0/edit?usp=sharing
-
-            # Get the query string dictionary from the URL
-            # The qsdict will contain the class, delay and count parameters
-            url = urlparse(self.path)
-            qsdict = parse_qs(url.query)
 
             # Output your HTTP Header
             self.send_response(http.client.OK)
@@ -207,16 +207,9 @@ class MyHandler(BaseHTTPRequestHandler):
             # If Accept is application/json then return all the packets
             accept_type = self.headers.get('Accept')
 
-            if accept_type == "application/json":
-                # This blindly returns all the packets in one shot
-                self.send_header("Content-Type", "application/json")
-                output = json.dumps(PACKETS).encode('utf-8')
-                self.send_header("Content-Length", str(len(output)))
-                self.end_headers()
-                self.wfile.write(output)
 
             # If Accept is text/event-stream
-            elif accept_type == "text/event-stream":
+            if accept_type == "text/event-stream":
                 self.send_header("Content-Type", "text/event-stream")
                 self.end_headers()
 
@@ -225,7 +218,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 param_delay = float(qsdict.get('delay', [1])[0])
                 param_count = int(qsdict.get('count', [1])[0])
 
-            for _ in range(param_count):
+                for _ in range(param_count):
                     filtered_packets = {cls: PACKETS[cls] for cls in param_class if cls in PACKETS} if param_class else PACKETS
                     if 'TPV' in filtered_packets:
                         output = f"event: pirail_TPV\ndata: {json.dumps(filtered_packets['TPV'])}\n\n"
@@ -235,6 +228,14 @@ class MyHandler(BaseHTTPRequestHandler):
                         self.wfile.write(output.encode('utf-8'))
                     self.wfile.flush()
                     time.sleep(param_delay)
+
+            else:
+                # This blindly returns all the packets in one shot
+                self.send_header("Content-Type", "application/json")
+                output = json.dumps(PACKETS).encode('utf-8')
+                self.send_header("Content-Length", str(len(output)))
+                self.end_headers()
+                self.wfile.write(output)
 
             # Need to return here!
             return

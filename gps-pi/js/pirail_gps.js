@@ -34,7 +34,7 @@ function gps_setup(viewport) {
 }
 
 function gps_stream(viewport, imagedata) {
-    const gpsStream = new EventSource("/packets/");
+    const gpsStream = new EventSource("/packets?count=1000");
 
     console.log(gpsStream.readyState);
     console.log(gpsStream.url);
