@@ -11,6 +11,7 @@ import time
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
+from urllib.parse import urlparse, parse_qs
 import http.client
 import requests
 import util
@@ -196,35 +197,44 @@ class MyHandler(BaseHTTPRequestHandler):
 
             # Get the query string dictionary from the URL
             # The qsdict will contain the class, delay and count parameters
-            # url = urlparse(self.path)
-            # qsdict = parse_qs(url.query)
-
+            url = urlparse(self.path)
+            qsdict = parse_qs(url.query)
 
             # Output your HTTP Header
             self.send_response(http.client.OK)
 
             # You want to check the self.headers
             # If Accept is application/json then return all the packets
+            accept_type = self.headers.get('Accept')
 
-            # This blindly returns all the packets in one shot
-            self.send_header("Content-Type", "application/json")
-
-            output = json.dumps(PACKETS).encode('utf-8')
-            self.send_header("Content-Length", str(len(output)))
-            self.end_headers()
-
-            self.wfile.write(output)
+            if accept_type == "application/json":
+                # This blindly returns all the packets in one shot
+                self.send_header("Content-Type", "application/json")
+                output = json.dumps(PACKETS).encode('utf-8')
+                self.send_header("Content-Length", str(len(output)))
+                self.end_headers()
+                self.wfile.write(output)
 
             # If Accept is text/event-stream
-            #self.send_header("Content-Type", "text/event-stream")
-            #self.end_headers()
-            # while xxxxx:
-            # Each time through, output the packets
-            #     output="event: xxxxx\ndata: xxxxx\n\n"
-            #     self.wfile.write(output.encode('utf-8'))
-            #     self.wfile.flush()
-            # and then sleep.
-            #     time.sleep(xxxxx)
+            elif accept_type == "text/event-stream":
+                self.send_header("Content-Type", "text/event-stream")
+                self.end_headers()
+
+                # Get class parameter (can contain multiple)
+                param_class = qsdict.get('class', [])
+                param_delay = float(qsdict.get('delay', [1])[0])
+                param_count = int(qsdict.get('count', [1])[0])
+
+            for _ in range(param_count):
+                    filtered_packets = {cls: PACKETS[cls] for cls in param_class if cls in PACKETS} if param_class else PACKETS
+                    if 'TPV' in filtered_packets:
+                        output = f"event: pirail_TPV\ndata: {json.dumps(filtered_packets['TPV'])}\n\n"
+                        self.wfile.write(output.encode('utf-8'))
+                    if 'SKY' in filtered_packets:
+                        output = f"event: pirail_SKY\ndata: {json.dumps(filtered_packets['SKY'])}\n\n"
+                        self.wfile.write(output.encode('utf-8'))
+                    self.wfile.flush()
+                    time.sleep(param_delay)
 
             # Need to return here!
             return
