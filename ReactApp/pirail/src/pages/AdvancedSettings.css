@@ -1,0 +1,75 @@
+/* src/pages/AdvancedSettings.css */
+
+.advanced-settings {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 1rem;
+    text-align: left;
+  }
+  
+  h2 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .setting-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .setting-label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  
+  .setting-toggle {
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+  }
+  
+  input[type="checkbox"] {
+    margin-right: 0.5rem;
+  }
+  
+  .sub-options {
+    display: flex;
+    flex-direction: column;
+    margin-left: 2rem;
+  }
+  
+  .sub-options label {
+    margin-top: 0.5rem;
+  }
+  
+  .sub-options select {
+    margin-top: 0.25rem;
+    padding: 0.25rem;
+    width: 100px;
+  }
+  
+  .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .save-button,
+  .back-button {
+    background-color: red;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100px;
+  }
+  
+  .save-button:hover,
+  .back-button:hover {
+    background-color: darkred;
+  }
+  

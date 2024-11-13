@@ -110,3 +110,27 @@ desktop/*.csv
 desktop/*.json
 desktop/*.png
 .DS_Store
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+ReactApp/node_modules/
+ReactApp/.pnp
+ReactApp/.pnp.js
+
+# testing
+ReactApp/coverage
+
+# production
+ReactApp/build
+
+# misc
+ReactApp/.DS_Store
+ReactApp/.env.local
+ReactApp/.env.development.local
+ReactApp/.env.test.local
+ReactApp/.env.production.local
+
+ReactApp/npm-debug.log*
+ReactApp/yarn-debug.log*
+ReactApp/yarn-error.log*
