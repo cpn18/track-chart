@@ -1,48 +1,64 @@
-/* src/components/Navbar.css */
 
 .navbar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1rem;
-    transition: background-color 0.3s, color 0.3s;
-  }
-  
-  .navbar.light {
-    background-color: white;
-    color: black;
-  }
-  
-  .navbar.dark {
-    background-color: #1E1E1E;
-    color: white;
-  }
-  
-  .logo-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 0.5rem;
-  }
-  
-  .logo {
-    height: 80px;
-    width: auto;
-    cursor: pointer;
-  }
-  
-  .nav-links {
-    display: flex;
-    gap: 1rem;
-  }
-  
-  .nav-link {
-    color: inherit; /* take color based on light/dark */
-    text-decoration: none;
-    padding: 0.5rem;
-    transition: color 0.3s;
-  }
-  
-  .nav-link.active-link {
-    color: red; /* active page is red */
-  }
-  
+  display: flex;
+  flex-direction: column; /* stack elems vert */
+  align-items: center; /* center content horiz */
+  padding: 1rem; /* add spacing */
+  transition: background-color 0.3s, color 0.3s; /* theme transition */
+}
+
+/* light mode */
+.navbar.light {
+  background-color: white; /* white bg */
+  color: black; /* black text */
+}
+
+/* dark mode */
+.navbar.dark {
+  background-color: #1E1E1E; /* dark bg */
+  color: white; /* white text */
+}
+
+/* logo (container) */
+.logo-container {
+  display: flex;
+  justify-content: center; /* center logo */
+  margin-bottom: 0.5rem; /* spacing below */
+}
+
+/* hover (logo) */
+.logo-container:hover {
+  transform: scale(1.02); /* enlarge on hover */
+}
+
+/* logo (style) */
+.logo {
+  height: 80px; /* height */
+  width: auto; /* maintain aspect ratio */
+  cursor: pointer; /* cursor -> pointer */
+}
+
+/* nav links (container) */
+.nav-links {
+  display: flex;
+  gap: 1rem; /* spacing between links */
+}
+
+/* individ. nav link */
+.nav-link {
+  color: inherit; /* take color from theme */
+  text-decoration: none; /* remove underline */
+  padding: 0.5rem; /* add padding */
+  transition: color 0.3s, transform 0.2s ease-in-out; /* hover effect */
+}
+
+/* nav links (hover) */
+.nav-link:hover {
+  color: red; /* change text color */
+  transform: scale(1.05); /* enlarge on hover */
+}
+
+/* active nav link */
+.nav-link.active-link {
+  color: red; /* highlight active page */
+}

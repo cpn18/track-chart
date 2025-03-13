@@ -1,58 +1,128 @@
-/* src/pages/Home.css */
 
+/* container for home page */
 .home-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 1rem;
+  flex-direction: column; /* align vert */
+  align-items: center; /* centers items horizontally */
+  padding-top: 1rem; /* Adds space at the top */
 }
 
+/* map container */
 .map-container {
-  width: 90%;
-  max-width: 800px;
-  height: 500px;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  overflow: hidden;
+  width: 90%; /* map responsive (to 90%) */
+  max-width: 800px; /* limits max width of map */
+  height: 500px; /* set height of map */
+  border: 2px solid #ccc; /* add a border */
+  border-radius: 8px; /* round corners */
+  overflow: hidden; /* no overflow!!! */
 }
 
+/* info container */
 .info-container {
-  margin-top: 1rem;
-  width: 90%;
-  max-width: 800px;
-  text-align: left;
+  margin-top: 1rem; /* spacing above the section */
+  width: 90%; /* responsive (to 90%) */
+  max-width: 800px; /* limit max width */
+  text-align: left; /* aligns text to <- */
 }
 
+/* info section (header) */
 .info-container h2 {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.2rem; /* font size */
+  margin-bottom: 0.5rem; /* spacing below heading */
 }
 
+/* grid layout for info boxes */
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  grid-template-columns: repeat(2, 1fr); /* two equal cols */
+  gap: 0.5rem; /* spacing between boxes */
+  margin-top: 0.5rem; /* spacing ^ grid */
 }
 
+/* singular box styles */
 .info-item {
-  background-color: #f0f0f0;
-  padding: 0.5rem;
-  border-radius: 4px;
+  background-color: #f0f0f0; /* light gray background */
+  padding: 0.5rem; /* padding inside the box */
+  border-radius: 4px; /* round corners */
   display: flex;
-  align-items: center;
-  font-weight: bold;
-  color: black; /* Ensures text remains black in dark mode */
+  align-items: center; /* centers vert. */
+  font-weight: bold; /* bold the text */
+  color: black; /* text stays black */
 }
 
+/* home page buttons (group) */
 .button-group {
   display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
+  justify-content: space-between; /* spread evenly */
+  margin-top: 1rem; /* spacing ^ button group */
 }
 
+/* button styles */
 .add-poi-button,
 .view-satellites-button {
+  background-color: red; /* button color */
+  color: white; /* text color */
+  border: none; /* remove border */
+  padding: 0.5rem 1rem; /* adjust button size */
+  font-weight: bold; /* bold text */
+  border-radius: 4px; /* round corners */
+  cursor: pointer; /* cursor -> pointer on hover */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* transitions */
+}
+
+/* button hover */
+.add-poi-button:hover,
+.view-satellites-button:hover {
+  background-color: darkred; /* change color -> darkred */
+  transform: scale(1.05); /* grow button on hover */
+  opacity: 0.9; /* lessen opacity */
+}
+
+/* modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  color: black;
+}
+
+.modal-textarea {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-button {
   background-color: red;
   color: white;
   border: none;
@@ -60,10 +130,64 @@
   font-weight: bold;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.add-poi-button:hover,
-.view-satellites-button:hover {
+.modal-button:hover {
+  background-color: darkred;
+  transform: scale(1.05);
   opacity: 0.9;
+}
+
+.modal-button.cancel {
+  background-color: red;
+}
+
+.modal-button.cancel:hover {
+  background-color: darkred;
+}
+
+/* Edit & Delete Buttons */
+.edit-button,
+.delete-button {
+  background-color: red; /* Match existing button color */
+  color: white; /* White text */
+  border: none; /* No border */
+  padding: 0.5rem 0.8rem; /* Adjust button size */
+  font-weight: bold; /* Bold text */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Pointer on hover */
+  margin: 5px 5px 0; /* Add some space */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Edit Button (lighter than Delete for visibility) */
+.edit-button {
+  background-color: red; /* Slightly lighter red */
+}
+
+/* Delete Button */
+.delete-button {
+  background-color: red; /* Darker red */
+}
+
+/* Hover Effect */
+.edit-button:hover {
+  background-color: darkred; /* Darker on hover */
+  transform: scale(1.05); /* Slight growth effect */
+}
+
+.delete-button:hover {
+  background-color: darkred; /* Dark red hover */
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Ensure Buttons in Popup Align Well */
+.leaflet-popup-content {
+  text-align: center; /* Center buttons in popup */
+}
+
+.leaflet-popup-content button {
+  display: inline-block; /* Ensure buttons line up */
 }

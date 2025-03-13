@@ -1,0 +1,11 @@
+
+/* Footer styling */
+.footer {
+  text-align: center; /* center text (horiz) */
+  font-size: 0.9rem; /* font size */
+  color: #666; /* text color (gray) */
+  margin-top: 2rem; /* space above footer */
+  padding: 1rem; /* padding inside footer */
+}
+
+  

@@ -1,126 +1,322 @@
-/* src/pages/settings.css */
 
+/* container for settings */
 .settings-container {
-    max-width: 600px;
-    margin: 0 auto;
-    text-align: center;
-    padding: 1rem;
-  }
-  
-  .setting-item {
-    margin-bottom: 1rem;
-    text-align: left;
-  }
-  
-  .setting-item label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 1rem;
-  }
-  
-  .setting-item h3 {
-    text-align: center;
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* status */
-  .status-section {
-    margin-bottom: 1.5rem;
-    text-align: center;
-  }
-  
-  .status-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-  
-  .status-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem;
-    background-color: #f0f0f0;
-    border-radius: 4px;
-    color: black;
-  }
-  
-  /* cond text */
-  .status-on {
-    color: green;
-    font-weight: bold;
-  }
+  max-width: 600px; /* limits width of page */
+  margin: 0 auto; /* center container (horiz) */
+  text-align: center; /* align text to center */
+  padding: 1rem; /* spacing inside container */
+}
 
-    .status-section h3 {
-    color: inherit; /* header change for dm */
-    text-align: center;
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+/* individual item container */
+.setting-item {
+  margin-bottom: 1rem; /* space between setting item(s) */
+  text-align: left; /* text align to the <- */
+}
+
+/* label styling */
+.setting-item label {
+  display: flex;
+  justify-content: space-between; /* space out elems in labels */
+  align-items: center; /* align to center */
+  font-size: 1rem; /* font size */
+}
+
+/* header style - setting sections */
+.setting-item h3 {
+  text-align: center; /* center heading text */
+  font-size: 1.2rem; /* font size */
+  margin-bottom: 0.5rem; /* spacing below heading */
+}
+
+/* section - display system statuses */
+.status-section {
+  margin-bottom: 1.5rem; /* spacing below status section */
+  text-align: center; /* center text */
+}
+
+/* grid layout for status items */
+.status-grid {
+  display: flex; /* flexbox layout */
+  flex-wrap: wrap; /* items will wrap onto next row if space is limited */
+  justify-content: center; /* center horiz within container */
+  gap: 0.5rem; /* spacing between items */
+  margin-top: 0.5rem; /* spacing above grid */
+}
+
+/* style for individual status items */
+.status-item {
+  flex: 1 1 calc(50% - 1rem);  /* use 50% of the width (- spacing) w/ flexibility */
+  box-sizing: border-box; /* use padding + borders in the elems width + height */
+  padding: 1rem; /* padding */
+  background-color: #f8f8f8; /* light gray background */
+  border-radius: 4px; /* round corners */
+  cursor: pointer; /* cursor -> pointer on hover */
+  transition: background-color 0.3s, color 0.3s; /* hover effects */
+}
+
+/* hover effect - status items */
+.status-item:hover {
+  background-color: #e6e6e6; /* change background on hover */
+  transform: scale(1.02); /* enlarge the element */
+  color: #333; /* darken text color */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* shadow when hover */
+}
+
+/* dropdown styling within status items */
+.status-item:hover .dropdown-arrow {
+  transform: scale(1.2); /* enlarge the dropdown arrow */
+}
+
+/* dropdown text */
+.dropdownText {
+  color: #000; /* ensures text remains black - this bc of dark mode */
+}
+
+/* status indicators (ON and OFF) */
+.status-on {
+  color: green; /* green color = active state */
+  font-weight: bold; /* bold font */
+}
+.status-off {
+  color: red; /* red color = inactive state */
+  font-weight: bold; /* bold font */
+}
+
+/* GPU temp box */
+.gpu-temp {
+  flex: 1 1 100%;
+  justify-content: center;
+}
+
+/* GPU temp nums */
+.gpu-temp-value {
+  color: green; /* GPU temp in green */
+  font-weight: bold;
+}
+
+/* flexbox for phones! we want our actions to be listed vertical if on phone */
+@media (max-width: 600px) {
+  .status-item {
+    flex: 1 1 100%; /* stack items vert */
   }
-  
-  .status-off {
-    color: red;
-    font-weight: bold;
-  }
-  
-  .gpu-temp {
-    grid-column: span 2; 
-    justify-content: center;
-  }
-  
-  .gpu-temp-value {
-    color: #49C773;
-    font-weight: bold;
-  }
-  
-  /* buttons */
-  .button-group {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  
-  .action-button {
-    background-color: red;
-    color: white;
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    width: 100px;
-    transition: background-color 0.3s;
-  }
-  
-  .action-button:hover {
-    background-color: darkred;
-  }
-  
-  /* advanced settings */
-  .advanced-settings-button-container {
-    display: flex;
-    justify-content: center;
-  }
-  
-  .advanced-settings-button {
-    background-color: red;
-    color: white;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    width: 100%;
-    max-width: 300px;
-    margin-top: 0.5rem;
-    transition: background-color 0.3s;
-  }
-  
-  .advanced-settings-button:hover {
-    background-color: darkred;
-  }
-  
+}
+
+/* dropdown menu */
+.dropdown-menu {
+  background-color: #f8f8f8; /* background for dropdown */
+  color: #000; /* text stay black (dm) */
+  padding: 0.5rem; /* padding inside dropdown */
+  border-radius: 4px; /* round dropdown corners */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* add shadow */
+  flex-direction: column; /* items stack vertically */
+  gap: 0.5rem; /* space between dropdown elems */
+}
+
+/* label (inside dropdown) */
+.dropdown-menu label {
+  display: flex;
+  align-items: center; /* align text (+ input elems) vertical*/
+  gap: 0.5rem; /* space between label text + switch */
+}
+
+/* button group */
+.button-group {
+  display: flex;
+  justify-content: space-between; /* spread buttons evenly */
+  margin-bottom: 1rem; /* add spacing below button group */
+}
+
+/* general button */
+.action-button {
+  background-color: red; /* button color */
+  color: white; /* text color */
+  border: none; /* no default border */
+  padding: 0.5rem 1rem; /* button size */
+  font-weight: bold; /* bold text */
+  border-radius: 4px; /* round corners */
+  cursor: pointer; /* cursor -> pointer on hover */
+  max-width: 400px; /* limit button width */
+  text-align: center; /* align text center */
+}
+
+/* hover effects (buttons) */
+.action-button:hover {
+  background-color: darkred; /* change color on hover */
+  opacity: 0.9;
+  transform: scale(1.05); /* enlarge button on hover */
+}
+
+/* advanced settings button */
+.advanced-settings-button-container {
+  display: flex;
+  justify-content: center;
+}
+
+.advanced-settings-button {
+  background-color: red; /* background color */
+  color: white; /* text color */
+  padding: 0.75rem; /* padding (easier clicking) */
+  border: none; /* no default border */
+  border-radius: 4px; /* round corners */
+  font-size: 1rem; /* text size */
+  cursor: pointer; /* makes clickable */
+  width: 100%; /* button = full width */
+  max-width: 300px; /* limit button width */
+  margin-top: 0.5rem; /* add spacing above button */
+  transition: background-color 0.3s; /* transition effect */
+}
+
+/* hover effect (advanced settings button) */
+.advanced-settings-button:hover {
+  background-color: darkred; /* darken button on hover */
+  transform: scale(1.05); /* enlarge button */
+  opacity: 0.9; /* reduce transparency */
+}
+
+/* sim button container */
+.simulator-button-container {
+  display: flex;
+  justify-content: center;
+}
+
+/* simulator button styling */
+.simulator-button {
+  background-color: red; /* color */
+  color: white; /* text color */
+  border: none; /* remove border */
+  padding: 0.5rem 1rem; /* add padding */
+  font-weight: bold; /* bold text */
+  border-radius: 4px; /* round corners */
+  cursor: pointer; /* makes clickable */
+  max-width: 400px; /* limit button width */
+  text-align: center;
+}
+
+/* sim button ( */
+.simulator-button:hover {
+  background-color: darkred; /* darken on hover */
+  opacity: 0.9; /* reduce transparency */
+  transform: scale(1.05); /* enlarge button on hover */
+}
+
+/* SWITCHES */
+
+/* The switch container */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+/* Hide the checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px; /* Rounds the edges */
+}
+
+/* The knob inside the slider */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+/* Toggle when checked */
+input:checked + .slider {
+  background-color: red; /* Background when enabled */
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px); /* Moves the knob */
+}
+
+/* POPUPS */
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  color: black;
+}
+
+.modal-textarea {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-button {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.modal-button:hover {
+  background-color: darkred;
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+.modal-button.cancel {
+  background-color: gray;
+}
+
+.modal-button.cancel:hover {
+  background-color: darkgray;
+}
