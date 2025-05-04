@@ -2,44 +2,86 @@ import React, { useState, useEffect } from 'react';
 import './IMU.css';
 import '../App.css';
 import Footer from '../components/Footer';
-
-/**
- * IMU Page
- * image representing an IMU
- * info for IMU (pitch, roll, CPU temp)
- */
+import Gauge from '../components/IMU/Gauge'
 
 const IMU = () => {
-  const [currentTime, setCurrentTime] = useState(new Date()); // store current system time
+  const [enabled, setEnabled] = useState(true);
+  const [config, setConfig] = useState(null);
+  const [pitch, setPitch] = useState(null);
+  const [roll, setRoll] = useState(null);
+  const [temp, setTemp] = useState(null);
+  const [time, setTime] = useState(null);
   const [showZero, setShowZero] = useState(false); 
-  const [imuData, setImuData] = useState({
-    pitch: 0,
-    roll: 0,
-    cpuTemp: 49, // ex: starting temperature (change this to be real-time)
-  });
+  const [acc_x, setAcc_x] = useState(false);
+  const [acc_y, setAcc_y] = useState(false);
+  const [acc_z, setAcc_z] = useState(false);
+  
 
-  /**
-   * useEffect
-   * interval to update currentTime every sec.
-   * prevent mem leak, clean up interval when comp. is unmounted.
-   */
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer); // cleanup on unmount
-  }, []);
-
-  /**
-   * reset IMU data to zero when the zero is clicked.
-   */
-  const handleZero = () => {
-    setImuData({
-      pitch: 0,
-      roll: 0,
-      cpuTemp: imuData.cpuTemp, // retain temp as it doesn't reset
+    fetch('/config')
+      .then((res) => res.json())
+      .then((data) => {
+        setConfig(data);
+        setEnabled(Boolean(data.imu?.enable));
+        console.log('Config fetched');
+      })
+      .catch((err) => {
+        console.error('Error fetching config:', err);
     });
+
+    if (enabled) {
+      // Initialize SSE connection to gps_stream
+      const imuStream = new EventSource("/packets?count=1000");
+      imuStream.addEventListener("pirail_ATT", handleDataUpdate);
+      
+        imuStream.onopen = function() {
+          console.log("imu connection opened");
+        };
+  
+        imuStream.onerror = function() {
+          console.log("imu connection error");
+        };
+  
+        return () => {
+          imuStream.close();
+        };
+      }
+    
+    }, []);
+  
+  const handleDataUpdate = (event) => {
+    console.log(event);
+    var att = JSON.parse(event.data);
+    // Pitch
+    if (att.pitch != undefined) {
+      setPitch(att.pitch)
+    }
+    // Roll
+    if (att.roll != undefined) {
+      setRoll(att.roll);
+    }
+    // CPU Temp
+    if (att.temp != undefined) {
+      setTemp(att.temp);
+    }
+    // Time
+    if (att.time != undefined) {
+      setTime(att.time.split('T')[1].split('.')[0])
+    }
+    if (att.acc_x != undefined) {
+      setAcc_x(att.acc_x);
+    }
+    if (att.acc_y != undefined) {
+      setAcc_y(att.acc_y);
+    }
+    if (att.acc_z != undefined) {
+      setAcc_z(att.acc_z);
+    }
+  }
+
+  const handleZero = () => {
+    // TODO: Make request to /IMUzero endpoint, zeroing will be handled on server side
   };
 
   const toggleZero = () => {
@@ -48,25 +90,22 @@ const IMU = () => {
 
   return (
     <div className="imu-container">
-      <img
-        src={`IMUexample.png`}
-        alt="IMU Example"
-        className="imu-image"
-      />
+      <div className="nav-container"></div>
+      {enabled ?
+      <div>
+        <Gauge att={ {pitch, roll, acc_x, acc_y, acc_z } } decay={5} />
+      </div>
+      : <div>IMU disabled - turn on in settings</div>}
 
-      {/* show cur date and time */}
       <p className="imu-timestamp">
-        IMU as of: {currentTime.toLocaleDateString()} {currentTime.toLocaleTimeString()}
+        IMU as of: {time}
       </p>
 
-      {/* info box for IMU numbers */}
       <div className="info-box-container">
-        <h2 className="info-box-title">INFORMATION:</h2>
-        {/* 2x2 grid for pitch, roll, temp, and zero out IMU */}
         <div className="info-box-grid">
-          <div className="info-box-item">Pitch: {imuData.pitch}°</div>
-          <div className="info-box-item">Roll: {imuData.roll}°</div>
-          <div className="info-box-item">CPU Temp: {imuData.cpuTemp}°C</div>
+          <div className="info-box-item">Pitch: {pitch ? `${pitch}°` : 'Loading...'}</div>
+          <div className="info-box-item">Roll: {roll ? `${roll}°` : 'Loading...'}</div>
+          <div className="info-box-item">CPU Temp: {temp ? `${temp}°` : 'Loading...'}</div>
           <button className="imu-zero-button" onClick={toggleZero} >
             ZERO
           </button>

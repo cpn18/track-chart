@@ -1,49 +1,66 @@
+// src/pages/LIDAR.jsx
 import React, { useEffect, useState } from 'react';
 import '../App.css';
 import Footer from '../components/Footer';
-
-/**
- * LIDAR Page:
- * Show the current time + date
- * an image representing a LIDAR stream.
- * End goal is to have a constantly updating LIDAR feed.
- */
+import LidarView from '../components/LIDAR/LidarView';
 
 const LIDAR = () => {
-  const [currentTime, setCurrentTime] = useState(new Date()); // store cur system time 
-
-  /**
-   * useEffect
-   * Interval to update `currentTime` every sec.
-   * To prevent mem leak, clean up interval when comp. is unmounted.
-   */
+  const [enabled, setEnabled] = useState(false);
+  const [config, setConfig] = useState(null);
+  const [lidarData, setLidarData] = useState(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    // 1) fetch config
+    fetch('/config')
+      .then((res) => res.json())
+      .then((data) => {
+        setConfig(data);
+        setEnabled(Boolean(data.lidar?.enable));
+        console.log('Config fetched for LIDAR, enabled=', data.lidar?.enable);
+      })
+      .catch((err) => {
+        console.error('Error fetching config:', err);
+      });
 
-    return () => clearInterval(interval); // clean on unmount
+    // 2) open SSE
+    const lidarStream = new EventSource('/packets?count=1000');
+    lidarStream.addEventListener('pirail_LIDAR', handleDataUpdate);
+
+    lidarStream.onopen = () => {
+      console.log('LIDAR SSE connection opened');
+    };
+
+    lidarStream.onerror = () => {
+      console.log('LIDAR SSE connection error');
+      // handle error or close
+    };
+
+    // Cleanup
+    return () => {
+      lidarStream.close();
+    };
   }, []);
+
+  const handleDataUpdate = (event) => {
+    const data = JSON.parse(event.data);
+    console.log('LIDAR SSE data:', data);
+    // Store the entire object (2D or 3D) in state
+    setLidarData(data);
+  };
 
   return (
     <div className="imu-container">
-       {/* LIDAR placeholder below */}
-       <video 
-        src={`/LIDARexample_video.mp4`} 
-        className="lidar-video" 
-        autoPlay 
-        loop 
-        muted 
-      />
-      {/* display cur date and time */}
-      <p className="imu-timestamp">
-        LIDAR as of: {currentTime.toLocaleDateString()} {currentTime.toLocaleTimeString()}
-      </p>
+      <div className="nav-container"></div>
+      
+      {enabled ? (
+        <LidarView lidarData={lidarData} />
+      ) : (
+        <div>LIDAR disabled – turn on in settings</div>
+      )}
+
       <Footer />
     </div>
   );
 };
 
 export default LIDAR;
-

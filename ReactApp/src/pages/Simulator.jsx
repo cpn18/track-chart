@@ -72,6 +72,7 @@ const Simulator = () => {
 
   return (
     <div className="simulator-container">
+      <div className="nav-container"></div>
       {/* question mark - toggling text */}
       <div className="toggle-info-icon" onClick={toggleInfo} title="Toggle Info">
         ?

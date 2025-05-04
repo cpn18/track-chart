@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../App.css';
+import { useTheme } from '../ThemeContext';
 import Footer from '../components/Footer';
 
 /**
@@ -10,35 +11,32 @@ import Footer from '../components/Footer';
  */
 const LPCM = () => {
   // track cur time, set to the cur date and time
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  /**
-   * useEffect
-   * Interval to update `currentTime` every sec.
-   * To prevent mem leak, clean up interval when comp. is unmounted.
-   */
+  const [enabled, setEnabled] = useState(true);
+  const { isDarkMode } = useTheme(); 
+  
   
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(interval);
+    fetch('/config')
+      .then((res) => res.json())
+      .then((data) => {
+        setConfig(data);
+        setEnabled(Boolean(data.lpcm?.enable));
+        console.log('Config fetched');
+      })
+      .catch((err) => {
+        console.error('Error fetching config:', err);
+    });
   }, []);
 
   return (
     <div className="imu-container">
+      <div className="nav-container"></div>
       {/* LPCM place holder image */}
-      <img
-        src={`/audio.png`}
+      {enabled ? <img
+        src={`/${isDarkMode ? 'lpcm_white.gif' : `lpcm_black.gif`}`}
         alt="LPCM Representation"
         className="lidar-image"
-      />
-      
-      {/* show cur date and time */}
-      <p className="imu-timestamp">
-        LPCM as of: {currentTime.toLocaleDateString()} {currentTime.toLocaleTimeString()}
-      </p>
+      /> : <div>LPCM disabled - turn on in settings</div>}
       
       {/* footer */}
       <Footer />

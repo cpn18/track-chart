@@ -16,45 +16,50 @@ const Navbar = () => {
   const location = useLocation(); // get the cur URL path
 
   return (
-    <nav className={`navbar ${isDarkMode ? 'dark' : 'light'}`}> {/* theme based styling */}
-      <div className="logo-container">
-        {/* click logo -> homepage */}
+    <div className="desktop-nav">
+      {/* PiRail Logo */}
+      <div className="nav-logo-bubble">
         <NavLink to="/">
           <img src={isDarkMode ? logoDark : logoLight} alt="PiRail Logo" className="logo" />
         </NavLink>
       </div>
-      <div className="nav-links">
-        {/* all other nav links (imu, lidar, etc.) */}
-        <NavLink
-          to="/imu"
-          className={({ isActive }) => (isActive ? 'nav-link active-link' : 'nav-link')}
-        >
-          IMU
+
+      {/* nav links */}
+      <div className="nav-buttons">
+        <NavLink to="/imu" className={({ isActive }) => (isActive ? 'nav-button active' : 'nav-button')}>
+          <img
+            src={`/${isDarkMode ? 'imuDARK.png' : 'imu.png'}`}
+            alt="IMU"
+            className="nav-icon"
+          />
+          <span>IMU</span>
         </NavLink>
-        <NavLink
-          to="/lidar"
-          className={({ isActive }) => (isActive ? 'nav-link active-link' : 'nav-link')}
-        >
-          LIDAR
+        <NavLink to="/lidar" className={({ isActive }) => (isActive ? 'nav-button active' : 'nav-button')}>
+          <img
+            src={`/${isDarkMode ? 'cameraiconDARK.png' : 'cameraicon.png'}`}
+            alt="LIDAR"
+            className="nav-icon"
+          />
+          <span>LIDAR</span>
         </NavLink>
-        <NavLink
-          to="/lpcm"
-          className={({ isActive }) => (isActive ? 'nav-link active-link' : 'nav-link')}
-        >
-          LPCM
+        <NavLink to="/lpcm" className={({ isActive }) => (isActive ? 'nav-button active' : 'nav-button')}>
+          <img
+            src={`/${isDarkMode ? 'waveformDARK.png' : 'waveform.png'}`}
+            alt="LPCM"
+            className="nav-icon"
+          />
+          <span>LPCM</span>
         </NavLink>
-        <NavLink
-          to="/settings"
-          className={({ isActive }) =>
-            isActive || location.pathname === '/advancedsettings' // highlight if on settings / advanced settings
-              ? 'nav-link active-link'
-              : 'nav-link'
-          }
-        >
-          Settings
+        <NavLink to="/settings" className={({ isActive }) => (isActive ? 'nav-button active' : 'nav-button')}>
+          <img
+            src={`/${isDarkMode ? 'gearIconSettingsDARK.png' : 'gearIconSettings.png'}`}
+            alt="Settings"
+            className="nav-icon"
+          />
+          <span>Settings</span>
         </NavLink>
       </div>
-    </nav>
+    </div>
   );
 };
 

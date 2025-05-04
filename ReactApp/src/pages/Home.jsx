@@ -2,8 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, LayersControl } from 'react-leaflet';
 import L from 'leaflet';
 import { usePoi } from '../PoiContext';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useTheme } from '../ThemeContext';
 import './Home.css';
 import Footer from '../components/Footer';
+
+// PiRail logo - light and dark mode
+const logoLight = `/pirailBlack.png`;
+const logoDark = `/pirailWhite.png`;
 
 // Metric to imperial conversions
 var m_to_ft = 3.28084;
@@ -18,6 +24,7 @@ const poiIcon = new L.Icon({
   popupAnchor: [0, -30],
 });
 
+// user icon - represents the user's location (by a train gif)
 const userIcon = new L.Icon({
   iconUrl: `train.gif`,
   iconSize: [25, 25],
@@ -32,6 +39,7 @@ const RecenterMap = ({ center }) => {
   const interactionTimeout = useRef(null);
 
   useEffect(() => {
+
     // called after an interaction
     const handleStartInteraction = () => { 
       setIsInteracting(true); // set interacting to true
@@ -71,27 +79,142 @@ const RecenterMap = ({ center }) => {
 };
 
 const Home = () => {
+  /* user location and alt */
+  const [config, setConfig] = useState(null);
+  const [enabled, setEnabled] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
   const [altitude, setAltitude] = useState(null);
   const [userSpeed, setSpeed] = useState(null);
   const [userDistance, setDistance] = useState(null);
   const [pois, setPois] = usePoi();
   const [zoom] = useState(13);
-  const [currentTime, setCurrentTime] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [poiDescription, setPoiDescription] = useState('');
   const [editingIndex, setEditingIndex] = useState(null);
+  /* delete confirmation modal */
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState(null);
+  /* handle dark/light mode */
+  const { isDarkMode } = useTheme();
+  /* ref for map instance */
+  const mapRef = useRef(null);
+  /* track the current time */
+  const [currentTime, setCurrentTime] = useState(false);
+  /* toggling info tab (mobile!) */
+  const [isInfoTabOpen, setIsInfoTabOpen] = useState(false);
+  const [startY, setStartY] = useState(0);
+  /* tracking map centering - and if lock mode is active */
+  const [isCentering, setIsCentering] = useState(true);
+  const [mapLayer, setMapLayer] = useState("light");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  /* check if the user is online/offline */
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  /* toggle map centering */
+  const handleCenterMap = () => {
+    setIsCentering((prev) => !prev); // toggle based on last state
+  };
 
+  /* toggle the info tab, this for mobile drag up */
+  const toggleInfoTab = () => {
+    setIsInfoTabOpen((prev) => !prev);
+  
+    // move the buttons based on the tab state */
+    const buttons = document.querySelectorAll('.center-map-button, .add-poi-button');
+    buttons.forEach((button) => {
+      if (!isInfoTabOpen) {
+        button.classList.add('move-up');
+      } else {
+        button.classList.remove('move-up');
+      }
+    });
+  };
+
+  /* handle touch start for info tab */
+  const handleTouchStart = (e) => {
+    setStartY(e.touches[0].clientY);
+  };
+  
+  /* handle touch move for info tab */
+  const handleTouchMove = (e) => {
+    const deltaY = e.touches[0].clientY - startY;
+
+    if (deltaY > 30) {
+      setIsInfoTabOpen(false);
+      document.querySelectorAll('.center-map-button, .add-poi-button').forEach((button) => {
+        button.classList.remove('move-up');
+      });
+    } else if (deltaY < -30) {
+      setIsInfoTabOpen(true);
+      document.querySelectorAll('.center-map-button, .add-poi-button').forEach((button) => {
+        button.classList.add('move-up');
+      });
+    }
+  };
+  
+  /* touch end */
+  const handleTouchEnd = () => {
+    setStartY(0);
+  };
+
+  /* check if the user is online/offline - handle switching */
   useEffect(() => {
-  // Initialize SSE connection to gps_stream
-  const gpsStream = new EventSource("/packets?count=1000");
-    gpsStream.addEventListener("pirail_TPV", handleDataUpdate);
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+  
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
   
     return () => {
-      gpsStream.close();
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+  
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+
+  /* switch the map layers based on the dark/light mode */
+  useEffect(() => {
+    setMapLayer(isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    fetch('/config')
+      .then((res) => res.json())
+      .then((data) => {
+        setConfig(data);
+        setEnabled(Boolean(data.gps?.enable));
+        console.log('Config fetched');
+      })
+      .catch((err) => {
+        console.error('Error fetching config:', err);
+    });
+
+    if (enabled) {
+      // Initialize SSE connection to gps_stream
+      const gpsStream = new EventSource("/packets?count=1000");
+        gpsStream.addEventListener("pirail_TPV", handleDataUpdate);
+      
+        gpsStream.onopen = function() {
+          console.log("gps connection opened");
+        };
+
+        gpsStream.onerror = function() {
+          console.log("gps connection error");
+        };
+
+        return () => {
+          gpsStream.close();
+        };
+    }
   }, []);
 
   const handleDataUpdate = (event) => {
@@ -129,6 +252,7 @@ const Home = () => {
     setEditingIndex(null);
   };
 
+  /* submit poi data - whether editing or adding */
   const handleModalSubmit = () => {
     if (poiDescription.trim()) {
       if (editingIndex !== null) {
@@ -151,17 +275,20 @@ const Home = () => {
     }
   };
 
+  /* editing a POI - activate modal */
   const handleEditPoi = (index) => {
     setEditingIndex(index);
     setPoiDescription(pois[index].description);
     setShowModal(true);
   };
 
+  /* delete a POI - activate modal */
   const handleDeletePoi = (index) => {
     setDeleteIndex(index);
     setShowDeleteModal(true);
   };
 
+  /* confirm delete POI */
   const confirmDeletePoi = () => {
     if (deleteIndex !== null) {
       const updatedPois = pois.filter((_, i) => i !== deleteIndex);
@@ -171,60 +298,119 @@ const Home = () => {
     }
   };
 
+  /* close the modal containing the POI form */
   const handleModalClose = () => {
     setPoiDescription('');
     setShowModal(false);
   };
 
+  const lightLayer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"; /* link to light map */
+  const darkLayer = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"; /* link to dark map */
+
   return (
-    <div className="home-container">
-      <MapContainer
+    <div className={isDarkMode ? 'home-container dark-mode' : 'home-container'}>
+      {/* new fullscreen map! this is using OSM and ORM */}
+      {enabled ? <MapContainer
         center={userLocation || { lat: 0, lng: 0 }}
         zoom={zoom}
         className="map-container"
+        attributionControl={false}
+        whenCreated={(map) => (mapRef.current = map)}
       >
+        {/* layers control for map - this is necessary to change map sources */}
         <LayersControl position="topright">
-          {/* base: OSM */}
           <LayersControl.BaseLayer checked name="OpenStreetMap">
             <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url={
+                isOnline // check if online or offline
+                  ? (
+                      mapLayer === "dark" // check if dark mode is enabled
+                        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" // online dark map
+                        : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" // online light map
+                    )
+                  : (
+                      mapLayer === "dark" // check if dark mode is enabled
+                        ? "/tiles/dark/{z}/{x}/{y}.png" // offline dark map
+                        : "/tiles/light/{z}/{x}/{y}.png" // offline light map
+                    )
+              }
+              attribution='&copy; OpenStreetMap contributors & CartoDB'
             />
           </LayersControl.BaseLayer>
-
-          {/* layer: ORM */}
+          {/* ORM overlay */}
           <LayersControl.Overlay checked name="Railways (OpenRailwayMap)">
             <TileLayer
               url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a> contributors'
+              attribution='&copy; OpenRailwayMap contributors'
               opacity={0.7}
             />
           </LayersControl.Overlay>
         </LayersControl>
 
-        {userLocation && <RecenterMap center={userLocation} />}
-
+        {/* user's current location marker - uses the centering/lock functionality */}
+        {userLocation && (
+          <RecenterMap 
+            center={userLocation} 
+            isCentering={isCentering} 
+            setIsCentering={setIsCentering} 
+          />
+        )}
         {userLocation && (
           <Marker position={userLocation} icon={userIcon}>
             <Popup>You are here!</Popup>
           </Marker>
         )}
 
+        {/* need to render the POI markers */}
         {pois.map((poi, index) => (
           <Marker key={index} position={{ lat: poi.lat, lng: poi.lng }} icon={poiIcon}>
             <Popup>
               <strong>Description:</strong> {poi.description} <br />
               <strong>Latitude:</strong> {poi.lat.toFixed(5)} <br />
               <strong>Longitude:</strong> {poi.lng.toFixed(5)} <br />
-              <button onClick={() => handleEditPoi(index)} className="edit-button">Edit</button>
-              <button onClick={() => handleDeletePoi(index)} className="delete-button">Delete</button>
+              <button onClick={() => handleEditPoi(index)}>Edit</button>
+              <button onClick={() => handleDeletePoi(index)}>Delete</button>
             </Popup>
           </Marker>
         ))}
-      </MapContainer>
+      </MapContainer> : <div id="map-disabled">GPS disabled - turn on in settings</div>}
+  
 
-      <div className="info-container">
-        <h2>INFORMATION:</h2>
+      {/* mobile info tab - swipe up to view */}
+      {isMobile && (
+        <div 
+          className={`info-tab-container ${isInfoTabOpen ? 'open' : ''}`} 
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="info-tab-header" onClick={toggleInfoTab}>
+            <div className="tab-handle"></div>
+          </div>
+
+          <div className="info-tab-content">
+            <div className="info-grid">
+              <div className="info-item">Speed:</div>
+              <div className="info-item">
+                LAT: {userLocation ? userLocation.lat.toFixed(5) : 'Loading...'}
+              </div>
+              <div className="info-item">Distance:</div>
+              <div className="info-item">
+                LONG: {userLocation ? userLocation.lng.toFixed(5) : 'Loading...'}
+              </div>
+              <div className="info-item">
+                Altitude: {altitude ? altitude : 'Loading...'}
+              </div>
+              <div className="info-item">
+                Time: {currentTime ? `${currentTime}` : 'Loading...'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* info section - this time it is for desktop! */}
+      <div className="info-box">
         <div className="info-grid">
           <div className="info-item">
             Speed: {userSpeed ? `${userSpeed} mph` : 'Loading...'}
@@ -245,14 +431,47 @@ const Home = () => {
             Time: {currentTime ? `${currentTime}` : 'Loading...'}
           </div>
         </div>
-        <div className="button-group">
-          <button className="add-poi-button" onClick={handleAddPoi}>
-            ADD POI
-          </button>
-          <button className="view-satellites-button">VIEW SATELLITES</button>
-        </div>
       </div>
 
+      {/* button to recenter/lock the map */}
+      <button
+        className={`center-map-button ${isInfoTabOpen ? 'move-up' : ''}`}
+        onClick={handleCenterMap}
+        title={isCentering ? 'Enable Free Scroll' : 'Enable GPS Lock'}
+      >
+        <img
+          src={
+            isDarkMode
+              ? isCentering
+                ? `/navigationicon_darkEnabled.png`
+                : `/navigationicon_darkDisabled.png`
+              : isCentering
+                ? `/navigationicon_lightEnabled.png`
+                : `/navigationicon_lightDisabled.png`
+          }
+          alt={isCentering ? 'GPS Lock Enabled' : 'Free Scroll Enabled'}
+          className="center-map-icon"
+        />
+      </button>
+
+      {/* button to add a POI */}
+      <button 
+        className={`add-poi-button ${isInfoTabOpen ? 'move-up' : ''}`} 
+        onClick={handleAddPoi}
+        title="Add POI"
+      >
+        <img 
+          src={`/${isDarkMode ? 'addPOIDARK.png' : 'addPOILIGHT.png'}`} 
+          alt="Add POI" 
+          className="add-poi-icon" 
+        />
+      </button>
+
+      <div className="network-status">
+        {isOnline ? "🛰️ Online Map" : "📦 Offline Map"}
+      </div>
+
+      {/* modal for adding/editing POI */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -274,6 +493,8 @@ const Home = () => {
           </div>
         </div>
       )}
+
+      {/* delete confirmation modal */}
       {showDeleteModal && deleteIndex !== null && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -291,6 +512,7 @@ const Home = () => {
         </div>
       )}
 
+      {/* footer - not sure if i need this anymore? going to keep for now. */}
       <Footer />
     </div>
   );

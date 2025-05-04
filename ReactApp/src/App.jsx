@@ -42,6 +42,7 @@ const AppContent = () => {
  */
 
 const App = () => {
+
   return (
     <ThemeProvider> {/* theme context to entire app */}
       <Router> {/* routing functionality */}

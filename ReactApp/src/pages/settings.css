@@ -7,6 +7,10 @@
   padding: 1rem; /* spacing inside container */
 }
 
+.nav-container {
+  height: 150px;
+}
+
 /* individual item container */
 .setting-item {
   margin-bottom: 1rem; /* space between setting item(s) */
@@ -144,6 +148,10 @@
   background-color: darkred; /* change color on hover */
   opacity: 0.9;
   transform: scale(1.05); /* enlarge button on hover */
+}
+
+.apply-button {
+  background-color: green;
 }
 
 /* advanced settings button */
