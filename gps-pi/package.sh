@@ -40,11 +40,13 @@ files="adxl345.py \
     htdocs \
     css \
     js \
+    ReactApp/* \
     os_setup"
 
 echo $hash > version.txt
 file=${HOME}/PiRail-${hash}.tgz
 cp ../desktop/geo.py .
+ln -s ../ReactApp .
 tar -zcf ${file} ${files} version.txt
-rm version.txt geo.py
+rm version.txt geo.py ReactApp
 echo "Wrote ${file}"
