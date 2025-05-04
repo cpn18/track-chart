@@ -2,9 +2,6 @@
 """
 Web Server
 """
-#pylint: disable=too-many-return-statements
-#pylint: disable=too-many-branches
-#pylint: disable=too-many-statements
 import os
 import sys
 import time
@@ -17,60 +14,46 @@ import requests
 import util
 import socket
 import threading
-
-DOCUMENT_MAP = {
-    "/": "htdocs/index.html",
-    "/pirail.css": "css/pirail.css",
-    "/index.html": "htdocs/index.html",
-    "/setup.html": "htdocs/setup.html",
-    "/gps.html": "htdocs/gps.html",
-    "/odometer.html": "htdocs/odometer.html",
-    "/imu.html": "htdocs/imu.html",
-    "/lidar.html": "htdocs/lidar.html",
-    "/lpcm.html": "htdocs/lpcm.html",
-    "/favicon.ico": "htdocs/favicon.ico",
-    "/version.txt": "version.txt",
-    "/jquery.js": "js/jquery-3.7.0.min.js",
-    "/pirail_setup.js": "js/pirail_setup.js",
-    "/pirail_dashboard.js": "js/pirail_dashboard.js",
-    "/pirail_gps.js": "js/pirail_gps.js",
-    "/pirail_odometer.js": "js/pirail_odometer.js",
-    "/pirail_imu.js": "js/pirail_imu.js",
-    "/pirail_lidar.js": "js/pirail_lidar.js",
-    "/pirail_lpcm.js": "js/pirail_lpcm.js",
-    "/pirail_draw.js": "js/pirail_draw.js",
-}
-
-MIME_MAP = {
-    ".html": "text/html",
-    ".txt": "text/plain",
-    ".js": "text/javascript",
-    ".css": "text/css",
-    ".json": "application/json",
-    "default": "application/octet-stream",
-}
-
-SHUTDOWN_DELAY="now"
-
-def get_sys_data():
-    """ Get System Data """
-    stat = os.statvfs(OUTPUT)
-
-    sys_data = {
-        "output": OUTPUT,
-        "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
-        "sw_version": CONFIG['sw_version'],
-    }
-    return sys_data
-
-def check_enabled(configs):
-    """ Determine if enabled """
-    for config in configs:
-        if config['enable'] or config['host'] not in ['localhost', '127.0.0.1']:
-            return (config['host'], config['port'])
-    return False
+import datetime
 
 PACKETS = {}
+SHUTDOWN_DELAY = "now"
+
+REACT_BUILD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ReactApp/dist")
+
+def parse_time(timestr):
+    """Parse the ISO8601 time format: '2024-06-01T11:28:11.000000Z'."""
+    timestr = timestr.replace('Z', '')
+    return datetime.datetime.fromisoformat(timestr)
+
+def simulate_packets(file_path):
+    """Simulate reading JSON data line by line and streaming packets in real time."""
+    with open(file_path, 'r') as f:
+        lines = f.read().splitlines()  # read file into a list of lines
+
+    if not lines:
+        return
+
+    while True:
+        # Parse the first line to determine the initial_time
+        first_packet = json.loads(lines[0])
+        initial_time = parse_time(first_packet['time'])
+        simulation_start = time.time()
+
+        # Now iterate through every line/packet
+        for line in lines:
+            packet = json.loads(line)
+            packet_time = parse_time(packet['time'])
+            offset = (packet_time - initial_time).total_seconds()
+            now_offset = time.time() - simulation_start
+            sleep_time = offset - now_offset
+
+            if sleep_time > 0:
+                time.sleep(sleep_time)
+
+            PACKETS[packet['class']] = packet
+
+
 
 def udp_receiver(ip, port):
     sock = socket.socket(socket.AF_INET, # Internet
@@ -82,12 +65,11 @@ def udp_receiver(ip, port):
         payload = json.loads(data.decode())
         PACKETS[payload['class']] = payload
 
-
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    """ Threaded HTTP Server """
+    """Threaded HTTP Server."""
 
 class MyHandler(BaseHTTPRequestHandler):
-    """ Web Handler """
+    """Main HTTP Handler, serves React build plus SSE and special endpoints."""
 
     def mini_proxy(self, url, verbose=False):
         """ Mini Web Proxy """
@@ -144,117 +126,134 @@ class MyHandler(BaseHTTPRequestHandler):
         if verbose:
             print("url: %s, exiting" % url)
 
-    def do_POST(self):
-        """ POST Handler """
-        if self.path.startswith("/setup"):
-            data = json.loads(self.rfile.read(int(self.headers['content-length'])))
-            for field in ['gps', 'imu', 'lidar', 'hpslidar', 'lpcm']:
-                CONFIG[field].update(data[field])
-            util.DONE = True
-            util.write_config(CONFIG)
-            content_type = "application/json"
-            output = json.dumps({
-                "message": "Stored. Rebooting...",
-            })
-            os.system("shutdown --reboot %s" % SHUTDOWN_DELAY)
-        else:
-            self.send_error(http.client.NOT_FOUND, self.path)
-            return
+    def send_file(self, filepath, content_type="text/html"):
 
-        # If we made it this far, then send output to the browser
-        output = output.encode('utf-8')
+        """Helper to serve file from disk."""
+        if not os.path.exists(filepath):
+            self.send_error(http.client.NOT_FOUND, "File Not Found")
+            return
+        with open(filepath, 'rb') as f:
+            data = f.read()
         self.send_response(http.client.OK)
         self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(output)))
+        self.send_header("Content-Length", str(len(data)))
         self.end_headers()
-        self.wfile.write(output)
+        self.wfile.write(data)
+
+    def do_POST(self):
+        """Handle POST requests (e.g. /setup)."""
+        if self.path.startswith("/setup"):
+            data = json.loads(self.rfile.read(int(self.headers['content-length'])))
+            # Example: store or update config in util
+            for field in ['gps','imu','lidar','hpslidar','lpcm','simulator']:
+                if field in data:
+                    CONFIG[field].update(data[field])
+            util.DONE = True
+            util.write_config(CONFIG)
+            output_dict = {"message": "Stored. Rebooting..."}
+            os.system(f"shutdown --reboot {SHUTDOWN_DELAY}")
+            output = json.dumps(output_dict).encode('utf-8')
+            self.send_response(http.client.OK)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(output)))
+            self.end_headers()
+            self.wfile.write(output)
+        else:
+            self.send_error(http.client.NOT_FOUND, self.path)
 
     def do_GET(self):
-        """Respond to a GET request."""
-
-        content_type = "text/html"
-
-        # Get the query string dictionary from the URL
-        # The qsdict will contain the class, delay and count parameters
+        """Handle GET requests: serve /packets SSE, or fallback to React build."""
         url = urlparse(self.path)
-        qsdict = parse_qs(url.query)
+        path = url.path
 
-        if self.path in DOCUMENT_MAP:
-            pathname = DOCUMENT_MAP[self.path]
-            _, extension = os.path.splitext(pathname)
-            if not os.path.exists(pathname):
-                self.send_error(http.client.NOT_FOUND, "File Not Found")
-                return
+        if path.startswith("/packets"):
+            qsdict = parse_qs(url.query)
+            accept_type = self.headers.get('Accept', '')
 
-            if not extension in MIME_MAP:
-                extension = 'default'
-            content_type = MIME_MAP[extension]
-            with open(pathname, 'rb') as j:
-                output = j.read()
-
-        elif self.path == "/setup":
-            content_type = "application/json"
-            output = json.dumps(CONFIG)
-
-        elif url.path == "/packets":
-            # UNH_CAPSTONE_2025
-            # See: https://docs.google.com/document/d/18RhnY7mhhvA0fA2-fiZChrwZWYRcukbJWfoN5YnYBk0/edit?usp=sharing
-
-            # Output your HTTP Header
+            # Start building SSE or JSON response
             self.send_response(http.client.OK)
-
-            # You want to check the self.headers
-            # If Accept is application/json then return all the packets
-            accept_type = self.headers.get('Accept')
-
-
-            # If Accept is text/event-stream
             if accept_type == "text/event-stream":
+                # SSE mode
                 self.send_header("Content-Type", "text/event-stream")
                 self.end_headers()
 
-                # Get class parameter (can contain multiple)
+                # Possibly read query params for 'class', 'delay', 'count' etc.
+                # e.g. &class=TPV&class=SKY
                 param_class = qsdict.get('class', [])
                 param_delay = float(qsdict.get('delay', [1])[0])
                 param_count = int(qsdict.get('count', [1])[0])
 
+                # If user specified classes, filter. Otherwise, all PACKETS.
+                if param_class:
+                    filtered = {cls: PACKETS[cls] for cls in param_class if cls in PACKETS}
+                else:
+                    filtered = PACKETS
+
                 for _ in range(param_count):
-                    filtered_packets = {cls: PACKETS[cls] for cls in param_class if cls in PACKETS} if param_class else PACKETS
-                    if 'TPV' in filtered_packets:
-                        output = f"event: pirail_TPV\ndata: {json.dumps(filtered_packets['TPV'])}\n\n"
-                        self.wfile.write(output.encode('utf-8'))
-                    if 'SKY' in filtered_packets:
-                        output = f"event: pirail_SKY\ndata: {json.dumps(filtered_packets['SKY'])}\n\n"
-                        self.wfile.write(output.encode('utf-8'))
-                    self.wfile.flush()
+                    # Example: if 'TPV' or 'SKY' in filtered, send them
+                    if 'TPV' in filtered:
+                        msg = f"event: pirail_TPV\ndata: {json.dumps(filtered['TPV'])}\n\n"
+                        self.wfile.write(msg.encode('utf-8'))
+                    if 'SKY' in filtered:
+                        msg = f"event: pirail_SKY\ndata: {json.dumps(filtered['SKY'])}\n\n"
+                        self.wfile.write(msg.encode('utf-8'))
+                    if 'ATT' in filtered:
+                        msg = f"event: pirail_ATT\ndata: {json.dumps(filtered['ATT'])}\n\n"
+                        self.wfile.write(msg.encode('utf-8'))
+                    if 'LIDAR' in filtered:
+                        msg = f"event: pirail_LIDAR\ndata: {json.dumps(filtered['LIDAR'])}\n\n"
+                        self.wfile.write(msg.encode('utf-8'))
+                    if 'LIDAR3D' in filtered:
+                        msg = f"event: pirail_LIDAR\ndata: {json.dumps(filtered['LIDAR3D'])}\n\n"
+                        self.wfile.write(msg.encode('utf-8'))
+                        self.wfile.flush()
                     time.sleep(param_delay)
 
             else:
-                # This blindly returns all the packets in one shot
+                # Return all packets in JSON
                 self.send_header("Content-Type", "application/json")
                 output = json.dumps(PACKETS).encode('utf-8')
                 self.send_header("Content-Length", str(len(output)))
                 self.end_headers()
                 self.wfile.write(output)
-
-            # Need to return here!
             return
 
-        elif self.path == "/poweroff":
-            util.DONE = True
-            content_type = "application/json"
-            output = json.dumps({
-                "message": "Shutting down...",
-            })
-            os.system("shutdown --poweroff %s" % SHUTDOWN_DELAY)
+        elif path == "/IMUzero":
+            # TODO: set global zero variable to current pitch and roll
+            # Now, when passing ATT packets, they will be compared to the zero val
+            return
 
-        elif self.path == "/reset":
+        elif path == "/config":
+            config_json = json.dumps(CONFIG).encode('utf-8')
+            self.send_response(http.client.OK)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(config_json)))
+            self.end_headers()
+            self.wfile.write(config_json)
+            return
+
+        # Custom endpoints
+        elif path == "/poweroff":
             util.DONE = True
-            content_type = "application/json"
-            output = json.dumps({
-                "message": "Rebooting...",
-            })
-            os.system("shutdown --reboot %s" % SHUTDOWN_DELAY)
+            output = json.dumps({"message": "Shutting down..."}).encode('utf-8')
+            os.system(f"shutdown --poweroff {SHUTDOWN_DELAY}")
+            self.send_response(http.client.OK)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(output)))
+            self.end_headers()
+            self.wfile.write(output)
+            return
+
+        elif path == "/reset":
+            util.DONE = True
+            output = json.dumps({"message": "Rebooting..."}).encode('utf-8')
+            os.system(f"shutdown --reboot {SHUTDOWN_DELAY}")
+            self.send_response(http.client.OK)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(output)))
+            self.end_headers()
+            self.wfile.write(output)
+            return
 
         elif self.path.startswith("/gps/"):
             enabled = check_enabled([CONFIG['gps'], CONFIG['gpsimu']])
@@ -295,59 +294,69 @@ class MyHandler(BaseHTTPRequestHandler):
                     "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
                 )
             return
-
-        elif self.path.startswith("/sys/"):
-            stream = self.headers['Accept'] == 'text/event-stream'
-
-            # Start the response
+        elif path.startswith("/sys/"):
+            stream = (self.headers.get('Accept') == 'text/event-stream')
             self.send_response(http.client.OK)
-
-            # If not streaming, must send the content-length
             if not stream:
-                content_type = "application/json"
-                output = json.dumps(get_sys_data())
-                self.send_header("Content-Length", str(len(output)))
+                self.send_header("Content-Type", "application/json")
+                data = json.dumps(get_sys_data()).encode('utf-8')
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
             else:
-                content_type = "text/event-stream"
-
-            # Send the content-type
-            self.send_header("Content-Type", content_type)
-
-            # End of HTTP Headers
-            self.end_headers()
-
-            if not stream:
-                # Not streaming, just send the data
-                self.wfile.write(output)
-            else:
-                # Streaming, generate new data each time
+                self.send_header("Content-Type", "text/event-stream")
+                self.end_headers()
                 try:
                     while not util.DONE:
-                        output = "event: sys\ndata: " + json.dumps(get_sys_data()) + "\n\n"
-                        self.wfile.write(output.encode('utf-8'))
+                        # Your logic to stream system data
+                        data = "event: sys\ndata: " + json.dumps(get_sys_data()) + "\n\n"
+                        self.wfile.write(data.encode('utf-8'))
                         self.wfile.flush()
                         time.sleep(util.STREAM_DELAY)
                 except (BrokenPipeError, ConnectionResetError):
                     pass
             return
 
+        # No endpoints match, serve index.html, let client side routing take care of the rest
         else:
-            self.send_error(http.client.NOT_FOUND, self.path)
-            return
+            filepath = os.path.join(REACT_BUILD_DIR, path.lstrip('/'))
+            if os.path.isfile(filepath):
+                _, ext = os.path.splitext(filepath)
+                if ext == '.css':
+                    mime = 'text/css'
+                elif ext == '.js':
+                    mime = 'text/javascript'
+                elif ext == '.ico':
+                    mime = 'image/x-icon'
+                elif ext in ['.png','.jpg','.jpeg','.gif','.svg']:
+                    mime = f'image/{ext.replace(".","")}'
+                else:
+                    mime = 'text/html'
+                self.send_file(filepath, content_type=mime)
+            else:
+                index_path = os.path.join(REACT_BUILD_DIR, "index.html")
+                self.send_file(index_path, content_type="text/html")
 
-        # If we made it this far, then send output to the browser
-        if not isinstance(output, bytes):
-            output = output.encode('utf-8')
-        self.send_response(http.client.OK)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(output)))
-        self.end_headers()
-        self.wfile.write(output)
+def get_sys_data():
+    """ Get System Data """
+    stat = os.statvfs(OUTPUT)
+
+    sys_data = {
+        "output": OUTPUT,
+        "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
+        "sw_version": CONFIG['sw_version'],
+    }
+    return sys_data
+
+def check_enabled(configs):
+    """Check if any of these config items are enabled."""
+    for config in configs:
+        if config['enable'] or config['host'] not in ['localhost','127.0.0.1']:
+            return (config['host'], config['port'])
+    return False
 
 if __name__ == "__main__":
-    # MAIN START
-
-    # Command Line Arguments
+    # MAIN
     try:
         HOST_NAME = ''
         PORT_NUMBER = int(sys.argv[1])
@@ -356,11 +365,26 @@ if __name__ == "__main__":
         PORT_NUMBER = 80
         OUTPUT = "/root/gps-data"
 
+    # read your config
     CONFIG = util.read_config()
 
-    # UDP Listener
-    Tudp = threading.Thread(name="U", target=udp_receiver, args=(CONFIG['udp']['ip'], CONFIG['udp']['port']))
-    Tudp.start()
+    # start either simulator or real UDP listener
+    simulator_enabled = CONFIG.get('simulator', {}).get('enable', False)
+    if simulator_enabled:
+        Tsim = threading.Thread(target=simulate_packets, args=("Data_Wolfeboro.json",), daemon=True)
+        Tsim.start()
+    else:
+        ip = CONFIG['udp']['ip']
+        port = CONFIG['udp']['port']
+        Tudp = threading.Thread(target=udp_receiver, args=(ip,port), daemon=True)
+        Tudp.start()
 
-    # Web Server
-    util.web_server(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler)
+    # Launch HTTP server
+    server = ThreadedHTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
+    print(f"Serving on port {PORT_NUMBER}, build dir={REACT_BUILD_DIR}")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    server.server_close()
+    print("Server stopped.")
