@@ -341,10 +341,18 @@ def get_sys_data():
     """ Get System Data """
     stat = os.statvfs(OUTPUT)
 
+    firmware_name = "/sys/firmware/devicetree/base/model"
+    if os.path.exists(firmware_name):
+        with open(firmware_name) as infile:
+            hwname = infile.read()
+    else:
+        hwname = "unknown"
+
     sys_data = {
         "output": OUTPUT,
         "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
-        "sw_version": CONFIG['sw_version'],
+        "sw_version": CONFIG.get('sw_version', 'unknown'),
+        "hwname": hwname,
     }
     return sys_data
 
