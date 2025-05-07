@@ -1,0 +1,161 @@
+@import 'leaflet/dist/leaflet.css'; /* leaflet map styles */
+
+/* center text inside .App */
+.App {
+  text-align: center;
+}
+
+/* logo */
+.App-logo {
+  height: 40vmin; /* scale logo relative to viewport */
+  pointer-events: none; /* prevent interaction */
+}
+
+/* app header */
+.App-header {
+  background-color: #282c34; /* dark bg color */
+  min-height: 100vh; /* full viewport height */
+  display: flex;
+  flex-direction: column; /* stack elems vert */
+  align-items: center; /* center elems horiz */
+  justify-content: center; /* center elems vert */
+  font-size: calc(10px + 2vmin); /* responsive font size */
+  color: white; /* white text */
+}
+
+/* links */
+.App-link {
+  color: #61dafb; /* blue link color */
+}
+
+/* body styling */
+/* maybe add Archivo Narrow or Liberation Sans Narrow */
+/* Archivo Narrow: https://fonts.google.com/specimen/Archivo+Narrow?preview.text=PiRail" */
+/* Liberation Sans Narrow: https://fontmeme.com/fonts/liberation-sans-narrow-font/" */
+body {
+  margin: 0; /* remove default margin */
+  font-family: sans-serif; /* set font */
+  transition: background-color 0.3s, color 0.3s; 
+}
+
+/* light mode */
+.light-mode {
+  transition: background-color 0.3s, color 0.3s; 
+  background-color: white; /* white bg */
+  color: black; /* black text */ 
+}
+
+/* dark mode */
+.dark-mode {
+  background-color: #1E1E1E; /* dark bg */
+  transition: background-color 0.3s, color 0.3s; 
+  color: white; /* white text */
+  min-height: 100vh; /* full viewport height */
+}
+
+/* settings page (container) */
+.settings-container {
+  padding: 1rem; /* spacing inside container */
+}
+
+/* general button styling */
+button {
+  background-color: red; /* red bg */
+  color: white; /* white text */
+  padding: 0.75rem 1.5rem; /* add padding */
+  border: none; /* remove border */
+  border-radius: 4px; /* round corners */
+  font-size: 1rem; /* set font size */
+  cursor: pointer; /* pointer on hover */
+}
+
+/* info box (container) */
+.info-box-container {
+  margin-top: 1rem; /* spacing above container */
+  width: 90%; /* make responsive */
+  max-width: 800px; /* limit max width */
+  text-align: left; /* align text left */
+}
+
+/* info box (title) */
+.info-box-title {
+  font-size: 1.2rem; /* set font size */
+  margin-bottom: 0.5rem; /* spacing below title */
+}
+
+/* info box (grid layout) */
+.info-box-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* two = columns */
+  gap: 0.5rem; /* spacing between grid items */
+  margin-top: 0.5rem; /* spacing above grid */
+}
+
+/* individ info box */
+.info-box-item {
+  background-color: #f0f0f0; /* light gray bg */
+  padding: 0.5rem; /* add padding */
+  border-radius: 4px; /* round corners */
+  display: flex;
+  align-items: center; /* center text vert */
+  font-weight: bold; /* bold text */
+  color: black; /* ! keep text black in dark mode ! */
+  justify-content: center; /* center content horiz */
+}
+
+/* info box (button style) */
+.info-box-button {
+  background-color: red; /* red bg */
+  color: white; /* white text */
+  padding: 0.75rem 1.5rem; /* add padding */
+  border: none; /* remove border */
+  border-radius: 4px; /* round corners */
+  font-size: 1rem; /* set font size */
+  cursor: pointer; /* pointer -> hover */
+  font-weight: bold; /* bold text */
+}
+
+/* info button (hover) */
+.info-box-button:hover {
+  opacity: 0.9; /* reduce opacity */
+}
+
+/* IMU container */
+.imu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* lidar placeholder vid */
+.lidar-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 80vh; /* prevents video from taking up too much vert space */
+  margin: 0 auto; /* align video to center */
+}
+
+/* IMU title */
+.imu-title {
+  font-size: 2rem; /* set font size */
+  margin-bottom: 0.5rem; /* spacing below title */
+  color: #333; /* dark text */
+}
+
+/* IMU timestamp */
+.imu-timestamp {
+  font-size: 0.9rem; /* set font size */
+  color: #666; /* light text */
+  margin-bottom: 1rem; /* spacing below timestamp */
+}
+
+/* LIDAR image */
+.lidar-image {
+  width: 75%; /* set width */
+  max-width: 500px; /* limit max width */
+  height: auto; /* keep aspect ratio */
+  margin-bottom: 1rem; /* spacing below image */
+}

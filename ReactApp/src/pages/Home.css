@@ -1,0 +1,493 @@
+
+/* container for home page */
+.home-container {
+  display: flex;
+  flex-direction: column; /* align vert */
+  align-items: left; /* centers items horizontally */
+  padding-top: 1rem; /* Adds space at the top */
+}
+
+/* map container */
+.map-container {
+  width: 100vw; /* viewport width */
+  height: 100vh; /* viewport height */
+  position: fixed; /* stay in place while scrolling */
+  top: 0;
+  left: 0;
+  z-index: 0; /* behind other elements */
+}
+
+/* floating button to add poi - in bottom right always! */
+.add-poi-button {
+  position: absolute;
+  right: 20px; /* 20px from right edge */
+  bottom: 2rem; /* 2rem from bottom */
+  width: 50px; /* width */
+  height: 50px; /* height */
+  background-color: white;
+  color: black;
+  border: none; /* no border */
+  border-radius: 50%; /* make it circular */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* shadow */
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer; /* change cursor on hover */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center; /* centers content vert */
+  justify-content: center; /* center content horiz */
+}
+
+.center-map-button {
+  position: absolute;
+  right: 20px;
+  bottom: calc(105px + env(safe-area-inset-bottom)); /* Ensure it sits above the add-poi-button */
+  width: 50px;
+  height: 50px;
+  background-color: white;
+  color: black;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease, bottom 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1003; /* Make sure it's above other elements */
+}
+
+.center-map-button:hover,
+.add-poi-button:hover {
+  background-color: #f0f0f0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transform: scale(1.1);
+}
+
+.leaflet-control-layers {
+  display: none !important;
+}
+
+.info-box {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%; /* Match width to other bubbles */
+  max-width: 500px;
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border: none;
+  text-align: left !important;
+  z-index: 1000;
+}
+
+@media (max-width: 768px) {
+  .info-box {
+    display: none; /* Hide desktop info box */
+  }
+
+  .leaflet-control-zoom {
+    display: none !important;
+  }
+
+  .info-tab-container {
+    position: fixed;
+    bottom: -160px; /* Move it off the screen initially */
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    transition: transform 0.3s ease;
+    z-index: 999;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .info-tab-container.open {
+    transform: translateY(-160px); /* Slide up */
+  }
+
+  .info-tab-header {
+    height: 35px;
+    background-color: white;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .tab-handle {
+    width: 50px;
+    height: 6px;
+    background-color: #999;
+    border-radius: 3px;
+  }
+
+  .info-tab-content {
+    height: auto !important; /* Let the height adjust to content size */
+    padding: 0.5rem 1rem; /* Keep consistent padding */
+    font-size: 16px;
+    color: #333;
+  }
+
+  /* Move buttons with tab */
+  .center-map-button,
+  .add-poi-button {
+    z-index: 1002; /* Ensure buttons are above the tab */
+    transition: transform 0.3s ease, bottom 0.3s ease;
+  }
+
+  .center-map-button.move-up {
+    bottom: calc(265px + env(safe-area-inset-bottom));
+  }
+  
+  .add-poi-button.move-up {
+    bottom: calc(205px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 768px) {
+  .dark-mode .info-tab-container {
+    background-color: #1E1E1E;
+    color: #fff;
+  }
+
+  .dark-mode .info-tab-header {
+    background-color: #1E1E1E;
+  }
+
+  .dark-mode .tab-handle {
+    background-color: #666;
+  }
+
+  .dark-mode .info-tab-content {
+    color: white;
+  }
+}
+
+
+.info-box h2 {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem; /* Remove extra top margin */
+  color: #000;
+  text-align: center;
+}
+
+.info-tab-container {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
+.add-poi-button {
+  position: absolute;
+  right: 20px;
+  bottom: calc(45px + env(safe-area-inset-bottom)); 
+  width: 50px;
+  height: 50px;
+  background-color: white;
+  color: black;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease, bottom 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1002; /* Ensure they appear above the info tab */
+}
+
+/* info container */
+.info-container {
+  margin-top: 1rem; /* spacing above the section */
+  width: 90%; /* responsive (to 90%) */
+  max-width: 800px; /* limit max width */
+  text-align: left !; /* aligns text to <- */
+}
+
+/* info section (header) */
+.info-container h2 {
+  font-size: 1.2rem; /* font size */
+  margin-bottom: 0.5rem; /* spacing below heading */
+}
+
+/* grid layout for info boxes */
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: left;
+}
+
+/* singular box styles */
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0; /* Remove padding */
+  background-color: transparent !important; /* remove background */
+  font-weight: normal;
+  font-size: 14px;
+  color: #333;
+  text-align: left;
+}
+
+/* home page buttons (group) */
+.button-group {
+  display: flex;
+  justify-content: space-between; /* spread evenly */
+  margin-top: 1rem; /* spacing ^ button group */
+}
+
+/* modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  color: black;
+}
+
+.modal-textarea {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  color: black;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-button {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.modal-button:hover {
+  background-color: darkred;
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* cancel button */
+.modal-button.cancel {
+  background-color: red;
+}
+
+/* hovering for cancel button */
+.modal-button.cancel:hover {
+  background-color: darkred;
+}
+
+/* edit & delete buttons */
+.edit-button,
+.delete-button {
+  background-color: red; /* match existing button color */
+  color: white; /* white text */
+  border: none; /* no! */
+  padding: 0.5rem 0.8rem; /* adjust button size */
+  font-weight: bold; /* bold text */
+  border-radius: 4px; /* rounded corners */
+  cursor: pointer; /* pointer -> hover */
+  margin: 5px 5px 0;
+  font-size: 14px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* hover effect - edit and delete*/
+.edit-button:hover,
+.delete-button:hover {
+  background-color: darkred;
+  scale: 1.05;
+}
+
+/* buttons in popup need to align */
+.leaflet-popup-content {
+  text-align: center; /* center those buttons in popup */
+  padding: 0px 0px;
+}
+
+.leaflet-popup-content button {
+  display: inline-block;
+  margin: 6px 8px; /* horizontal spacing between buttons */
+  padding: 5px 8px; /*padding for smaller buttons (smaller padding) */
+  font-size: 12px; /* small font */
+  border-radius: 6px; /* round edges to stay consistent */
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.leaflet-popup-content button:hover {
+  background-color: darkred; /* darken on hover */
+  transform: scale(1.05);
+}
+
+/* DARK MODE BELOW THIS LINE */
+
+.dark-mode .nav-logo-bubble,
+.dark-mode .nav-button,
+.dark-mode .info-box,
+.dark-mode .add-poi-button,
+.dark-mode .center-map-button {
+  background-color: #1E1E1E; /* dark gray background for ALL */
+  color: #ffffff; /* all white text ! */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* stronger shadow for dark mode */
+}
+
+.dark-mode .info-item,
+.dark-mode .info-box h2 {
+  color: white; /* this is to catch any text that stays black */
+  text-align: center;
+}
+
+.dark-mode .nav-logo-bubble:hover,
+.dark-mode .nav-button:hover,
+.dark-mode .add-poi-button:hover,
+.dark-mode .center-map-button:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7); /* shadow underneath button */
+  background-color: #333;
+  transform: scale(1.05); /* make bigger */
+}
+
+.dark-mode .modal-content {
+  background-color: #1E1E1E; /* same gray background */
+  color: white; /* same white text */
+}
+
+.dark-mode .modal-textarea {
+  background-color: #444; /* Dark input background */
+  color: white;
+  border: 1px solid #555;
+}
+
+.dark-mode .modal-button {
+  background-color: red; /* i think the red button works still in dark mode? */
+  font-weight: bold;
+  /* maybe change this to a dark gray? */
+}
+
+.dark-mode .modal-button:hover {
+  background-color: darkred; /* dark red on hover */
+  transform: scale(1.05); /* enlarge button */
+}
+
+.dark-mode .leaflet-popup-content button {
+  background-color: red; /* red! background */
+  color: white;
+  border: none;
+}
+
+.dark-mode .leaflet-popup-content button:hover {
+  background-color: darkred; /* darkred on hover */
+  transform: scale(1.05);
+}
+
+/* dark mode -> popups */
+.dark-mode .leaflet-popup-content-wrapper {
+  background-color: #333;
+  color: white;
+  border: 1px solid #444;
+}
+
+/* dark mode -> popup tip - hide */
+.dark-mode .leaflet-popup-tip-container {
+  display: none;
+}
+
+/* map controls need to change to match dark mode! */
+.dark-mode .leaflet-control-zoom a {
+  background-color: #1E1E1E;
+  color: white;
+}
+
+.dark-mode .modal-content h2 {
+  margin-bottom: 1rem;
+  color: white;
+}
+
+/* hover effect for zoom buttons */
+.dark-mode .leaflet-control-zoom a:hover {
+  background-color: #333;
+}
+
+.add-poi-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  pointer-events: none; /* prevents interfering with button hover */
+}
+
+.center-map-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  pointer-events: none; /* keep hover tooltips working on the button */
+}
+
+/* for icon nav bar images below! */
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+#map-disabled {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  padding-top: 20%;
+}
+
+.network-status { /* network status indicator */
+  position: absolute; /* positioned on top of map */
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.8); /* semi-transparent white */
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  z-index: 1000;
+}
+.dark-mode .network-status { /* dark mode for network status */
+  background-color: rgba(30, 30, 30, 0.8); /* dark mode bg */
+  color: #eee; /* light text */
+}

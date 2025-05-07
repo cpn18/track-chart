@@ -1,0 +1,146 @@
+
+/* container (IMU) */
+.imu-container {
+  display: flex;
+  flex-direction: column; /* align elem vertical */
+  align-items: center; /* center content horizontal */
+  padding-top: 1rem; /* add spacing at the top */
+  font-family: Arial, sans-serif; /* set font family */
+}
+
+/* IMU page (title) */
+.imu-title {
+  font-size: 2rem; /* increase font size for better visibility */
+  margin-bottom: 0.5rem; /* add spacing below title */
+  color: #333; /* dark gray text */
+}
+
+/* timestamp styling */
+.imu-timestamp {
+  font-size: 0.9rem; /* adjust font size */
+  color: #666; /* lighter gray for less emphasis */
+  margin-bottom: 1rem; /* add spacing below timestamp */
+}
+
+/* information display container */
+.info-container {
+  margin-top: 1rem; /* spacing above container */
+  width: 90%; /* make responsive */
+  max-width: 800px; /* limit max width */
+  text-align: left; /* align text to left */
+}
+
+/* heading style inside info container */
+.info-container h2 {
+  font-size: 1.2rem; /* font size */
+  margin-bottom: 0.5rem; /* spacing below heading */
+}
+
+/* info boxes (grid layout)*/
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* two equal columns */
+  gap: 0.5rem; /* spacing between grid items */
+  margin-top: 0.5rem; /* spacing above the grid */
+}
+
+/* single info (box style) */
+.info-item {
+  background-color: #f0f0f0; /* light gray background */
+  padding: 0.5rem; /* padding inside the box */
+  border-radius: 4px; /* round corners */
+  display: flex;
+  align-items: center; /* center text vert */
+  font-weight: bold; /* make text bold */
+  color: black; /* keep text black (dm) */
+  justify-content: center; /* center content horizontal */
+}
+
+/* zero button styling */
+.imu-zero-button {
+  background-color: red; /* button background to red */
+  color: white; /* text color */
+  border: none; /* remove default border */
+  padding: 0.5rem 1rem; /* padding (easier click) */
+  font-weight: bold; /* bold text */
+  border-radius: 4px; /* round corners */
+  cursor: pointer; /* cursor -> pointer on hover */
+}
+
+/* zero button (hover) */
+.imu-zero-button:hover {
+  background-color: darkred; /* darken on hover */
+  opacity: 0.9; /* reduce transparency */
+  transform: scale(1.05); /* enlarge button on hover */
+}
+
+/* modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500px;
+  color: black; /* ! keep text black in dark mode ! */
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  color: black;
+}
+
+.modal-textarea {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-button {
+  margin-top: 20px;
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.modal-button:hover {
+  background-color: darkred;
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+.modal-button.cancel {
+  background-color: red;
+}
+
+.modal-button.cancel:hover {
+  background-color: darkred;
+}

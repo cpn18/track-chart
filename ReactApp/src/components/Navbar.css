@@ -1,0 +1,68 @@
+/* nav bar - desktop */
+.desktop-nav {
+    position: absolute;
+    top: 1rem; /* spacing from top */
+    left: 50%; /* center */
+    transform: translateX(-50%); /* exact centering (adjusts) */
+    display: flex;
+    flex-direction: column; /* align vert */
+    align-items: center; /* center-align */
+    z-index: 1;
+  }
+  
+  /* logo container in nav bar */
+  .nav-logo-bubble {
+    background-color: white; /* white background */
+    padding: 0.75rem; /* padding */
+    border-radius: 20px; /* rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* shadow */
+    display: inline-flex; /* inline flex */
+    justify-content: center; /* center */
+    align-items: center; /* center */
+    margin-bottom: 0.5rem; /* spacing */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* transition */
+  }
+
+  .nav-logo-bubble:hover {
+    background-color: #f0f0f0; /* Subtle gray background */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+    transform: scale(1.05);
+  }
+  
+  .nav-logo-bubble img {
+    width: 120px;
+    height: auto;
+  }
+  
+  .nav-button {
+    background-color: white;
+    padding: 0.4rem 0.75rem;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    text-decoration: none;
+    color: black;
+    display: flex;
+    flex-direction: row; /* make icon and text side-by-side */
+    align-items: center;  /* center them vertically */
+    gap: 0.4rem; /* space between icon and text */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    font-size: 14px;
+  }
+  
+  
+  .nav-button:hover {
+    background-color: #f0f0f0; /* Subtle gray background */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+    transform: scale(1.05); /* Slight scaling */
+  }
+  
+  .nav-button.active {
+    background-color: red;
+    color: white;
+  }
+  
+  .nav-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }

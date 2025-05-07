@@ -1,0 +1,211 @@
+.simulator-container {
+  max-width: 600px; /* limit width of the simulator text */
+  margin: 0 auto; /* centers the container horizontally */
+  text-align: center; /* centers all text inside the container */
+  padding: 1rem; /* spacing inside the container */
+  line-height: 1.6; /* readability by increasing line height */
+  position: relative; /* for positioning the question mark icon */
+}
+
+/* Question mark icon for toggling text */
+.toggle-info-icon {
+  position: absolute; /* position relative to container */
+  top: 10px; /* spacing from top */
+  right: 10px; /* spacing from right */
+  background-color: #ccc; /* light gray background */
+  color: black; /* text color */
+  border-radius: 50%; /* make it circular */
+  width: 30px; /* size of the icon */
+  height: 30px;
+  display: flex;
+  justify-content: center; /* center text horizontally */
+  align-items: center; /* center text vertically */
+  font-size: 1.2rem; /* font size */
+  cursor: pointer; /* pointer on hover */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* subtle shadow */
+  transition: background-color 0.3s, transform 0.2s; /* smooth hover effect */
+}
+
+.toggle-info-icon:hover {
+  background-color: #aaa; /* darker background on hover */
+  transform: scale(1.1); /* slightly enlarge on hover */
+}
+
+/* Text container for toggleable information */
+.info-text {
+  text-align: center; /* ensures all text is centered */
+  margin-top: 20px; /* spacing above text */
+}
+
+.simulator-container h1,
+.simulator-container h2,
+.simulator-container p {
+  text-align: center; /* centers all headings and paragraphs */
+  margin: 0 auto; /* ensures they align within the container */
+}
+
+/* main title */
+.simulator-container h1 {
+  font-size: 1.5em; /* font size */
+  margin-bottom: 1rem; /* spacing below the heading */
+}
+
+/* section headers */
+.simulator-container h2 {
+  font-size: 1.2em; /* font size */
+  margin-top: 2rem; /* spacing above the heading */
+}
+
+.image-group {
+  display: flex;
+  justify-content: center; /* center images horizontally */
+  gap: 2.75rem; /* spacing between buttons */
+  margin-top: 1rem; /* spacing above button group */
+  height: 80px;
+}
+
+.image-group > .upload {
+  padding-inline-start: 35px;
+}
+
+/* button group for sim buttons */
+.button-group {
+  display: flex;
+  justify-content: center; /* center buttons horizontally */
+  gap: 1rem; /* spacing between buttons */
+  margin-top: 1rem; /* spacing above button group */
+}
+
+/* styles for buttons on sim page */
+.setting-button {
+  background-color: red; /* default color */
+  color: white; /* text color */
+  padding: 0.75rem 1.5rem; /* padding = make buttons larger */
+  border: none; /* remove default border */
+  border-radius: 4px; /* round corners */
+  font-size: 1rem; /* font size */
+  cursor: pointer; /* cursor -> pointer on hover */
+  transition: background-color 0.3s ease; /* transition on hover */
+  font-weight: bold;
+}
+
+/* button hover */
+.setting-button:hover {
+  background-color: darkred; /* change color on hover */
+  transform: scale(1.05); /* grow button on hover */
+  opacity: 0.9; /* lessen opacity */
+}
+
+/* modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500px;
+  color: black; /* ! keep text black in dark mode ! */
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  color: black;
+}
+
+.modal-textarea {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-button {
+  margin-top: 20px;
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.modal-button:hover {
+  background-color: darkred;
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+.modal-button.cancel {
+  background-color: red;
+}
+
+.modal-button.cancel:hover {
+  background-color: darkred;
+}
+
+/* UPLOAD */
+
+/* Drag & Drop Container */
+.upload-container {
+  border: 2px dashed #d32f2f; /* PiRail primary red */
+  background-color: white; /* Dark background */
+  color: black; /* White text */
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  cursor: pointer; /* Makes it clickable */
+  transition: all 0.3s ease-in-out;
+  margin-bottom: 20px;
+}
+
+/* Hover & Dragging Effect */
+.upload-container:hover,
+.upload-container.dragging {
+  background-color: red; /* Darker red */
+  border-color: #ffffff; /* White border */
+  color: white;
+}
+
+/* Hidden File Input */
+.hidden {
+  display: none;
+}
+
+/* Error Message */
+.upload-error {
+  color: #ff5252;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* Uploaded File Name */
+.file-name {
+  color: #76ff03; /* Bright green */
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 8px;
+}
