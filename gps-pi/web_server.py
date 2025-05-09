@@ -183,13 +183,15 @@ class MyHandler(BaseHTTPRequestHandler):
                 param_delay = float(qsdict.get('delay', [1])[0])
                 param_count = int(qsdict.get('count', [1])[0])
 
-                # If user specified classes, filter. Otherwise, all PACKETS.
-                if param_class:
-                    filtered = {cls: PACKETS[cls] for cls in param_class if cls in PACKETS}
-                else:
-                    filtered = PACKETS
-
                 for _ in range(param_count):
+                    PACKETS.update({"SYS": get_sys_data()})
+
+                    # If user specified classes, filter. Otherwise, all PACKETS.
+                    if param_class:
+                        filtered = {cls: PACKETS[cls] for cls in param_class if cls in PACKETS}
+                    else:
+                        filtered = PACKETS
+
                     # Example: if 'TPV' or 'SKY' in filtered, send them
                     if 'TPV' in filtered:
                         msg = f"event: pirail_TPV\ndata: {json.dumps(filtered['TPV'])}\n\n"
@@ -206,10 +208,14 @@ class MyHandler(BaseHTTPRequestHandler):
                     if 'LIDAR3D' in filtered:
                         msg = f"event: pirail_LIDAR\ndata: {json.dumps(filtered['LIDAR3D'])}\n\n"
                         self.wfile.write(msg.encode('utf-8'))
-                        self.wfile.flush()
+                    if 'SYS' in filtered:
+                        msg = f"event: pirail_SYS\ndata: {json.dumps(filtered['SYS'])}\n\n"
+                        self.wfile.write(msg.encode('utf-8'))
+                    self.wfile.flush()
                     time.sleep(param_delay)
 
             else:
+                PACKETS.update({"SYS": get_sys_data()})
                 # Return all packets in JSON
                 self.send_header("Content-Type", "application/json")
                 output = json.dumps(PACKETS).encode('utf-8')
