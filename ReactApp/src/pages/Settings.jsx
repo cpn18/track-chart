@@ -78,6 +78,7 @@ const Settings = () => {
     };
   }, []);
   
+/*
   const handleDataUpdate = (event) => {
     console.log(event);
     var att = JSON.parse(event.data);
@@ -143,6 +144,7 @@ const Settings = () => {
         console.error('Error updating config:', err);
       });
   }
+ */
 
   const toggleDropdown = (sensor) => {
     console.log(config);

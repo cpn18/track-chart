@@ -218,8 +218,9 @@ const Home = () => {
   }, []);
 
   const handleDataUpdate = (event) => {
-    console.log(event);
+    //console.log(event);
     var tpv = JSON.parse(event.data);
+    console.log(tpv)
 
     // Location
     if (tpv.lat !== undefined && tpv.lon !== undefined) {
@@ -231,7 +232,13 @@ const Home = () => {
     } 
     // Speed
     if (tpv.speed != undefined) {
-      setSpeed(Math.round(tpv.speed*ms_to_mph))
+      if (tpv.speed > tpv.eps) {
+        setSpeed(Math.round(tpv.speed*ms_to_mph))
+      } else {
+        setSpeed(0)
+      }
+    } else {
+      setSpeed(-1)
     }
     // Odometer
     if (tpv.odometer != undefined) {
@@ -390,11 +397,15 @@ const Home = () => {
 
           <div className="info-tab-content">
             <div className="info-grid">
-              <div className="info-item">Speed:</div>
+              <div className="info-item">
+	        Speed: {userSpeed >= 0 ? `${userSpeed} mph` : 'Loading...'}
+	      </div>
               <div className="info-item">
                 LAT: {userLocation ? userLocation.lat.toFixed(5) : 'Loading...'}
               </div>
-              <div className="info-item">Distance:</div>
+              <div className="info-item">
+                Distance: {userDistance ? `${userDistance} mi` : 'Loading...'}
+	      </div>
               <div className="info-item">
                 LONG: {userLocation ? userLocation.lng.toFixed(5) : 'Loading...'}
               </div>
@@ -413,7 +424,7 @@ const Home = () => {
       <div className="info-box">
         <div className="info-grid">
           <div className="info-item">
-            Speed: {userSpeed ? `${userSpeed} mph` : 'Loading...'}
+            Speed: {userSpeed >= 0 ? `${userSpeed} mph` : 'Loading...'}
           </div>
           <div className="info-item">
             LAT: {userLocation ? userLocation.lat.toFixed(5) : 'Loading...'}
