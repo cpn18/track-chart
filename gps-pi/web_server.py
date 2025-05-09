@@ -350,7 +350,7 @@ def get_sys_data():
     firmware_name = "/sys/firmware/devicetree/base/model"
     if os.path.exists(firmware_name):
         with open(firmware_name) as infile:
-            hwname = infile.read()
+            hwname = infile.read()[0:-1]
     else:
         hwname = "unknown"
 
