@@ -220,7 +220,7 @@ const Home = () => {
   const handleDataUpdate = (event) => {
     //console.log(event);
     var tpv = JSON.parse(event.data);
-    console.log(tpv)
+    //console.log(tpv)
 
     // Location
     if (tpv.lat !== undefined && tpv.lon !== undefined) {
@@ -232,6 +232,7 @@ const Home = () => {
     } 
     // Speed
     if (tpv.speed != undefined) {
+      // if speed greater than the error, must be moving
       if (tpv.speed > tpv.eps) {
         setSpeed(Math.round(tpv.speed*ms_to_mph))
       } else {
