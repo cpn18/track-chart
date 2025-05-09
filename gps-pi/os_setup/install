@@ -41,5 +41,5 @@ systemctl enable rc-local
 syttemctl start rc-local
 
 # React
-apt-get install npm
+apt-get install npm python3-tqdm
 npm install typescript
