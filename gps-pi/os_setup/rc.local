@@ -18,7 +18,7 @@ if [ "$_IP" ]; then
 fi
 
 # Enable Network Address Translation
-if [ -f /etc/iptables.ipv4.natv ]; then
+if [ -f /etc/iptables.ipv4.nat ]; then
   iptables-restore < /etc/iptables.ipv4.nat
 fi
 

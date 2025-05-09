@@ -1,8 +1,8 @@
 #!/bin/bash
 cmd="/bin/cp"
 
-apt-get install update
-apt-get install upgrade
+apt-get update
+apt-get upgrade
 
 apt-get install vim
 apt-get install python3-smbus i2c-tools git
@@ -31,9 +31,15 @@ systemctl enable gpsd.socket
 systemctl start gpsd.socket
 
 # LIDAR
-sudo apt-get install python3-pip
+apt-get install python3-pip
 pip3 install rplidar
 ${cmd} 01-lidar.rules /etc/udev/rules.d
 
 # Bootup
 ${cmd} rc.local /etc
+systemctl enable rc-local
+syttemctl start rc-local
+
+# React
+apt-get install npm
+npm install typescript
