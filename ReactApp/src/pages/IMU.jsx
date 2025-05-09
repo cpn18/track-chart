@@ -51,19 +51,19 @@ const IMU = () => {
     }, []);
   
   const handleDataUpdate = (event) => {
-    console.log(event);
     var att = JSON.parse(event.data);
+    console.log(att);
     // Pitch
     if (att.pitch != undefined) {
-      setPitch(att.pitch)
+      setPitch(att.pitch.toFixed(3))
     }
     // Roll
     if (att.roll != undefined) {
-      setRoll(att.roll);
+      setRoll(att.roll.toFixed(3));
     }
     // CPU Temp
     if (att.temp != undefined) {
-      setTemp(att.temp);
+      setTemp(att.temp.toFixed(0));
     }
     // Time
     if (att.time != undefined) {
@@ -98,7 +98,7 @@ const IMU = () => {
       : <div>IMU disabled - turn on in settings</div>}
 
       <p className="imu-timestamp">
-        IMU as of: {time}
+        IMU as of: {time}Z
       </p>
 
       <div className="info-box-container">
