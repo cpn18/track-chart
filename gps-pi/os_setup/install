@@ -11,7 +11,7 @@ apt-get install python3-smbus i2c-tools git
 ${cmd} timezone /etc/timezone
 
 # WiFi Hotspot
-apt-get install hostapd dnsmasq iptables-persistent
+apt-get install dhcpcd hostapd dnsmasq iptables-persistent
 ${cmd} hostapd.conf /etc/hostapd
 ${cmd} hostapd /etc/default
 ${cmd} dhcpcd.conf /etc
