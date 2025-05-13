@@ -26,35 +26,6 @@ def parse_time(timestr):
     timestr = timestr.replace('Z', '')
     return datetime.datetime.fromisoformat(timestr)
 
-def simulate_packets(file_path):
-    """Simulate reading JSON data line by line and streaming packets in real time."""
-    with open(file_path, 'r') as f:
-        lines = f.read().splitlines()  # read file into a list of lines
-
-    if not lines:
-        return
-
-    while True:
-        # Parse the first line to determine the initial_time
-        first_packet = json.loads(lines[0])
-        initial_time = parse_time(first_packet['time'])
-        simulation_start = time.time()
-
-        # Now iterate through every line/packet
-        for line in lines:
-            packet = json.loads(line)
-            packet_time = parse_time(packet['time'])
-            offset = (packet_time - initial_time).total_seconds()
-            now_offset = time.time() - simulation_start
-            sleep_time = offset - now_offset
-
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-
-            PACKETS[packet['class']] = packet
-
-
-
 def udp_receiver(ip, port):
     sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
@@ -382,16 +353,11 @@ if __name__ == "__main__":
     # read your config
     CONFIG = util.read_config()
 
-    # start either simulator or real UDP listener
-    simulator_enabled = CONFIG.get('simulator', {}).get('enable', False)
-    if simulator_enabled:
-        Tsim = threading.Thread(target=simulate_packets, args=("Data_Wolfeboro.json",), daemon=True)
-        Tsim.start()
-    else:
-        ip = CONFIG['udp']['ip']
-        port = CONFIG['udp']['port']
-        Tudp = threading.Thread(target=udp_receiver, args=(ip,port), daemon=True)
-        Tudp.start()
+    # Start the UDP Listener
+    ip = CONFIG['udp']['ip']
+    port = CONFIG['udp']['port']
+    Tudp = threading.Thread(target=udp_receiver, args=(ip,port), daemon=True)
+    Tudp.start()
 
     # Launch HTTP server
     server = ThreadedHTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
