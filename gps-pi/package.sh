@@ -13,6 +13,8 @@ files="adxl345.py \
     imu_logger.sh \
     gpsimu_logger.py \
     gpsimu_logger.sh \
+    simulator.py \
+    simulator.sh \
     witmotionjygpsimu.py \
     gps_common.py \
     IMU.py \

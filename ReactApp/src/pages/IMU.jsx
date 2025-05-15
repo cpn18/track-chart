@@ -23,7 +23,7 @@ const IMU = () => {
       .then((res) => res.json())
       .then((data) => {
         setConfig(data);
-        setEnabled(Boolean(data.imu?.enable));
+        setEnabled(Boolean(data.imu?.enable) || Boolean(data.gpsimu?.enable) || Boolean(data.sim?.enable));
         console.log('Config fetched');
       })
       .catch((err) => {

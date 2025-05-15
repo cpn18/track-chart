@@ -191,7 +191,7 @@ const Home = () => {
       .then((res) => res.json())
       .then((data) => {
         setConfig(data);
-        setEnabled(Boolean(data.gps?.enable));
+        setEnabled(Boolean(data.gps?.enable) || Boolean(data.gpsimu?.enable) || Boolean(data.sim?.enable));
         console.log('Config fetched');
       })
       .catch((err) => {

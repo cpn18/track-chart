@@ -24,7 +24,7 @@ import geo
 
 from gps_common import update_odometer
 
-ALWAYS_LOG = True
+LOGGING = False
 
 TPV = SKY = {}
 TPV_SYS_TIME = SKY_SYS_TIME = 0
@@ -111,13 +111,13 @@ def simulator(output_directory):
         while not util.DONE:
             # Parse the first line to determine the initial_time
             first_packet = json.loads(lines[0])
-            initial_time = parse_time(first_packet['time'])
+            initial_time = util.parse_time(first_packet['time'])
             simulation_start = time.time()
 
             # Now iterate through every line/packet
             for line in lines:
                 obj = json.loads(line)
-                packet_time = parse_time(obj['time'])
+                packet_time = util.parse_time(obj['time'])
                 offset = (packet_time - initial_time).total_seconds()
                 now_offset = time.time() - simulation_start
                 sleep_time = offset - now_offset

@@ -21,11 +21,6 @@ SHUTDOWN_DELAY = "now"
 
 REACT_BUILD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ReactApp/dist")
 
-def parse_time(timestr):
-    """Parse the ISO8601 time format: '2024-06-01T11:28:11.000000Z'."""
-    timestr = timestr.replace('Z', '')
-    return datetime.datetime.fromisoformat(timestr)
-
 def udp_receiver(ip, port):
     sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP

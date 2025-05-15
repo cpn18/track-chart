@@ -20,7 +20,7 @@ const LPCM = () => {
       .then((res) => res.json())
       .then((data) => {
         setConfig(data);
-        setEnabled(Boolean(data.lpcm?.enable));
+        setEnabled(Boolean(data.lpcm?.enable) || Boolean(data.sim?.enable));
         console.log('Config fetched');
       })
       .catch((err) => {

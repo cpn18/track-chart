@@ -15,7 +15,7 @@ const LIDAR = () => {
       .then((res) => res.json())
       .then((data) => {
         setConfig(data);
-        setEnabled(Boolean(data.lidar?.enable));
+        setEnabled(Boolean(data.lidar?.enable) || Boolean(data.hpslidar?.enable) || Boolean(data.sim?.enable));
         console.log('Config fetched for LIDAR, enabled=', data.lidar?.enable);
       })
       .catch((err) => {

@@ -8,13 +8,14 @@
 	"host": "localhost",
         "port": 80
     },
-    "simulator": {
+    "sim": {
         "enable": false,
         "log": false,
         "data": "Data_Wolfeboro.json",
         "cmd': ["simulator.sh", "%PORT%", "%OUTPUT_DIR%"],
         "host": "localhost",
         "port": 8084 
+    },
     "gps": {
 	"enable": true,
 	"cmd": ["gps_logger.sh", "%PORT%", "%OUTPUT_DIR%"],

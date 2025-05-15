@@ -82,3 +82,8 @@ def get_cpu_temp():
             return float(temp.read())/1000
     except:
         return 0.0
+
+def parse_time(timestr):
+    """Parse the ISO8601 time format: '2024-06-01T11:28:11.000000Z'."""
+    timestr = timestr.replace('Z', '')
+    return datetime.datetime.fromisoformat(timestr)
