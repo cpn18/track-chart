@@ -7,9 +7,8 @@ import os
 import sys
 import threading
 import time
-import datetime
+from datetime import datetime
 import json
-import statistics
 import re
 from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -17,29 +16,11 @@ from socketserver import ThreadingMixIn
 import http.client
 import socket
 
-import gps
-import nmea
 import util
-import geo
 
-from gps_common import update_odometer
-
-LOGGING = False
-
-TPV = SKY = {}
-TPV_SYS_TIME = SKY_SYS_TIME = 0
-HOLD = -1
-MEMO = ""
-
-GPS_NUM_SAT = 0
-GPS_NUM_USED = 0
-
-ODOMETER = 0.0
-ODIR = 1
-
-def send_udp(sock, ip, port, obj):
+def send_udp(sock, ip_addr, port, obj):
     """ Send Packet """
-    sock.sendto(json.dumps(obj).encode(), (ip, port))
+    sock.sendto(json.dumps(obj).encode(), (ip_addr, port))
 
 def do_json_output(self, output_dict):
     """ send back json text """
@@ -53,13 +34,15 @@ def do_json_output(self, output_dict):
 
 def handle_log(self, _groups, _qsdict):
     """ Turn Logging On/Off """
-    global LOGGING
-
-    LOGGING = False
+    pass
 
 MATCHES = [
     {
         "pattern": re.compile(r"GET /sim/log$"),
+        "handler": handle_log,
+    },
+    {
+        "pattern": re.compile(r"PUT /sim/log$"),
         "handler": handle_log,
     }
 ]
@@ -70,8 +53,8 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
 
-    def do_GET(self):
-        """Respond to a GET request."""
+    def handle_web_request(self):
+        """Respond to a request."""
         url = urlparse(self.path)
         qsdict = parse_qs(url.query)
 
@@ -85,51 +68,73 @@ class MyHandler(BaseHTTPRequestHandler):
 
         self.send_error(http.client.NOT_FOUND, self.path)
 
+    def do_GET(self):
+        self.handle_web_request()
+
+    def do_PUT(self):
+        self.handle_web_request()
+
 def simulator(output_directory):
-    """ Simulate reading JSON data line by line and streaming packets in real time."""
+    """ Read JSON data line by line and stream packets in real time."""
 
     config = util.read_config()
 
     # UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+    # Check for the simulator input
+    filename = config['sim']['data']
+    if not os.path.isfile(filename):
+        raise FileNotFoundError
+
+    if not os.access(filename, os.R_OK):
+        raise PermissionError
+
     # Create the output directory
     if not os.path.isdir(output_directory):
         os.mkdir(output_directory)
 
+    output = os.path.join(
+        output_directory,
+        datetime.now().strftime("%Y%m%d%H%M") + "_sim.csv"
+    )
+
     # Open the output file
-    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
-    with open(os.path.join(output_directory,timestamp+"_sim.csv"), "w") as sim_output:
+    with open(output, "w") as sim_output:
         util.write_header(sim_output, config)
 
-        with open(config['sim']['data'], 'r') as f:
-            lines = f.read().splitlines()  # read file into a list of lines
-
-        if not lines:
-            return
-
         while not util.DONE:
-            # Parse the first line to determine the initial_time
-            first_packet = json.loads(lines[0])
-            initial_time = util.parse_time(first_packet['time'])
-            simulation_start = time.time()
 
-            # Now iterate through every line/packet
-            for line in lines:
-                obj = json.loads(line)
-                packet_time = util.parse_time(obj['time'])
-                offset = (packet_time - initial_time).total_seconds()
-                now_offset = time.time() - simulation_start
-                sleep_time = offset - now_offset
-                if sleep_time > 0:
-                    time.sleep(sleep_time)
+            print(f"Reading from {filename}")
+            with open(filename, 'r') as sim_input:
+                first = True
 
-                # Send the Data
-                send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
-                if LOGGING:
-                    sim_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
-                    sim_output.flush()
+                # Now iterate through every line/packet
+                for line in sim_input:
+                    obj = json.loads(line)
+                    packet_time = util.parse_time(obj['time'])
 
+                    if first:
+                        # Parse the first line to determine the initial_time
+                        initial_time = packet_time
+                        simulation_start = time.time()
+                        first = False
+
+                    offset = (packet_time - initial_time).total_seconds()
+                    now_offset = time.time() - simulation_start
+                    sleep_time = offset - now_offset
+                    if sleep_time > 0:
+                        time.sleep(sleep_time)
+
+                    # Send the Data
+                    send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
+                    if config['sim']['logging']:
+                        sim_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+                        sim_output.flush()
+
+            # Pause, then restart data file
+            print("Pausing...")
+            time.sleep(60)
 
 def simulator_wrapper(output_directory):
     """ Wrapper Around GPS Logger Function """
@@ -150,7 +155,7 @@ if __name__ == "__main__":
         PORT_NUMBER = int(sys.argv[1])
         OUTPUT = sys.argv[2]
     except IndexError:
-        PORT_NUMBER = 8080
+        PORT_NUMBER = 8084
         OUTPUT = "/root/gps-data"
 
     # Web Server
