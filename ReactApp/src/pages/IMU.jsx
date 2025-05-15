@@ -23,7 +23,7 @@ const IMU = () => {
       .then((res) => res.json())
       .then((data) => {
         setConfig(data);
-        setEnabled(Boolean(data.imu?.enable) || Boolean(data.gpsimu?.enable) || Boolean(data.sim?.enable));
+        setEnabled(Boolean(data.imu?.enable) || Boolean(data.sim?.enable));
         console.log('Config fetched');
       })
       .catch((err) => {
@@ -51,8 +51,10 @@ const IMU = () => {
     }, []);
   
   const handleDataUpdate = (event) => {
+    // console.log(event)
     var att = JSON.parse(event.data);
-    console.log(att);
+    // console.log(att);
+
     // Pitch
     if (att.pitch != undefined) {
       setPitch(att.pitch.toFixed(3))
