@@ -11,7 +11,7 @@ import Footer from '../components/Footer';
  */
 const LPCM = () => {
   // track cur time, set to the cur date and time
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(false);
   const { isDarkMode } = useTheme(); 
   
   
@@ -32,11 +32,13 @@ const LPCM = () => {
     <div className="imu-container">
       <div className="nav-container"></div>
       {/* LPCM place holder image */}
-      {enabled ? <img
+      {enabled ? ( <img
         src={`/${isDarkMode ? 'lpcm_white.gif' : `lpcm_black.gif`}`}
         alt="LPCM Representation"
         className="lidar-image"
-      /> : <div>LPCM disabled - turn on in settings</div>}
+      /> ) : (
+	 <div>LPCM disabled - turn on in settings</div>i
+      )}
       
       {/* footer */}
       <Footer />
