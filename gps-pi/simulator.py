@@ -117,14 +117,12 @@ def simulator(output_directory):
                     if first:
                         # Parse the first line to determine the initial_time
                         initial_time = packet_time
-                        simulation_start = time.time()
                         first = False
 
-                    offset = (packet_time - initial_time).total_seconds()
-                    now_offset = time.time() - simulation_start
-                    sleep_time = offset - now_offset
+                    sleep_time = (packet_time - initial_time).total_seconds() / config['sim']['speedup']
                     if sleep_time > 0:
                         time.sleep(sleep_time)
+                    initial_time = packet_time
 
                     # Send the Data
                     send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
