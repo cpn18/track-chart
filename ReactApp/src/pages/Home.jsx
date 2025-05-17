@@ -87,7 +87,7 @@ const Home = () => {
   const [userSpeed, setSpeed] = useState(null);
   const [userDistance, setDistance] = useState(null);
   const [pois, setPois] = usePoi();
-  const [zoom] = useState(13);
+  const [zoom] = useState(16);
   const [showModal, setShowModal] = useState(false);
   const [poiDescription, setPoiDescription] = useState('');
   const [editingIndex, setEditingIndex] = useState(null);
@@ -247,7 +247,11 @@ const Home = () => {
     }
     // Time
     if (tpv.time != undefined) {
-      setCurrentTime(tpv.time.split('T')[1].split('.')[0])
+      if (tpv.simulated) {
+        setCurrentTime(tpv.time.replace('T', ' ').split('.')[0])
+      } else {
+        setCurrentTime(tpv.time.split('T')[1].split('.')[0])
+      }
     }
   };
 

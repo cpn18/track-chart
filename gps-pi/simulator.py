@@ -124,6 +124,7 @@ def simulator(output_directory):
                         time.sleep(sleep_time)
                     initial_time = packet_time
 
+                    obj['simulated'] = True
                     # Send the Data
                     send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
                     if config['sim']['logging']:
