@@ -18,32 +18,37 @@ import socket
 
 import util
 
+CONFIG = {}
+
 def send_udp(sock, ip_addr, port, obj):
     """ Send Packet """
     sock.sendto(json.dumps(obj).encode(), (ip_addr, port))
 
-def do_json_output(self, output_dict):
-    """ send back json text """
-    output = json.dumps(output_dict).encode('utf-8')
+def handle_get(self, _groups, _qsdict):
+    """ Get Module Status """
+    output = json.dumps({"sim": CONFIG['sim']}).encode()
     self.send_response(http.client.OK)
-    self.send_header("Content-Type", "application/json;charset=utf-8")
+    self.send_header("Content-Type", "application/json")
     self.send_header("Content-Length", str(len(output)))
     self.end_headers()
     self.wfile.write(output)
 
-
-def handle_log(self, _groups, _qsdict):
-    """ Turn Logging On/Off """
-    pass
+def handle_put(self, _groups, _qsdict):
+    """ Update Module Status """
+    data = json.loads(self.rfile.read(int(self.headers['content-length'])))
+    CONFIG['sim'].update(data)
+    self.send_response(http.client.OK)
+    self.send_header("Content-Length", "0")
+    self.end_headers()
 
 MATCHES = [
     {
-        "pattern": re.compile(r"GET /sim/log$"),
-        "handler": handle_log,
+        "pattern": re.compile(r"GET /sim/config$"),
+        "handler": handle_get,
     },
     {
-        "pattern": re.compile(r"PUT /sim/log$"),
-        "handler": handle_log,
+        "pattern": re.compile(r"PUT /sim/config$"),
+        "handler": handle_put,
     }
 ]
 
@@ -63,7 +68,10 @@ class MyHandler(BaseHTTPRequestHandler):
             if groups is not None:
                 if 'accept' in match and match['accept'] != self.headers['Accept']:
                     continue
-                match['handler'](self, groups, qsdict)
+                try:
+                    match['handler'](self, groups, qsdict)
+                except BrokenPipeError:
+                    pass
                 return
 
         self.send_error(http.client.NOT_FOUND, self.path)
@@ -75,15 +83,15 @@ class MyHandler(BaseHTTPRequestHandler):
         self.handle_web_request()
 
 def simulator(output_directory):
-    """ Read JSON data line by line and stream packets in real time."""
+    """ Read JSON data line by line and stream packets """
 
-    config = util.read_config()
+    CONFIG.update(util.read_config())
 
     # UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     # Check for the simulator input
-    filename = config['sim']['data']
+    filename = CONFIG['sim']['data']
     if not os.path.isfile(filename):
         raise FileNotFoundError
 
@@ -101,7 +109,7 @@ def simulator(output_directory):
 
     # Open the output file
     with open(output, "w") as sim_output:
-        util.write_header(sim_output, config)
+        util.write_header(sim_output, CONFIG)
 
         while not util.DONE:
 
@@ -119,15 +127,15 @@ def simulator(output_directory):
                         initial_time = packet_time
                         first = False
 
-                    sleep_time = (packet_time - initial_time).total_seconds() / config['sim']['speedup']
+                    sleep_time = (packet_time - initial_time).total_seconds() / CONFIG['sim']['speedup']
                     if sleep_time > 0:
                         time.sleep(sleep_time)
                     initial_time = packet_time
 
                     obj['simulated'] = True
                     # Send the Data
-                    send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
-                    if config['sim']['logging']:
+                    send_udp(sock, CONFIG['udp']['ip'], CONFIG['udp']['port'], obj)
+                    if CONFIG['sim']['logging']:
                         sim_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
                         sim_output.flush()
 
