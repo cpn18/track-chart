@@ -21,6 +21,17 @@ SHUTDOWN_DELAY = "now"
 
 REACT_BUILD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ReactApp/dist")
 
+MIME = {
+    ".css": "text/css",
+    ".js": "text/javascript",
+    ".ico": "image/x-icon",
+    ".png": "image/png",
+    ".jpg": "image/jpg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".svg": "image/svg",
+}
+
 def udp_receiver(ip, port):
     sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
@@ -259,23 +270,23 @@ class MyHandler(BaseHTTPRequestHandler):
         elif path == "/poweroff":
             util.DONE = True
             output = json.dumps({"message": "Shutting down..."}).encode('utf-8')
-            os.system(f"shutdown --poweroff {SHUTDOWN_DELAY}")
             self.send_response(http.client.OK)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(output)))
             self.end_headers()
             self.wfile.write(output)
+            os.system(f"shutdown --poweroff {SHUTDOWN_DELAY}")
             return
 
         elif path == "/reset":
             util.DONE = True
             output = json.dumps({"message": "Rebooting..."}).encode('utf-8')
-            os.system(f"shutdown --reboot {SHUTDOWN_DELAY}")
             self.send_response(http.client.OK)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(output)))
             self.end_headers()
             self.wfile.write(output)
+            os.system(f"shutdown --reboot {SHUTDOWN_DELAY}")
             return
 
         elif self.path.startswith("/gps/"):
@@ -356,16 +367,7 @@ class MyHandler(BaseHTTPRequestHandler):
             filepath = os.path.join(REACT_BUILD_DIR, path.lstrip('/'))
             if os.path.isfile(filepath):
                 _, ext = os.path.splitext(filepath)
-                if ext == '.css':
-                    mime = 'text/css'
-                elif ext == '.js':
-                    mime = 'text/javascript'
-                elif ext == '.ico':
-                    mime = 'image/x-icon'
-                elif ext in ['.png','.jpg','.jpeg','.gif','.svg']:
-                    mime = f'image/{ext.replace(".","")}'
-                else:
-                    mime = 'text/html'
+                mime = MIME.get(ext, 'text/html')
                 self.send_file(filepath, content_type=mime)
             else:
                 index_path = os.path.join(REACT_BUILD_DIR, "index.html")
