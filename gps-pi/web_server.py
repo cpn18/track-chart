@@ -163,9 +163,10 @@ class MyHandler(BaseHTTPRequestHandler):
 
         url = urlparse(self.path)
         path = url.path
+        module = path.split('/')[1]  # sim, gps, lidar, imu, etc...
 
-        if self.path.startswith("/sim/"):
-            enabled = check_enabled([CONFIG['sim']])
+        if mdoule in CONFIG:
+            enabled = check_enabled([CONFIG[module]])
             if enabled is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
             else:
@@ -173,7 +174,9 @@ class MyHandler(BaseHTTPRequestHandler):
                     self,
                     "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
                 )
-            return
+        else:
+            self.send_error(http.client.NOT_FOUND, "Not Found")
+        return
 
     def do_GET(self):
         """Handle GET requests: serve /packets SSE, or fallback to React build."""

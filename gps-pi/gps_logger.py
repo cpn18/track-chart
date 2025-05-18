@@ -37,6 +37,8 @@ GPS_NUM_USED = 0
 ODOMETER = 0.0
 ODIR = 1
 
+CONFIG = {}
+
 def send_udp(sock, ip, port, obj):
     """ Send Packet """
     sock.sendto(json.dumps(obj).encode(), (ip, port))
@@ -111,7 +113,32 @@ def handle_gps(self, _groups, _qsdict):
     else:
         do_json_output(self, [SKY, TPV])
 
+def handle_get(self, _groups, _qsdict):
+    """ Get Module Status """
+    output = json.dumps({"gps": CONFIG['gps']}).encode()
+    self.send_response(http.client.OK)
+    self.send_header("Content-Type", "application/json")
+    self.send_header("Content-Length", str(len(output)))
+    self.end_headers()
+    self.wfile.write(output)
+
+def handle_put(self, _groups, _qsdict):
+    """ Update Module Status """
+    data = json.loads(self.rfile.read(int(self.headers['content-length'])))
+    CONFIG['gps'].update(data)
+    self.send_response(http.client.OK)
+    self.send_header("Content-Length", "0")
+    self.end_headers()
+
 MATCHES = [
+    {
+        "pattern": re.compile(r"GET /gps/config$"),
+        "handler": handle_get,
+    },
+    {
+        "pattern": re.compile(r"PUT /gps/config$"),
+        "handler": handle_put,
+    },
     {
         "pattern": re.compile(r"GET /gps/mark$"),
         "handler": handle_mark,
@@ -153,7 +180,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
 
-    def do_GET(self):
+    def handle_web_request(self):
         """Respond to a GET request."""
         url = urlparse(self.path)
         qsdict = parse_qs(url.query)
@@ -163,10 +190,19 @@ class MyHandler(BaseHTTPRequestHandler):
             if groups is not None:
                 if 'accept' in match and match['accept'] != self.headers['Accept']:
                     continue
-                match['handler'](self, groups, qsdict)
+                try:
+                    match['handler'](self, groups, qsdict)
+                except BrokenPipeError:
+                    pass
                 return
 
         self.send_error(http.client.NOT_FOUND, self.path)
+
+    def do_GET(self):
+        self.handle_web_request()
+
+    def do_PUT(self):
+        self.handle_web_request()
 
 def gps_logger(output_directory):
     """ GPS Data Logger """
@@ -181,7 +217,7 @@ def gps_logger(output_directory):
     hold_lon = []
     hold_alt = []
 
-    config = util.read_config()
+    CONFIG.update(util.read_config())
 
     # UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -196,7 +232,7 @@ def gps_logger(output_directory):
     # Open the output file
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
     with open(os.path.join(output_directory,timestamp+"_gps.csv"), "w") as gps_output:
-        util.write_header(gps_output, config)
+        util.write_header(gps_output, CONFIG)
 
         while not util.DONE:
             # GPS
@@ -235,9 +271,10 @@ def gps_logger(output_directory):
 
             # Log the Data
             if 'time' in obj:
-                send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
-                gps_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
-                gps_output.flush()
+                send_udp(sock, CONFIG['udp']['ip'], CONFIG['udp']['port'], obj)
+                if CONFIG['gps']['logging']:
+                    gps_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+                    gps_output.flush()
 
             # Short Circuit the rest of the checks
             if HOLD == -1:
