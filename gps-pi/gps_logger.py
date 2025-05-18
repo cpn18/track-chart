@@ -218,6 +218,8 @@ def gps_logger(output_directory):
     hold_alt = []
 
     CONFIG.update(util.read_config())
+    if 'logging' not in CONFIG['gps']:
+        CONFIG['gps']['logging'] = True
 
     # UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

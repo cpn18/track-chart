@@ -87,6 +87,9 @@ def simulator(output_directory):
 
     CONFIG.update(util.read_config())
 
+    if 'logging' not in CONFIG['sim']:
+        CONFIG['sim']['logging'] = False
+
     # UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 

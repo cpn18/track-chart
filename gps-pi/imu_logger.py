@@ -163,6 +163,8 @@ def imu_logger(output_directory):
     cf_angle_x = cf_angle_y = cf_angle_z = 0
 
     CONFIG.update(util.read_config())
+    if 'logging' not in CONFIG['imu']:
+        CONFIG['imu']['logging'] = True
 
     # UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    
