@@ -10,7 +10,7 @@
     },
     "sim": {
         "enable": false,
-        "log": false,
+        "logging": false,
         "data": "Data_Wolfeboro.json",
         "speedup": 4,
         "cmd': ["simulator.sh", "%PORT%", "%OUTPUT_DIR%"],
@@ -19,6 +19,7 @@
     },
     "gps": {
 	"enable": true,
+        "logging": true,
 	"cmd": ["gps_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
 	"host": "localhost",
         "port": 8080
@@ -27,6 +28,7 @@
        	"x": "x", "y": "y", "z": "z",
         "serial": "/dev/ttyUSB0",
 	"enable": false,
+        "logging": true,
 	"cmd": ["gpsimu_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
 	"host": "localhost",
         "port": 8080
@@ -34,24 +36,28 @@
     "imu": {
        	"x": "x", "y": "y", "z": "z",
 	"enable": true,
+        "logging": true,
 	"cmd": ["imu_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
 	"host": "localhost",
         "port": 8081
     },
     "lidar": {
 	"enable": false,
+        "logging": true,
 	"cmd": ["lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
 	"host": "localhost",
         "port": 8082
     },
     "hpslidar": {
 	"enable": false,
+        "logging": true,
 	"cmd": ["hps_lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
 	"host": "localhost",
         "port": 8082
     },
     "lpcm": {
 	"enable": false,
+        "logging": true,
 	"cmd": ["lpcm_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
         "arecord": "--format S16_LE --rate=44100 --channels=1 --duration=60",
 	"host": "localhost",

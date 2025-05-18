@@ -36,7 +36,7 @@ def handle_get(self, _groups, _qsdict):
 def handle_put(self, _groups, _qsdict):
     """ Update Module Status """
     data = json.loads(self.rfile.read(int(self.headers['content-length'])))
-    CONFIG['sim'].update(data)
+    CONFIG['sim'].update(data['sim'])
     self.send_response(http.client.OK)
     self.send_header("Content-Length", "0")
     self.end_headers()

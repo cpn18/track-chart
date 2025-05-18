@@ -51,7 +51,7 @@ class WitMotionJyGpsImu():
         self.imu_device = 'WTGAHRS1'
         self.thread = threading.Thread(target=self.read, args=(self.event,))
         self.thread.start()
-        self.gpsimu = {}
+        self.wit = {}
         self.config = config
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -74,29 +74,32 @@ class WitMotionJyGpsImu():
             ss = int.from_bytes(d[5:6],"little")
             ms = int.from_bytes(d[6:8],"little")
             #print("Time",year,month,day,hh,mm,ss,ms)
-            self.gpsimu['time'] = "%4d-%02d-%02dT%02d:%02d:%02d.%03dZ" % (year+2000, month, day, hh, mm, ss, ms)
-            #outfile.write("Time %s\n" % self.gpsimu['time'])
+            self.wit['time'] = "%4d-%02d-%02dT%02d:%02d:%02d.%03dZ" % (year+2000, month, day, hh, mm, ss, ms)
+            #outfile.write("Time %s\n" % self.wit['time'])
             obj = self.get_sky()
-            do_output(self.gpsout,obj)
             send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], obj)
+            if self.config['gps']['logging']:
+                do_output(self.gpsout,obj)
 
             obj = self.get_tpv()
-            do_output(self.gpsout,obj)
             send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], obj)
+            if self.config['gps']['logging']:
+                do_output(self.gpsout,obj)
 
             obj = self.get_att()
-            do_output(self.imuout,obj)
             send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], obj)
+            if self.config['imu']['logging']:
+                do_output(self.imuout,obj)
         elif t == b'\x51':
             ax = 9.8*16*float(int.from_bytes(d[0:2],"little", signed=True))/32768.0
             ay = 9.8*16*float(int.from_bytes(d[2:4],"little", signed=True))/32768.0
             az = 9.8*16*float(int.from_bytes(d[4:6],"little", signed=True))/32768.0
             t = float(int.from_bytes(d[6:8],"little", signed=True))/100.0
             #print("Accel",ax,ay,az,t)
-            self.gpsimu['ACCx'] = ax
-            self.gpsimu['ACCy'] = ay
-            self.gpsimu['ACCz'] = az
-            self.gpsimu['temp'] = t
+            self.wit['ACCx'] = ax
+            self.wit['ACCy'] = ay
+            self.wit['ACCz'] = az
+            self.wit['temp'] = t
             #outfile.write("Accel %f %f %f %f\n" % (ax,ay,az,t))
         elif t == b'\x52':
             wx = 2000*float(int.from_bytes(d[0:2],"little", signed=True))/32768.0
@@ -104,10 +107,10 @@ class WitMotionJyGpsImu():
             wz = 2000*float(int.from_bytes(d[4:6],"little", signed=True))/32768.0
             t = float(int.from_bytes(d[6:8],"little", signed=True))/100.0
             #print("Angluar",wx,wy,wz,t)
-            self.gpsimu['GYRx'] = wx
-            self.gpsimu['GYRy'] = wy
-            self.gpsimu['GYRz'] = wz
-            self.gpsimu['temp'] = t
+            self.wit['GYRx'] = wx
+            self.wit['GYRy'] = wy
+            self.wit['GYRz'] = wz
+            self.wit['temp'] = t
             #outfile.write("Angluar %f %f %f %f\n" % (wx,wy,wz,t))
         elif t == b'\x53':
             roll = 180.0*float(int.from_bytes(d[0:2],"little", signed=True))/32768.0
@@ -115,9 +118,9 @@ class WitMotionJyGpsImu():
             yaw = 180.0*float(int.from_bytes(d[4:6],"little", signed=True))/32768.0
             version = int.from_bytes(d[6:8],"little", signed=True)
             #print("Angle",roll,pitch,yaw,version)
-            self.gpsimu['ANGx'] = pitch + self.config['gpsimu']['pitch_adj']
-            self.gpsimu['ANGy'] = roll + self.config['gpsimu']['roll_adj']
-            self.gpsimu['ANGz'] = yaw + self.config['gpsimu']['yaw_adj']
+            self.wit['ANGx'] = pitch + self.config['imu']['pitch_adj']
+            self.wit['ANGy'] = roll + self.config['imu']['roll_adj']
+            self.wit['ANGz'] = yaw + self.config['imu']['yaw_adj']
             #outfile.write("Angle %f %f %f\n" % (pitch,roll,yaw))
         elif t == b'\x54':
             hx = int.from_bytes(d[0:2],"little", signed=True)
@@ -125,10 +128,10 @@ class WitMotionJyGpsImu():
             hz = int.from_bytes(d[4:6],"little", signed=True)
             t = float(int.from_bytes(d[6:8],"little", signed=True))/100.0
             #print("Magnetic",hx,hy,hz,t)
-            self.gpsimu['MAGx'] = hx
-            self.gpsimu['MAGy'] = hy
-            self.gpsimu['MAGz'] = hz
-            self.gpsimu['temp'] = t
+            self.wit['MAGx'] = hx
+            self.wit['MAGy'] = hy
+            self.wit['MAGz'] = hz
+            self.wit['temp'] = t
             #outfile.write("Magnetic %f %f %f %f\n" % (hx,hy,hz,t))
         elif t == b'\x55':
             d0 = int.from_bytes(d[0:2],"little", signed=True)
@@ -140,23 +143,23 @@ class WitMotionJyGpsImu():
             p = int.from_bytes(d[0:4],"little", signed=True)
             h = int.from_bytes(d[4:8],"little", signed=True) / 100.0 # convert to m
             #print("Pressure",p,h)
-            self.gpsimu['alt'] = h
+            self.wit['alt'] = h
             #outfile.write("Pressure %d\n" % (h))
         elif t == b'\x57':
             lon = cvt_lat_lon(int.from_bytes(d[0:4],"little",signed=True))
             lat = cvt_lat_lon(int.from_bytes(d[4:8],"little",signed=True))
             #print ("Location",lat, lon)
-            self.gpsimu['lat'] = lat
-            self.gpsimu['lon'] = lon
+            self.wit['lat'] = lat
+            self.wit['lon'] = lon
             #outfile.write("Location %f %f\n" % (lat,lon))
         elif t == b'\x58':
             gpsh = float(int.from_bytes(d[0:2],"little",signed=True))/10.0
             gpsy = float(int.from_bytes(d[2:4],"little",signed=True))/10.0
             gpsv = float(int.from_bytes(d[4:8],"little",signed=True))/1000.0
             #print ("GroundSpeed", gpsh, gpsy, gpsv)
-            self.gpsimu['alt'] = gpsh
-            self.gpsimu['track'] = gpsy
-            self.gpsimu['speed'] = gpsv
+            self.wit['alt'] = gpsh
+            self.wit['track'] = gpsy
+            self.wit['speed'] = gpsv
             #outfile.write("Groundspeed %f %f %f\n" % (gpsh, gpsy, gpsv))
         elif t == b'\x59':
             q0 = float(int.from_bytes(d[0:2],"little",signed=True))/32768.0
@@ -169,11 +172,11 @@ class WitMotionJyGpsImu():
             pdop = float(int.from_bytes(d[2:4],"little",signed=True))/32768.0
             hdop = float(int.from_bytes(d[4:6],"little",signed=True))/32768.0
             vdop = float(int.from_bytes(d[6:8],"little",signed=True))/32768.0
-            self.gpsimu['nsat'] = sn
-            self.gpsimu['usat'] = sn
-            self.gpsimu['pdop'] = pdop
-            self.gpsimu['hdop'] = hdop
-            self.gpsimu['vdop'] = vdop
+            self.wit['nsat'] = sn
+            self.wit['usat'] = sn
+            self.wit['pdop'] = pdop
+            self.wit['hdop'] = hdop
+            self.wit['vdop'] = vdop
             #print ("Accuracy",sn,pdop,hdop,vdop)
             #outfile.write("Accuracy %d %f %f %f\n" % (sn, pdop, hdop, vdop))
         else:
@@ -183,7 +186,7 @@ class WitMotionJyGpsImu():
     def read(self, event):
         """ Read from the serial port """
         ser = serial.Serial(self.ttyname)
-        self.gpsimu['device'] = ser.name
+        self.gps['device'] = ser.name
         #ser.write(RETURN_CONTEXT)
         #ser.flush()
         #ser.write(SAVE)
@@ -217,14 +220,14 @@ class WitMotionJyGpsImu():
         }
         try:
             sky.update({
-                'device': self.gpsimu['device'],
-                'time': self.gpsimu['time'],
-                'pdop': self.gpsimu['pdop'],
-                'hdop': self.gpsimu['hdop'],
-                'vdop': self.gpsimu['vdop'],
-                'nSat': self.gpsimu['nsat'],
-                'uSat': self.gpsimu['usat'],
-                'satellites': [{'used': True}] * self.gpsimu['usat'],
+                'device': self.wit['device'],
+                'time': self.wit['time'],
+                'pdop': self.wit['pdop'],
+                'hdop': self.wit['hdop'],
+                'vdop': self.wit['vdop'],
+                'nSat': self.wit['nsat'],
+                'uSat': self.wit['usat'],
+                'satellites': [{'used': True}] * self.wit['usat'],
             })
         except KeyError:
             pass
@@ -238,18 +241,18 @@ class WitMotionJyGpsImu():
         }
         try:
             tpv.update({
-                'device': self.gpsimu['device'],
-                'time': self.gpsimu['time'],
-                'lat': self.gpsimu['lat'],
-                'lon': self.gpsimu['lon'],
-                'alt': self.gpsimu['alt'],
-                'track': self.gpsimu['track'],
-                'speed': self.gpsimu['speed'],
+                'device': self.wit['device'],
+                'time': self.wit['time'],
+                'lat': self.wit['lat'],
+                'lon': self.wit['lon'],
+                'alt': self.wit['alt'],
+                'track': self.wit['track'],
+                'speed': self.wit['speed'],
             })
-            if 'usat' in self.gpsimu:
+            if 'usat' in self.wit:
                 tpv['status'] = 1
-                if self.gpsimu['usat'] > 0:
-                    tpv['mode'] = min(3, self.gpsimu['usat'])
+                if self.wit['usat'] > 0:
+                    tpv['mode'] = min(3, self.wit['usat'])
                 else:
                     tpv['mode'] = 1
         except KeyError:
@@ -263,23 +266,23 @@ class WitMotionJyGpsImu():
         try:
             att.update({
                 'device': self.imu_device,
-                'time': self.gpsimu['time'],
-                'acc_x': self.gpsimu['ACC'+self.config['gpsimu']['x']],
-                'acc_y': self.gpsimu['ACC'+self.config['gpsimu']['y']],
-                'acc_z': self.gpsimu['ACC'+self.config['gpsimu']['z']],
-                'gyro_x': self.gpsimu['GYR'+self.config['gpsimu']['x']],
-                'gyro_y': self.gpsimu['GYR'+self.config['gpsimu']['y']],
-                'gyro_z': self.gpsimu['GYR'+self.config['gpsimu']['z']],
-                'mag_x': self.gpsimu['MAG'+self.config['gpsimu']['x']],
-                'mag_y': self.gpsimu['MAG'+self.config['gpsimu']['y']],
-                'mag_z': self.gpsimu['MAG'+self.config['gpsimu']['z']],
-                'pitch': self.gpsimu['ANG'+self.config['gpsimu']['x']],
+                'time': self.wit['time'],
+                'acc_x': self.wit['ACC'+self.config['imu']['x']],
+                'acc_y': self.wit['ACC'+self.config['imu']['y']],
+                'acc_z': self.wit['ACC'+self.config['imu']['z']],
+                'gyro_x': self.wit['GYR'+self.config['imu']['x']],
+                'gyro_y': self.wit['GYR'+self.config['imu']['y']],
+                'gyro_z': self.wit['GYR'+self.config['imu']['z']],
+                'mag_x': self.wit['MAG'+self.config['imu']['x']],
+                'mag_y': self.wit['MAG'+self.config['imu']['y']],
+                'mag_z': self.wit['MAG'+self.config['imu']['z']],
+                'pitch': self.wit['ANG'+self.config['imu']['x']],
                 'pitch_st': "N",
-                'roll': self.gpsimu['ANG'+self.config['gpsimu']['y']],
+                'roll': self.wit['ANG'+self.config['imu']['y']],
                 'roll_st': "N",
-                'yaw': self.gpsimu['ANG'+self.config['gpsimu']['z']],
+                'yaw': self.wit['ANG'+self.config['imu']['z']],
                 'yaw_st': "N",
-                'temp': self.gpsimu['temp'],
+                'temp': self.wit['temp'],
             })
             # Calculate Heading
             att['heading'] = (math.degrees(math.atan2(att['mag_y'], att['mag_x'])) - 90) % 360
@@ -296,45 +299,45 @@ class WitMotionJyGpsImu():
         last_time = ""
         last_lat = last_lon = last_alt = 0
         while True:
-            if 'time' in self.gpsimu:
-                if last_time != self.gpsimu['time']:
-                    last_time = self.gpsimu['time']
+            if 'time' in self.wit:
+                if last_time != self.wit['time']:
+                    last_time = self.wit['time']
                     yield_data = []
 
-                    if self.gpsimu['lat'] != last_lat or self.gpsimu['lon'] != last_lon or self.gpsimu['alt'] != last_alt:
-                        last_lat = self.gpsimu['lat']
-                        last_lon = self.gpsimu['lon']
-                        last_alt = self.gpsimu['alt']
+                    if self.wit['lat'] != last_lat or self.wit['lon'] != last_lon or self.wit['alt'] != last_alt:
+                        last_lat = self.wit['lat']
+                        last_lon = self.wit['lon']
+                        last_alt = self.wit['alt']
 
                         sky = {
                             'class': 'SKY',
-                            'time': self.gpsimu['time'],
-                            'device': self.gpsimu['device'],
-                            'pdop': self.gpsimu['pdop'],
-                            'hdop': self.gpsimu['hdop'],
-                            'vdop': self.gpsimu['vdop'],
-                            'nSat': self.gpsimu['nsat'],
-                            'uSat': self.gpsimu['usat'],
-                            'satellites': [{'used': True}] * self.gpsimu['usat'],
+                            'time': self.wit['time'],
+                            'device': self.wit['device'],
+                            'pdop': self.wit['pdop'],
+                            'hdop': self.wit['hdop'],
+                            'vdop': self.wit['vdop'],
+                            'nSat': self.wit['nsat'],
+                            'uSat': self.wit['usat'],
+                            'satellites': [{'used': True}] * self.wit['usat'],
                         }
                         yield_data.append((sky['time'], "SKY", sky))
 
                         tpv = {
                             'class': 'TPV',
-                            'device': self.gpsimu['device'],
+                            'device': self.wit['device'],
                             'mode': 0,
                             'status': 0,
-                            'time': self.gpsimu['time'],
-                            'lat': self.gpsimu['lat'],
-                            'lon': self.gpsimu['lon'],
-                            'alt': self.gpsimu['alt'],
-                            'track': self.gpsimu['track'],
-                            'speed': self.gpsimu['speed'],
+                            'time': self.wit['time'],
+                            'lat': self.wit['lat'],
+                            'lon': self.wit['lon'],
+                            'alt': self.wit['alt'],
+                            'track': self.wit['track'],
+                            'speed': self.wit['speed'],
                         }
-                        if 'sn' in self.gpsimu:
+                        if 'sn' in self.wit:
                             tpv['status'] = 1
-                            if self.gpsimu['usat'] > 0:
-                                tpv['mode'] = min(3, self.gpsimu['usat']) 
+                            if self.wit['usat'] > 0:
+                                tpv['mode'] = min(3, self.wit['usat']) 
                             else:
                                 tpv['mode'] = 1
 
@@ -347,7 +350,10 @@ class WitMotionJyGpsImu():
                 time.sleep(5)
 
 if __name__ == "__main__":
-    config = {}
+    config = {
+        "gps": {"logging": True},
+        "imu": {"logging": True},
+    }
     with open("gpslog.csv", "w") as gpsout:
         with open("imulog.csv", "w") as imuout:
             W = WitMotionJyGpsImu("/dev/ttyUSB0", gpsout, imuout, config)

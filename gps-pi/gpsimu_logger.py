@@ -38,6 +38,8 @@ GPS_NUM_USED = 0
 ODOMETER = 0.0
 ODIR = 1
 
+CONFIG = {}
+
 def do_json_output(self, output_dict):
     """ send back json text """
     output = json.dumps(output_dict).encode('utf-8')
@@ -132,7 +134,34 @@ def handle_zero(self, _groups, _qsdict):
     SAMPLES = 15
     do_json_output(self, {"message": "Zeroing IMU..."})
 
+def handle_get(self, _groups, _qsdict):
+    """ Get Module Status """
+    output = json.dumps({"gps": CONFIG['gps'], "imu": CONFIG['imu']}).encode()
+    self.send_response(http.client.OK)
+    self.send_header("Content-Type", "application/json")
+    self.send_header("Content-Length", str(len(output)))
+    self.end_headers()
+    self.wfile.write(output)
+
+def handle_put(self, _groups, _qsdict):
+    """ Update Module Status """
+    data = json.loads(self.rfile.read(int(self.headers['content-length'])))
+    CONFIG['gps'].update(data['gps'])
+    CONFIG['imu'].update(data['imu'])
+    self.send_response(http.client.OK)
+    self.send_header("Content-Length", "0")
+    self.end_headers()
+
 MATCHES = [
+    {
+        "pattern": re.compile(r"GET /gps/config$"),
+        "handler": handle_get,
+    },
+    {
+        "pattern": re.compile(r"PUT /gps/config$"),
+        "handler": handle_put,
+    },
+
     {
         "pattern": re.compile(r"GET /gps/mark$"),
         "handler": handle_mark,
@@ -191,7 +220,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
 
-    def do_GET(self):
+    def handle_web_request(self):
         """Respond to a GET request."""
         url = urlparse(self.path)
         qsdict = parse_qs(url.query)
@@ -201,10 +230,19 @@ class MyHandler(BaseHTTPRequestHandler):
             if groups is not None:
                 if 'accept' in match and match['accept'] != self.headers['Accept']:
                     continue
-                match['handler'](self, groups, qsdict)
+                try:
+                    match['handler'](self, groups, qsdict)
+                except BrokenPipeError:
+                    pass
                 return
 
         self.send_error(http.client.NOT_FOUND, self.path)
+
+    def do_GET(self):
+        self.handle_web_request()
+
+    def do_PUT(self):
+        self.handle_web_request()
 
 def gpsimu_logger(output_directory):
     """ GPS Data Logger """
@@ -225,14 +263,19 @@ def gpsimu_logger(output_directory):
     hold_lon = []
     hold_alt = []
 
-    config = util.read_config()
+    CONFIG.update(util.read_config())
 
-    if 'pitch_adj' not in config['gpsimu']:
-        config['gpsimu']['pitch_adj'] = 0
-    if 'roll_adj' not in config['gpsimu']:
-        config['gpsimu']['roll_adj'] = 0
-    if 'yaw_adj' not in config['gpsimu']:
-        config['gpsimu']['yaw_adj'] = 0
+    if 'logging' not in CONFIG['gps']:
+        CONFIG['gps']['logging'] = True
+    if 'logging' not in CONFIG['imu']:
+        CONFIG['imu']['logging'] = True
+
+    if 'pitch_adj' not in COMFIG['imu']:
+        COMFIG['imu']['pitch_adj'] = 0
+    if 'roll_adj' not in COMFIG['imu']:
+        config['imu']['roll_adj'] = 0
+    if 'yaw_adj' not in COMFIG['imu']:
+        COMFIG['imu']['yaw_adj'] = 0
 
     # Create the output directory
     if not os.path.isdir(output_directory):
@@ -243,13 +286,13 @@ def gpsimu_logger(output_directory):
     with open(os.path.join(output_directory,timestamp+"_gps.csv"), "w") as gps_output, \
         open(os.path.join(output_directory,timestamp+"_imu.csv"), "w") as imu_output:
 
-        util.write_header(gps_output, config)
-        util.write_header(imu_output, config)
+        util.write_header(gps_output, CONFIG)
+        util.write_header(imu_output, CONFIG)
 
         # Listen
         session = gps.WitMotionJyGpsImu(
-            config['gpsimu']['serial'],
-            gps_output, imu_output, config
+            CONFIG['gps']['serial'],
+            gps_output, imu_output, CONFIG
         )
 
         while not util.DONE:
@@ -280,14 +323,14 @@ def gpsimu_logger(output_directory):
                 saved_yaw.append(ATT['yaw'])
                 SAMPLES -= 1
             elif len(saved_pitch) > 0:
-                config['gpsimu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
-                config['gpsimu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
-                config['gpsimu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
+                COMFIG['imu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
+                COMFIG['imu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
+                COMFIG['imu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
                 SAMPLES = 0
                 saved_pitch = saved_roll = saved_yaw = []
-                util.write_config(config)
-                util.write_header(imu_output, config)
-                session.update_config(config)
+                util.write_config(COMFIG)
+                util.write_header(imu_output, COMFIG)
+                session.update_config(COMFIG)
 
             # Short Circuit the rest of the checks
             if HOLD == -1:
