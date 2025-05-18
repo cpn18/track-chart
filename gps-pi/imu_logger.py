@@ -32,12 +32,13 @@ MIN_MAG_Z = -1534
 
 # Loop delay
 LOOP_DELAY = 0.02
-SLEEP_TIME = 0.00001
 
 SAMPLES = 0
 
 # ATT Dictionary
 ATT = {}
+
+CONFIG = {}
 
 def send_udp(sock, ip, port, obj):
     """ Send Packet """
@@ -76,8 +77,32 @@ def handle_zero(self, _groups, _qsdict):
     SAMPLES = 100
     do_json_output(self, {"message": "Zeroing IMU..."})
 
+def handle_get(self, _groups, _qsdict):
+    """ Get Module Status """
+    output = json.dumps({"imu": CONFIG['imu']}).encode()
+    self.send_response(http.client.OK)
+    self.send_header("Content-Type", "application/json")
+    self.send_header("Content-Length", str(len(output)))
+    self.end_headers()
+    self.wfile.write(output)
+
+def handle_put(self, _groups, _qsdict):
+    """ Update Module Status """
+    data = json.loads(self.rfile.read(int(self.headers['content-length'])))
+    CONFIG['imu'].update(data)
+    self.send_response(http.client.OK)
+    self.send_header("Content-Length", "0")
+    self.end_headers()
 
 MATCHES = [
+    {
+        "pattern": re.compile(r"GET /imu/config$"),
+        "handler": handle_get,
+    },
+    {
+        "pattern": re.compile(r"PUT /imu/config$"),
+        "handler": handle_put,
+    },
     {
         "pattern": re.compile(r"GET /imu/zero$"),
         "handler": handle_zero,
@@ -102,7 +127,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 class MyHandler(BaseHTTPRequestHandler):
     """ Web Request Handler """
-    def do_GET(self):
+    def handle_web_request(self):
         """Respond to a GET request."""
         url = urlparse(self.path)
         qsdict = parse_qs(url.query)
@@ -112,10 +137,19 @@ class MyHandler(BaseHTTPRequestHandler):
             if groups is not None:
                 if 'accept' in match and match['accept'] != self.headers['Accept']:
                     continue
-                match['handler'](self, groups, qsdict)
+                try:
+                    match['handler'](self, groups, qsdict)
+                except BrokenPipeError:
+                    pass
                 return
 
         self.send_error(http.client.NOT_FOUND, self.path)
+
+    def def do_GET(self):
+        self.handle_web_request()
+
+    def do_PUT(self):
+        self.handle_web_request()
 
 def imu_logger(output_directory):
     """ IMU Logger """
@@ -128,26 +162,28 @@ def imu_logger(output_directory):
 
     cf_angle_x = cf_angle_y = cf_angle_z = 0
 
-    config = util.read_config()
+    CONFIG.update(util.read_config())
 
     # UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    
 
-    if 'pitch_adj' not in config['imu']:
-        config['imu']['pitch_adj'] = 0
-    if 'roll_adj' not in config['imu']:
-        config['imu']['roll_adj'] = 0
-    if 'yaw_adj' not in config['imu']:
-        config['imu']['yaw_adj'] = 0
+    if 'pitch_adj' not in CONFIG['imu']:
+        CONFIG['imu']['pitch_adj'] = 0
+    if 'roll_adj' not in CONFIG['imu']:
+        CONFIG['imu']['roll_adj'] = 0
+    if 'yaw_adj' not in CONFIG['imu']:
+        CONFIG['imu']['yaw_adj'] = 0
 
     # Open the output file
     with open(os.path.join(output_directory,datetime.datetime.now().strftime("%Y%m%d%H%M")+"_imu.csv"), "w") as imu_output:
-        util.write_header(imu_output, config)
+        util.write_header(imu_output, CONFIG)
 
         now = time.time()
         while not util.DONE:
             last_time = now
             now = time.time()
+            delta_time = now - last_time
+
             acc = accel.get_axes()
 
             # Calibration
@@ -159,19 +195,17 @@ def imu_logger(output_directory):
                 "class": "ATT",
                 "device": accel.device(),
                 "time": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "acc_x": acc['ACC'+config['imu']['x']],
-                "acc_y": acc['ACC'+config['imu']['y']],
-                "acc_z": acc['ACC'+config['imu']['z']],
-                "gyro_x": acc['GYR'+config['imu']['x']],
-                "gyro_y": acc['GYR'+config['imu']['y']],
-                "gyro_z": acc['GYR'+config['imu']['z']],
-                "mag_x": acc['MAG'+config['imu']['x']],
-                "mag_y": acc['MAG'+config['imu']['y']],
-                "mag_z": acc['MAG'+config['imu']['z']],
+                "acc_x": acc['ACC'+CONFIG['imu']['x']],
+                "acc_y": acc['ACC'+CONFIG['imu']['y']],
+                "acc_z": acc['ACC'+CONFIG['imu']['z']],
+                "gyro_x": acc['GYR'+CONFIG['imu']['x']],
+                "gyro_y": acc['GYR'+CONFIG['imu']['y']],
+                "gyro_z": acc['GYR'+CONFIG['imu']['z']],
+                "mag_x": acc['MAG'+CONFIG['imu']['x']],
+                "mag_y": acc['MAG'+CONFIG['imu']['y']],
+                "mag_z": acc['MAG'+CONFIG['imu']['z']],
                 "temp": util.get_cpu_temp(),
             }
-
-            delta_time = now - last_time
 
             # Calculate Yaw, Pitch and Roll with data fusion
             acc_x_angle = math.degrees(math.atan2(obj['acc_y'], obj['acc_z']))
@@ -182,11 +216,11 @@ def imu_logger(output_directory):
             cf_angle_y = AA*(cf_angle_y+obj['gyro_y']*delta_time) + (1-AA)*acc_y_angle
             cf_angle_z = AA*(cf_angle_z+obj['gyro_z']*delta_time) + (1-AA)*acc_z_angle
 
-            obj['pitch'] = cf_angle_x + config['imu']['pitch_adj']
+            obj['pitch'] = cf_angle_x + CONFIG['imu']['pitch_adj']
             obj['pitch_st'] = "N"
-            obj['roll'] = cf_angle_y - 90 + config['imu']['roll_adj']
+            obj['roll'] = cf_angle_y - 90 + CONFIG['imu']['roll_adj']
             obj['roll_st'] = "N"
-            obj['yaw'] = cf_angle_z + config['imu']['yaw_adj']
+            obj['yaw'] = cf_angle_z + CONFIG['imu']['yaw_adj']
             obj['yaw_st'] = "N"
 
             # Calculate Heading
@@ -203,18 +237,20 @@ def imu_logger(output_directory):
                 saved_yaw.append(cf_angle_y)
                 SAMPLES -= 1
             elif len(saved_pitch) > 0:
-                config['imu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
-                config['imu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
-                config['imu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
+                CONFIG['imu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
+                CONFIG['imu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
+                CONFIG['imu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
                 SAMPLES = 0
                 saved_pitch = saved_roll = saved_yaw = []
-                util.write_config(config)
-                util.write_header(imu_output, config)
+                util.write_config(CONFIG)
+                util.write_header(imu_output, CONFIG)
 
             # Log the output
-            send_udp(sock, config['udp']['ip'], config['udp']['port'], obj)
-            imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
-            imu_output.flush()
+            send_udp(sock, CONFIG['udp']['ip'], CONFIG['udp']['port'], obj)
+            if CONFIG['imu']['logging']:
+                imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
+                imu_output.flush()
+
             ATT = obj
 
             # Delay Loop
