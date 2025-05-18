@@ -127,6 +127,54 @@ class MyHandler(BaseHTTPRequestHandler):
         else:
             self.send_error(http.client.NOT_FOUND, self.path)
 
+    def do_PUT(self):
+        def mini_proxy(self, url):
+            """ Mini Web Proxy """
+            data = self.rfile.read(int(self.headers['content-length']))
+
+            # Try to establish the connection
+            try:
+                response = requests.put(
+                    url,
+                    data=data,
+                    headers=self.headers,
+                )
+            except requests.exceptions.ConnectionError as ex:
+                self.send_error(http.client.SERVICE_UNAVAILABLE, str(ex))
+                return
+            # Error response
+            if response.status_code != http.client.OK:
+                self.send_error(response.status_code, response.reason)
+                return
+            # Start the response
+            self.send_response(http.client.OK)
+            # Copy certain response headers
+            for header in ['Content-Type']:
+                self.send_header(header, response.headers[header])
+            # Send the content-length
+            output = response.content
+            if not isinstance(output, bytes):
+                 output = output.encode('utf-8')
+            self.send_header("Content-Length", str(len(output)))
+            # End of HTTP Headers
+            self.end_headers()
+            # Send the data
+            self.wfile.write(output)
+
+        url = urlparse(self.path)
+        path = url.path
+
+        if self.path.startswith("/sim/"):
+            enabled = check_enabled([CONFIG['sim']])
+            if enabled is False:
+                self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
+            else:
+                mini_proxy(
+                    self,
+                    "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
+                )
+            return
+
     def do_GET(self):
         """Handle GET requests: serve /packets SSE, or fallback to React build."""
         url = urlparse(self.path)
@@ -266,6 +314,17 @@ class MyHandler(BaseHTTPRequestHandler):
                     "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
                 )
             return
+
+        elif self.path.startswith("/sim/"):
+            enabled = check_enabled([CONFIG['sim']])
+            if enabled is False:
+                self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
+            else:
+                self.mini_proxy(
+                    "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
+                )
+            return
+
         elif path.startswith("/sys/"):
             stream = (self.headers.get('Accept') == 'text/event-stream')
             self.send_response(http.client.OK)
