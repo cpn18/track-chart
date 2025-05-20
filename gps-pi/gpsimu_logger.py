@@ -196,7 +196,7 @@ MATCHES = [
         "handler": handle_gps,
     },
     {
-        "pattern": re.compile(r"GET /imu/zero$"),
+        "pattern": re.compile(r"PUT /imu/zero$"),
         "handler": handle_zero,
     },
     {

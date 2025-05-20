@@ -176,7 +176,7 @@ class MyHandler(BaseHTTPRequestHandler):
         path = url.path
         module = path.split('/')[1]  # sim, gps, lidar, imu, etc...
 
-        if mdoule in CONFIG:
+        if module in CONFIG:
             enabled = check_enabled([CONFIG[module]])
             if enabled is False:
                 self.send_error(http.client.SERVICE_UNAVAILABLE, "Not Enabled")
@@ -250,11 +250,6 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_header("Content-Length", str(len(output)))
                 self.end_headers()
                 self.wfile.write(output)
-            return
-
-        elif path == "/IMUzero":
-            # TODO: set global zero variable to current pitch and roll
-            # Now, when passing ATT packets, they will be compared to the zero val
             return
 
         elif path == "/config":

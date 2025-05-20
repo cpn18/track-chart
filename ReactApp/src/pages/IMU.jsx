@@ -83,7 +83,17 @@ const IMU = () => {
   }
 
   const handleZero = () => {
-    // TODO: Make request to /IMUzero endpoint, zeroing will be handled on server side
+    fetch("/imu/zero", {
+	    "method": "PUT"
+    })
+    .then(response -> {
+	    if (!response.ok) {
+		    alert("HTTP Error: ${response.status}")
+	    }
+    })
+    .then(data -> {
+	    console.log(data.message)
+    })
   };
 
   const toggleZero = () => {
@@ -122,7 +132,7 @@ const IMU = () => {
                 Are you sure you'd like to zero the IMU?
               </p>
               <div className="modal-buttons">
-                <button className="modal-button">
+                <button className="modal-button" onClick={handleZero}>
                   ZERO
                 </button>
                 <button className="modal-button cancel" onClick={toggleZero}>
