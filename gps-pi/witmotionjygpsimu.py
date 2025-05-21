@@ -54,6 +54,9 @@ class WitMotionJyGpsImu():
         self.wit = {}
         self.config = config
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.imux = config['imu']['x']
+        self.imuy = config['imu']['y']
+        self.imuz = config['imu']['z']
 
     def update_config(self, config):
         self.config = config
@@ -267,20 +270,20 @@ class WitMotionJyGpsImu():
             att.update({
                 'device': self.imu_device,
                 'time': self.wit['time'],
-                'acc_x': self.wit['ACC'+self.config['imu']['x']],
-                'acc_y': self.wit['ACC'+self.config['imu']['y']],
-                'acc_z': self.wit['ACC'+self.config['imu']['z']],
-                'gyro_x': self.wit['GYR'+self.config['imu']['x']],
-                'gyro_y': self.wit['GYR'+self.config['imu']['y']],
-                'gyro_z': self.wit['GYR'+self.config['imu']['z']],
-                'mag_x': self.wit['MAG'+self.config['imu']['x']],
-                'mag_y': self.wit['MAG'+self.config['imu']['y']],
-                'mag_z': self.wit['MAG'+self.config['imu']['z']],
-                'pitch': self.wit['ANG'+self.config['imu']['x']],
+                'acc_x': self.wit['ACC'+self.imux],
+                'acc_y': self.wit['ACC'+self.imuy],
+                'acc_z': self.wit['ACC'+self.imuz],
+                'gyro_x': self.wit['GYR'+self.imux],
+                'gyro_y': self.wit['GYR'+self.imuy],
+                'gyro_z': self.wit['GYR'+self.imuz],
+                'mag_x': self.wit['MAG'+self.imux],
+                'mag_y': self.wit['MAG'+self.imuy],
+                'mag_z': self.wit['MAG'+self.imuz],
+                'pitch': self.wit['ANG'+self.imux],
                 'pitch_st': "N",
-                'roll': self.wit['ANG'+self.config['imu']['y']],
+                'roll': self.wit['ANG'+self.imuy],
                 'roll_st': "N",
-                'yaw': self.wit['ANG'+self.config['imu']['z']],
+                'yaw': self.wit['ANG'+self.imuz],
                 'yaw_st': "N",
                 'temp': self.wit['temp'],
             })

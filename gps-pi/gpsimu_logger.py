@@ -331,6 +331,7 @@ def gpsimu_logger(output_directory):
                 util.write_config(COMFIG)
                 util.write_header(imu_output, COMFIG)
                 session.update_config(COMFIG)
+                os._exit(0)
 
             # Short Circuit the rest of the checks
             if HOLD == -1:

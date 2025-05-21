@@ -145,7 +145,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
         self.send_error(http.client.NOT_FOUND, self.path)
 
-    def def do_GET(self):
+    def do_GET(self):
         self.handle_web_request()
 
     def do_PUT(self):
@@ -176,6 +176,10 @@ def imu_logger(output_directory):
     if 'yaw_adj' not in CONFIG['imu']:
         CONFIG['imu']['yaw_adj'] = 0
 
+    imux = CONFIG['imu']['x']
+    imuy = CONFIG['imu']['y']
+    imuz = CONFIG['imu']['z']
+
     # Open the output file
     with open(os.path.join(output_directory,datetime.datetime.now().strftime("%Y%m%d%H%M")+"_imu.csv"), "w") as imu_output:
         util.write_header(imu_output, CONFIG)
@@ -197,15 +201,15 @@ def imu_logger(output_directory):
                 "class": "ATT",
                 "device": accel.device(),
                 "time": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "acc_x": acc['ACC'+CONFIG['imu']['x']],
-                "acc_y": acc['ACC'+CONFIG['imu']['y']],
-                "acc_z": acc['ACC'+CONFIG['imu']['z']],
-                "gyro_x": acc['GYR'+CONFIG['imu']['x']],
-                "gyro_y": acc['GYR'+CONFIG['imu']['y']],
-                "gyro_z": acc['GYR'+CONFIG['imu']['z']],
-                "mag_x": acc['MAG'+CONFIG['imu']['x']],
-                "mag_y": acc['MAG'+CONFIG['imu']['y']],
-                "mag_z": acc['MAG'+CONFIG['imu']['z']],
+                "acc_x": acc['ACC'+imux],
+                "acc_y": acc['ACC'+imuy],
+                "acc_z": acc['ACC'+imuz],
+                "gyro_x": acc['GYR'+imux],
+                "gyro_y": acc['GYR'+imuy],
+                "gyro_z": acc['GYR'+imuz],
+                "mag_x": acc['MAG'+imux],
+                "mag_y": acc['MAG'+imuy],
+                "mag_z": acc['MAG'+imuz],
                 "temp": util.get_cpu_temp(),
             }
 
@@ -246,6 +250,7 @@ def imu_logger(output_directory):
                 saved_pitch = saved_roll = saved_yaw = []
                 util.write_config(CONFIG)
                 util.write_header(imu_output, CONFIG)
+                os._exit(0)
 
             # Log the output
             send_udp(sock, CONFIG['udp']['ip'], CONFIG['udp']['port'], obj)
