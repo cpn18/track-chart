@@ -22,11 +22,28 @@ export function draw_point(canvas, imagedata, x, y, color) {
   }
 
   // Each "bit" is controlled by four bytes
-  const pixelIndex = (iy * canvas.width + ix) * 4;
+  let pixelIndex = (iy * canvas.width + ix) * 4;
   imagedata.data[pixelIndex + 0] = color[0]; // RED
   imagedata.data[pixelIndex + 1] = color[1]; // GREEN
   imagedata.data[pixelIndex + 2] = color[2]; // BLUE
   imagedata.data[pixelIndex + 3] = color[3]; // ALPHA
+
+  imagedata.data[pixelIndex + 4] = color[0]; // RED
+  imagedata.data[pixelIndex + 5] = color[1]; // GREEN
+  imagedata.data[pixelIndex + 6] = color[2]; // BLUE
+  imagedata.data[pixelIndex + 7] = color[3]; // ALPHA
+
+  pixelIndex += canvas.width*4
+
+  imagedata.data[pixelIndex + 0] = color[0]; // RED
+  imagedata.data[pixelIndex + 1] = color[1]; // GREEN
+  imagedata.data[pixelIndex + 2] = color[2]; // BLUE
+  imagedata.data[pixelIndex + 3] = color[3]; // ALPHA
+
+  imagedata.data[pixelIndex + 4] = color[0]; // RED
+  imagedata.data[pixelIndex + 5] = color[1]; // GREEN
+  imagedata.data[pixelIndex + 6] = color[2]; // BLUE
+  imagedata.data[pixelIndex + 7] = color[3]; // ALPHA
 }
 
 export function draw_line(canvas, imagedata, x1, y1, x2, y2, color) {
