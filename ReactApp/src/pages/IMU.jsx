@@ -86,13 +86,10 @@ const IMU = () => {
     fetch("/imu/zero", {
 	    "method": "PUT"
     })
-    .then(response -> {
-	    if (!response.ok) {
-		    alert("HTTP Error: ${response.status}")
-	    }
-    })
-    .then(data -> {
-	    console.log(data.message)
+    .then(response => response.json())
+    .then((data) => {
+	    console.log(data)
+	    toggleZero()
     })
   };
 
