@@ -202,7 +202,7 @@ const Settings = () => {
   }
 
   const powerOff = () => {
-    fetch('/powerOff')
+    fetch('/poweroff')
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Failed to power off: ${res.status}`);
