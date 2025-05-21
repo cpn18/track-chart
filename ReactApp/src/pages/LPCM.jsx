@@ -37,7 +37,7 @@ const LPCM = () => {
         alt="LPCM Representation"
         className="lidar-image"
       /> ) : (
-	 <div>LPCM disabled - turn on in settings</div>i
+	 <div>LPCM disabled - turn on in settings</div>
       )}
       
       {/* footer */}
