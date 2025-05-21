@@ -335,7 +335,7 @@ const Settings = () => {
                 </label>
                 <div>
                   <label>Forward</label>
-                  <select>
+                  <select value={config?.imu?.x}>
                     <option value="x">x</option>
                     <option value="y">y</option>
                     <option value="z">z</option>
@@ -343,7 +343,7 @@ const Settings = () => {
                 </div>
                 <div>
                   <label>Side</label>
-                  <select>
+                  <select value={config?.imu?.y}>
                     <option value="x">x</option>
                     <option value="y">y</option>
                     <option value="z">z</option>
@@ -351,7 +351,7 @@ const Settings = () => {
                 </div>
                 <div>
                   <label>Vertical</label>
-                  <select>
+                  <select value={config?.imu?.z}>
                     <option value="x">x</option>
                     <option value="y">y</option>
                     <option value="z">z</option>
