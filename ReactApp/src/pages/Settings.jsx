@@ -70,11 +70,11 @@ const Settings = () => {
     settingsStream.addEventListener('pirail_ATT', handleDataUpdate);
 
     settingsStream.onopen = () => {
-      console.log('ATT connection opened');
+      console.log('packet connection opened');
     };
 
     settingsStream.onerror = () => {
-      console.log('ATT connection error');
+      console.log('packet connection error');
     };
   }, []);
   
@@ -189,6 +189,29 @@ const Settings = () => {
     }
   };
 
+  const toggleLogging = (data, sensor, toggle = 1) => {
+    // current state
+    const currLogging = data[sensor].logging;
+
+    // compute desired state
+    const newLogging =
+      toggle === -1 ? false :
+      toggle ===  0 ? true  :
+      toggle ===  2 ? currLogging :
+      !currLogging;               
+
+    // push to shared config (even if unchanged – harmless)
+    const updatedConfig = {
+      ...data,
+      [sensor]: {
+        ...data[sensor],
+        logging: newLogging,
+      },
+    };
+    setConfig(updatedConfig);
+	  console.log("logging is " + newLogging)
+  };
+
   // toggle: value to set sensor to (see above)
   const initSensors = (data, toggle = 1) => {
     Object.keys(data).forEach((sensor) => {
@@ -211,6 +234,7 @@ const Settings = () => {
       })
       .then((data) => {
         console.log(data);
+        togglePower()
       })
   }
 
@@ -252,11 +276,12 @@ const Settings = () => {
   }, [config, pendingApply]);
   
   const handleDataUpdate = (event) => {
-    console.log(event);
+    //console.log(event);
     var att = JSON.parse(event.data);
+    //console.log(att);
     // CPU Temp
     if (att.temp != undefined) {
-      setTemp(att.temp);
+      setTemp(att.temp.toFixed(0));
     }
   }
 
@@ -323,16 +348,27 @@ const Settings = () => {
                 onClick={(e) => e.stopPropagation()} // Prevent dropdown toggle
               >
                 <label>
-                  Enable IMU
-                  <label className="switch">
-                    <input
+		    Enable
+		    <label className="switch">
+                <input
                       type="checkbox"
                       checked={config?.imu?.enable || false}
                       onChange={() => toggleSensor(config, 'imu')}
-                    />
+                 />
                     <span className="slider"></span>
-                  </label>
-                </label>
+		    </label>
+		    </label>
+                <label>
+		    Logging
+		    <label className="switch">
+                <input
+                      type="checkbox"
+                      checked={config?.imu?.logging || false}
+                      onChange={() => toggleLogging(config, 'imu')}
+                 />
+                    <span className="slider"></span>
+		    </label>
+		    </label>
                 <div>
                   <label>Forward</label>
                   <select value={config?.imu?.x}>
