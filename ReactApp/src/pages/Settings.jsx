@@ -25,6 +25,10 @@ const Settings = () => {
   const [showApply, setApply] = useState(false);
   const [config, setConfig] = useState(null); // config served by web server
   const [temp, setTemp] = useState(null);
+  const [output, setOutput] = useState(null);
+  const [used, setUsed] = useState(null);
+  const [swver, setSwVer] = useState(null);
+  const [hwname, setHwName] = useState(null);
   const [pendingApply, setPendingApply] = useState(false);
 
 
@@ -47,7 +51,7 @@ const Settings = () => {
   const toggleReset = () => {
     setReset(!showReset);
   };
-
+/*
   useEffect(() => {
     fetch('/config')
       .then((res) => {
@@ -70,13 +74,14 @@ const Settings = () => {
     settingsStream.addEventListener('pirail_ATT', handleDataUpdate);
 
     settingsStream.onopen = () => {
-      console.log('packet connection opened');
+      console.log('connection opened');
     };
 
     settingsStream.onerror = () => {
-      console.log('packet connection error');
+      console.log('connection error');
     };
   }, []);
+  */
   
 /*
   const handleDataUpdate = (event) => {
@@ -219,9 +224,18 @@ const Settings = () => {
     });
   };
 
-  const resetSettings = () => {
-    initSensors(config, 0);
-    setPendingApply(true);
+  const resetDevice = () => {
+    fetch('/reset')
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to reset off: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        toggleReset()
+      })
   }
 
   const powerOff = () => {
@@ -258,6 +272,7 @@ const Settings = () => {
 
     const settingsStream = new EventSource('/packets?count=1000');
     settingsStream.addEventListener('pirail_ATT', handleDataUpdate);
+    settingsStream.addEventListener('pirail_SYS', handleSysDataUpdate);
 
     settingsStream.onopen = () => {
       console.log('ATT connection opened');
@@ -274,14 +289,54 @@ const Settings = () => {
       setPendingApply(false);
     }
   }, [config, pendingApply]);
+
+  const applySettings = () => {
+	  console.log(config)
+    fetch('/config', {
+      "method": "PUT",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gps: config.gps,
+        imu: config.imu,
+        lidar: config.lidar,
+        hpslidar: config.hpslidar,
+        lpcm: config.lpcm,
+	sim: config.sim,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch. Status code: ${res.status}`);
+        }
+	      toggleApply();
+	      reBoot();
+      })
+  };
   
   const handleDataUpdate = (event) => {
     //console.log(event);
     var att = JSON.parse(event.data);
-    //console.log(att);
+    console.log(att);
     // CPU Temp
     if (att.temp != undefined) {
       setTemp(att.temp.toFixed(0));
+    }
+  }
+
+  const handleSysDataUpdate = (event) => {
+    //console.log(event);
+    var sys = JSON.parse(event.data);
+    console.log(sys);
+    // Output
+    if (sys.output != undefined) {
+      setOutput(sys.output);
+      setUsed(sys.used_percent.toFixed(0));
+    }
+    if (sys.sw_version != undefined) {
+      setSwVer(sys.sw_version);
+    }
+    if (sys.hwname != undefined) {
+      setHwName(sys.hwname);
     }
   }
 
@@ -324,6 +379,17 @@ const Settings = () => {
                     <span className="slider"></span>
                   </label>
                 </label>
+                <label>
+		    Logging
+		    <label className="switch">
+                <input
+                      type="checkbox"
+                      checked={config?.gps?.logging || false}
+                      onChange={() => toggleLogging(config, 'gps')}
+                 />
+                    <span className="slider"></span>
+		    </label>
+		    </label>
               </div>
             )}
           </div>
@@ -438,6 +504,17 @@ const Settings = () => {
                     <span className="slider"></span>
                   </label>
                 </label>
+                <label>
+		    Logging
+		    <label className="switch">
+                <input
+                      type="checkbox"
+                      checked={config?.lidar?.logging || false}
+                      onChange={() => toggleLogging(config, 'lidar')}
+                 />
+                    <span className="slider"></span>
+		    </label>
+		    </label>
               </div>
             )}
           </div>
@@ -472,6 +549,17 @@ const Settings = () => {
                     <span className="slider"></span>
                   </label>
                 </label>
+                <label>
+		    Logging
+		    <label className="switch">
+                <input
+                      type="checkbox"
+                      checked={config?.lpcm?.logging || false}
+                      onChange={() => toggleLogging(config, 'lpcm')}
+                 />
+                    <span className="slider"></span>
+		    </label>
+		    </label>
               </div>
             )}
           </div>
@@ -480,6 +568,18 @@ const Settings = () => {
           <div className="status-item gpu-temp">
             <span className="dropdownText">CPU Temp: {temp ? `${temp}°` : 'Loading...'}</span>
             <span className="gpu-temp-value"></span>
+          </div>
+          {/* Output */}
+          <div className="status-item">
+            <span className="dropdownText">Output: {output ? `${output} ${used}%` : 'Loading...'}</span>
+          </div>
+          {/* Software */}
+          <div className="status-item">
+            <span className="dropdownText">Software: {swver ? `${swver}` : 'Loading...'}</span>
+          </div>
+          {/* Hardware */}
+          <div className="status-item">
+            <span className="dropdownText">Hardware: {hwname ? `${hwname}` : 'Loading...'}</span>
           </div>
         </div>
       </div>
@@ -576,7 +676,7 @@ const Settings = () => {
                 Are you sure you'd like to reset the PiRail unit?
               </p>
               <div className="modal-buttons">
-                <button className="modal-button" onClick={resetSettings}>
+                <button className="modal-button" onClick={resetDevice}>
                   RESET
                 </button>
                 <button className="modal-button cancel" onClick={toggleReset}>

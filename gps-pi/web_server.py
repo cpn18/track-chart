@@ -176,6 +176,8 @@ class MyHandler(BaseHTTPRequestHandler):
         path = url.path
         module = path.split('/')[1]  # sim, gps, lidar, imu, etc...
 
+        print(url,path,module)
+
         if module in CONFIG:
             enabled = check_enabled([CONFIG[module]])
             if enabled is False:
@@ -185,6 +187,13 @@ class MyHandler(BaseHTTPRequestHandler):
                     self,
                     "http://%s:%d%s" % (enabled[0], enabled[1], self.path),
                 )
+        elif path.startswith("/config"):
+            data = self.rfile.read(int(self.headers['content-length']))
+            CONFIG.update(json.loads(data))
+            util.write_config(CONFIG)
+            self.send_response(http.client.OK)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
         else:
             self.send_error(http.client.NOT_FOUND, "Not Found")
         return
