@@ -11,7 +11,9 @@ import Footer from '../components/Footer';
  */
 const LPCM = () => {
   // track cur time, set to the cur date and time
+  const [config, setConfig] = useState(null);
   const [enabled, setEnabled] = useState(false);
+  const [time, setTime] = useState(null);
   const { isDarkMode } = useTheme(); 
   
   
@@ -26,7 +28,28 @@ const LPCM = () => {
       .catch((err) => {
         console.error('Error fetching config:', err);
     });
+
+	      const settingsStream = new EventSource('/packets?count=1000');
+    settingsStream.addEventListener('pirail_LPCM', handleDataUpdate);
+
+    settingsStream.onopen = () => {
+      console.log('packet connection opened');
+    };
+
+    settingsStream.onerror = () => {
+      console.log('packet connection error');
+    };
+
   }, []);
+
+    const handleDataUpdate = (event) => {
+    console.log(event);
+    var lpcm = JSON.parse(event.data);
+    console.log(lpcm);
+    if (lpcm.time != undefined) {
+      setTime(lpcm.time.split('.')[0]);
+    }
+  }
 
   return (
     <div className="imu-container">
@@ -39,6 +62,7 @@ const LPCM = () => {
       /> ) : (
 	 <div>LPCM disabled - turn on in settings</div>
       )}
+      <label>{time}</label>
       
       {/* footer */}
       <Footer />
