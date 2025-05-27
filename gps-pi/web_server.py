@@ -245,6 +245,9 @@ class MyHandler(BaseHTTPRequestHandler):
                     if 'LIDAR3D' in filtered:
                         msg = f"event: pirail_LIDAR\ndata: {json.dumps(filtered['LIDAR3D'])}\n\n"
                         self.wfile.write(msg.encode('utf-8'))
+                    if 'LPCM' in filtered:
+                        msg = f"event: pirail_LPCM\ndata: {json.dumps(filtered['LPCM'])}\n\n"
+                        self.wfile.write(msg.encode('utf-8'))
                     if 'SYS' in filtered:
                         msg = f"event: pirail_SYS\ndata: {json.dumps(filtered['SYS'])}\n\n"
                         self.wfile.write(msg.encode('utf-8'))
@@ -379,6 +382,19 @@ class MyHandler(BaseHTTPRequestHandler):
 
 def get_sys_data():
     """ Get System Data """
+
+    try:
+        response = requests.head("https://openstreetmap.org")
+        osm = True
+    except:
+        osm = False
+
+    try:
+        response = requests.head("https://openrailwaymap.org")
+        orm = True
+    except:
+        orm = False
+
     stat = os.statvfs(OUTPUT)
 
     firmware_name = "/sys/firmware/devicetree/base/model"
@@ -393,6 +409,7 @@ def get_sys_data():
         "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
         "sw_version": CONFIG.get('sw_version', 'unknown'),
         "hwname": hwname,
+        "online": osm and orm,
     }
     return sys_data
 
