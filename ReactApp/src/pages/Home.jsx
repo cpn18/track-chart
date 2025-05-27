@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, LayersControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, LayersControl, ScaleControl } from 'react-leaflet';
 import L from 'leaflet';
 import { usePoi } from '../PoiContext';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -108,7 +108,7 @@ const Home = () => {
   const [mapLayer, setMapLayer] = useState("light");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   /* check if the user is online/offline */
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(false /* navigator.onLine */);
   
   /* toggle map centering */
   const handleCenterMap = () => {
@@ -348,6 +348,7 @@ const Home = () => {
               }
               attribution='&copy; OpenStreetMap contributors & CartoDB'
             />
+	    <ScaleControl position="bottomleft" />
           </LayersControl.BaseLayer>
           {/* ORM overlay */}
           <LayersControl.Overlay checked name="Railways (OpenRailwayMap)">
