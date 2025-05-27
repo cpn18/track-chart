@@ -129,9 +129,9 @@
 - K 43.517999 -71.487533 26.40 X '{"name": "Leslie Roberts Dr"}' *
 - K - - 26.40 S '{"name": "Belmont Beach", "offset":0 }' *
 - K 43.518505 -71.484253 26.58 TL '{"name": "Belmont/Laconia"}' *
-- K 43.520385 -71.478792 26.89 X '{"name": "Dupont Ped"}' *
+- K 43.520385 -71.478792 26.89 X '{"name": "Dupont Ped", "offset": -0.020}' *
 - K - - 26.89 S '{"name": "Bartlett Beach", "offset":0 }' *
-- K 43.520454396732305 -71.47869766863529 26.90 O '{"name": "Durkee Br"}' *
+- K 43.520454396732305 -71.47869766863529 26.90 O '{"name": "Durkee Br", "offset": 0.020}' *
 - K 43.521091 -71.477717 26.96 X '{"name": "Keasor Court"}' *
 - K 43.521553 -71.477133 27.00 MP '{"name": "C27"}' *
 - K 43.522807 -71.476025 27.15 X '{"name": "Bay St"}' *

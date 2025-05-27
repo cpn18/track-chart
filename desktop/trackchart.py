@@ -236,6 +236,7 @@ def bridges_and_crossings(track_chart, xing_type=None):
         mileage = obj['mileage']
         xtype = obj['class']
         metadata = obj['metadata']
+        offset_mileage = mileage + metadata.get('offset', 0)
 
         if not first <= mileage <= last or xtype not in ['U', 'O', 'X']:
             continue
@@ -250,6 +251,7 @@ def bridges_and_crossings(track_chart, xing_type=None):
 
         # Get X based on mileage
         xpixel = mile_to_pixel(track_chart, mileage-first)
+        offset_xpixel = mile_to_pixel(track_chart, offset_mileage-first)
 
         if xtype == 'U':
             # Draw underpass
@@ -275,10 +277,10 @@ def bridges_and_crossings(track_chart, xing_type=None):
         if len(text) > 0:
             description = ("%s %s" % (mileage_to_string(obj), text)).strip()
             (text_image, x_size, y_size) = rotated_text(draw, description, 90)
-            image.paste(text_image, (int(xpixel-y_size/2), int(ypixel-1.5*margin-x_size)))
+            image.paste(text_image, (int(offset_xpixel-y_size/2), int(ypixel-1.5*margin-x_size)))
 
         # Survey Station
-        survey_station(image, draw, xpixel, margin, metadata)
+        survey_station(image, draw, offset_xpixel, margin, metadata)
 
     del draw
 
