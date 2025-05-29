@@ -479,8 +479,8 @@
 
 .network-status { /* network status indicator */
   position: absolute; /* positioned on top of map */
-  top: 10px;
-  right: 10px;
+  bottom: 10px;
+  left: 10px;
   background-color: rgba(255, 255, 255, 0.8); /* semi-transparent white */
   padding: 0.25rem 0.5rem;
   border-radius: 6px;

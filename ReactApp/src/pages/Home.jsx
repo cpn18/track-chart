@@ -202,6 +202,7 @@ const Home = () => {
       // Initialize SSE connection to gps_stream
       const gpsStream = new EventSource("/packets?count=1000");
         gpsStream.addEventListener("pirail_TPV", handleDataUpdate);
+        gpsStream.addEventListener("pirail_SYS", handleSysUpdate);
       
         gpsStream.onopen = function() {
           console.log("gps connection opened");
@@ -216,6 +217,17 @@ const Home = () => {
         };
     }
   }, []);
+
+  const handleSysUpdate = (event) => {
+    //console.log(event);
+    var sys = JSON.parse(event.data);
+    console.log(sys)
+    if (sys.online) {
+	    setIsOnline(true)
+    } else {
+	    setIsOnline(false)
+    }
+  };
 
   const handleDataUpdate = (event) => {
     //console.log(event);
@@ -348,7 +360,7 @@ const Home = () => {
               }
               attribution='&copy; OpenStreetMap contributors & CartoDB'
             />
-	    <ScaleControl position="bottomleft" />
+	    <ScaleControl position="topright" />
           </LayersControl.BaseLayer>
           {/* ORM overlay */}
           <LayersControl.Overlay checked name="Railways (OpenRailwayMap)">
