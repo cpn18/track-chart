@@ -354,8 +354,8 @@ const Home = () => {
                     )
                   : (
                       mapLayer === "dark" // check if dark mode is enabled
-                        ? "/tiles/dark/{z}/{x}/{y}.png" // offline dark map
-                        : "/tiles/light/{z}/{x}/{y}.png" // offline light map
+                        ? "/tiles/osm/dark/{z}/{x}/{y}.png" // offline dark map
+                        : "/tiles/osm/light/{z}/{x}/{y}.png" // offline light map
                     )
               }
               attribution='&copy; OpenStreetMap contributors & CartoDB'
@@ -365,7 +365,11 @@ const Home = () => {
           {/* ORM overlay */}
           <LayersControl.Overlay checked name="Railways (OpenRailwayMap)">
             <TileLayer
-              url="https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
+              url={
+		 isOnline
+		      ? "https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png"
+		      : "/tiles/orm/standard/{z}/{x}/{y}.png"
+	      }
               attribution='&copy; OpenRailwayMap contributors'
               opacity={0.7}
             />

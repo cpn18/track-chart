@@ -220,39 +220,42 @@ class MyHandler(BaseHTTPRequestHandler):
                 param_delay = float(qsdict.get('delay', [1])[0])
                 param_count = int(qsdict.get('count', [1])[0])
 
-                for _ in range(param_count):
-                    PACKETS.update({"SYS": get_sys_data()})
+                try:
+                    for _ in range(param_count):
+                        PACKETS.update({"SYS": get_sys_data()})
 
-                    # If user specified classes, filter. Otherwise, all PACKETS.
-                    if param_class:
-                        filtered = {cls: PACKETS[cls] for cls in param_class if cls in PACKETS}
-                    else:
-                        filtered = PACKETS
+                        # If user specified classes, filter. Otherwise, all PACKETS.
+                        if param_class:
+                            filtered = {cls: PACKETS[cls] for cls in param_class if cls in PACKETS}
+                        else:
+                            filtered = PACKETS
 
-                    # Example: if 'TPV' or 'SKY' in filtered, send them
-                    if 'TPV' in filtered:
-                        msg = f"event: pirail_TPV\ndata: {json.dumps(filtered['TPV'])}\n\n"
-                        self.wfile.write(msg.encode('utf-8'))
-                    if 'SKY' in filtered:
-                        msg = f"event: pirail_SKY\ndata: {json.dumps(filtered['SKY'])}\n\n"
-                        self.wfile.write(msg.encode('utf-8'))
-                    if 'ATT' in filtered:
-                        msg = f"event: pirail_ATT\ndata: {json.dumps(filtered['ATT'])}\n\n"
-                        self.wfile.write(msg.encode('utf-8'))
-                    if 'LIDAR' in filtered:
-                        msg = f"event: pirail_LIDAR\ndata: {json.dumps(filtered['LIDAR'])}\n\n"
-                        self.wfile.write(msg.encode('utf-8'))
-                    if 'LIDAR3D' in filtered:
-                        msg = f"event: pirail_LIDAR\ndata: {json.dumps(filtered['LIDAR3D'])}\n\n"
-                        self.wfile.write(msg.encode('utf-8'))
-                    if 'LPCM' in filtered:
-                        msg = f"event: pirail_LPCM\ndata: {json.dumps(filtered['LPCM'])}\n\n"
-                        self.wfile.write(msg.encode('utf-8'))
-                    if 'SYS' in filtered:
-                        msg = f"event: pirail_SYS\ndata: {json.dumps(filtered['SYS'])}\n\n"
-                        self.wfile.write(msg.encode('utf-8'))
-                    self.wfile.flush()
-                    time.sleep(param_delay)
+                        # Example: if 'TPV' or 'SKY' in filtered, send them
+                        if 'TPV' in filtered:
+                            msg = f"event: pirail_TPV\ndata: {json.dumps(filtered['TPV'])}\n\n"
+                            self.wfile.write(msg.encode('utf-8'))
+                        if 'SKY' in filtered:
+                            msg = f"event: pirail_SKY\ndata: {json.dumps(filtered['SKY'])}\n\n"
+                            self.wfile.write(msg.encode('utf-8'))
+                        if 'ATT' in filtered:
+                            msg = f"event: pirail_ATT\ndata: {json.dumps(filtered['ATT'])}\n\n"
+                            self.wfile.write(msg.encode('utf-8'))
+                        if 'LIDAR' in filtered:
+                            msg = f"event: pirail_LIDAR\ndata: {json.dumps(filtered['LIDAR'])}\n\n"
+                            self.wfile.write(msg.encode('utf-8'))
+                        if 'LIDAR3D' in filtered:
+                            msg = f"event: pirail_LIDAR\ndata: {json.dumps(filtered['LIDAR3D'])}\n\n"
+                            self.wfile.write(msg.encode('utf-8'))
+                        if 'LPCM' in filtered:
+                            msg = f"event: pirail_LPCM\ndata: {json.dumps(filtered['LPCM'])}\n\n"
+                            self.wfile.write(msg.encode('utf-8'))
+                        if 'SYS' in filtered:
+                            msg = f"event: pirail_SYS\ndata: {json.dumps(filtered['SYS'])}\n\n"
+                            self.wfile.write(msg.encode('utf-8'))
+                        self.wfile.flush()
+                        time.sleep(param_delay)
+                except BrokenPipeError:
+                    pass
 
             else:
                 PACKETS.update({"SYS": get_sys_data()})
@@ -409,7 +412,7 @@ def get_sys_data():
         "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
         "sw_version": CONFIG.get('sw_version', 'unknown'),
         "hwname": hwname,
-        "online": osm and orm,
+        "online": False and osm and orm,
     }
     return sys_data
 

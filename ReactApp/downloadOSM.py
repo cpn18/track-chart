@@ -1,4 +1,5 @@
 import os
+import sys
 import math
 import requests
 import time
@@ -10,14 +11,22 @@ min_lat, max_lat = 42.7, 45.3
 min_lon, max_lon = -72.6, -70.6
 
 # zoom levels to download (8–11)
-zoom_levels = range(1, 16)
+zoom_levels = range(0, 20)
 
-# folder to store tiles
-output_dir = "./public/tiles/light"
-
-# OSM tile server
-# https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png THIS IS FOR DARK MAPS
-tile_url = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+TILEMAP = {
+    "light": {
+        "source": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "output": "public/tiles/osm/{style}"
+    },
+    "dark": {
+        "source": "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        "output": "public/tiles/osm/{style}"
+    },
+    "standard": {
+        "source": "http://tiles.openrailwaymap.org/{style}/{z}/{x}/{y}.png",
+        "output": "public/tiles/orm/{style}"
+    }
+}
 
 def latlon_to_tile(lat, lon, zoom):
     lat_rad = math.radians(lat)
@@ -31,27 +40,62 @@ headers = {
     "User-Agent": "PiRail/1.0 (https://gitlab.cs.unh.edu/pirail-2025-capstone/pirail-2025-capstone) Contact: dsb1041"
 }
 
-for z in zoom_levels:
-    x_start, y_start = latlon_to_tile(max_lat, min_lon, z)
-    x_end, y_end = latlon_to_tile(min_lat, max_lon, z)
+def download_box(style, lat1, lon1, lat2, lon2):
+    min_lat = min(lat1, lat2)
+    max_lat = max(lat1, lat2)
+    min_lon = min(lon1, lon2)
+    max_lon = max(lon1, lon2)
 
-    for x in tqdm(range(x_start, x_end + 1), desc=f"Zoom {z}"):
-        for y in range(y_start, y_end + 1):
-            url = tile_url.format(z=z, x=x, y=y)
-            path = os.path.join(output_dir, str(z), str(x))
-            os.makedirs(path, exist_ok=True)
-            filename = os.path.join(path, f"{y}.png")
+    for z in zoom_levels:
+        x_start, y_start = latlon_to_tile(max_lat, min_lon, z)
+        x_end, y_end = latlon_to_tile(min_lat, max_lon, z)
 
-            if not os.path.exists(filename):
-                try:
-                    response = requests.get(url, headers=headers, timeout=10)
-                    if response.status_code == 200:
-                        with open(filename, "wb") as f:
-                            f.write(response.content)
-                        print(f"✅ Saved: {filename}")
-                        time.sleep(0.01)  # delay to avoid rate limiting
-                    else:
-                        # user-agent isn't working, so we get a 403 forbidden error - OSM is mad at us
-                        print(f"❌ Failed {z}/{x}/{y}: HTTP {response.status_code}")
-                except Exception as e:
-                    print(f"❌ Error {z}/{x}/{y}: {e}")
+        for x in tqdm(range(x_start, x_end + 1), desc=f"Zoom {z}"):
+            for y in range(y_start, y_end + 1):
+                download_tile(style, x, y, z)
+
+def download_point(style, lat, lon):
+    for z in zoom_levels:
+        x, y = latlon_to_tile(lat, lon, z)
+        download_tile(style, x, y, z)
+
+def download_tile(style, x, y, z):
+
+
+    output_dir = TILEMAP[style]["output"].format(style=style, z=z, x=x, y=y)
+    path = os.path.join(output_dir, str(z), str(x))
+    filename = os.path.join(path, f"{y}.png")
+
+    if not os.path.exists(filename):
+        try:
+            url = TILEMAP[style]["source"].format(style=style, z=z, x=x, y=y)
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                os.makedirs(path, exist_ok=True)
+                with open(filename, "wb") as f:
+                    f.write(response.content)
+                print(f"✅ Saved: {filename}")
+                time.sleep(0.01)  # delay to avoid rate limiting
+            else:
+                # user-agent isn't working, so we get a 403 forbidden error - OSM is mad at us
+                print(f"❌ Failed {z}/{x}/{y}: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"❌ Error {z}/{x}/{y}: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) == 5:
+        download_box(
+            "light",
+            float(sys.argv[1]),
+            float(sys.argv[2]),
+            float(sys.argv[3]),
+            float(sys.argv[4]),
+        )
+    elif len(sys.argv) == 3:
+        download_point(
+            "light",
+            float(sys.argv[1]),
+            float(sys.argv[2]),
+        )
+    else:
+        print("USAGE: error")
