@@ -386,17 +386,29 @@ class MyHandler(BaseHTTPRequestHandler):
 def get_sys_data():
     """ Get System Data """
 
-    try:
-        response = requests.head("https://openstreetmap.org")
-        osm = True
-    except:
-        osm = False
+    # Set to False to force offline testing
+    online = True
 
-    try:
-        response = requests.head("https://openrailwaymap.org")
-        orm = True
-    except:
-        orm = False
+    if online:
+        try:
+            response = requests.head("https://openstreetmap.org")
+            online = True
+        except:
+            online = False
+
+    if online:
+        try:
+            response = requests.head("https://basemaps.cartocdn.com")
+            online = True
+        except:
+            online = False
+
+    if online:
+        try:
+            response = requests.head("https://openrailwaymap.org")
+            online = True
+        except:
+            online = False
 
     stat = os.statvfs(OUTPUT)
 
@@ -412,7 +424,7 @@ def get_sys_data():
         "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
         "sw_version": CONFIG.get('sw_version', 'unknown'),
         "hwname": hwname,
-        "online": False and osm and orm,
+        "online": online,
     }
     return sys_data
 

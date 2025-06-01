@@ -148,7 +148,7 @@
   .center-map-button.move-up {
     bottom: calc(265px + env(safe-area-inset-bottom));
   }
-  
+
   .add-poi-button.move-up {
     bottom: calc(205px + env(safe-area-inset-bottom));
   }
@@ -189,7 +189,7 @@
 .add-poi-button {
   position: absolute;
   right: 20px;
-  bottom: calc(45px + env(safe-area-inset-bottom)); 
+  bottom: calc(45px + env(safe-area-inset-bottom));
   width: 50px;
   height: 50px;
   background-color: white;
@@ -363,6 +363,7 @@
 
 /* DARK MODE BELOW THIS LINE */
 
+.dark-mode .home-container,
 .dark-mode .nav-logo-bubble,
 .dark-mode .nav-button,
 .dark-mode .info-box,
