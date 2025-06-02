@@ -412,6 +412,14 @@ def get_sys_data():
 
     stat = os.statvfs(OUTPUT)
 
+    os_version = ""
+    with open("/etc/os-release") as infile:
+        for line in infile:
+            line = line.strip().split('=')
+            if line[0] == "PRETTY_NAME":
+                os_version = line[1].replace('"', '')
+                break
+
     firmware_name = "/sys/firmware/devicetree/base/model"
     if os.path.exists(firmware_name):
         with open(firmware_name) as infile:
@@ -424,6 +432,7 @@ def get_sys_data():
         "used_percent": 100 - int(100 * stat.f_bavail / stat.f_blocks),
         "sw_version": CONFIG.get('sw_version', 'unknown'),
         "hwname": hwname,
+        "os_version": os_version,
         "online": online,
     }
     return sys_data

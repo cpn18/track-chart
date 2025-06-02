@@ -28,6 +28,7 @@ const Settings = () => {
   const [output, setOutput] = useState(null);
   const [used, setUsed] = useState(null);
   const [swver, setSwVer] = useState(null);
+  const [osver, setOsVer] = useState(null);
   const [hwname, setHwName] = useState(null);
   const [pendingApply, setPendingApply] = useState(false);
 
@@ -338,6 +339,9 @@ const Settings = () => {
     if (sys.hwname != undefined) {
       setHwName(sys.hwname);
     }
+    if (sys.os_version != undefined) {
+      setOsVer(sys.os_version);
+    }
   }
 
   
@@ -580,6 +584,10 @@ const Settings = () => {
           {/* Hardware */}
           <div className="status-item">
             <span className="dropdownText">Hardware: {hwname ? `${hwname}` : 'Loading...'}</span>
+          </div>
+          {/* OS Version */}
+          <div className="status-item">
+            <span className="dropdownText">OS Version: {osver ? `${osver}` : 'Loading...'}</span>
           </div>
         </div>
       </div>
