@@ -229,7 +229,7 @@ const Settings = () => {
     fetch('/reset')
       .then((res) => {
         if (!res.ok) {
-          throw new Error(`Failed to reset off: ${res.status}`);
+          throw new Error(`Failed to reset: ${res.status}`);
         }
         return res.json();
       })
@@ -310,7 +310,6 @@ const Settings = () => {
           throw new Error(`Failed to fetch. Status code: ${res.status}`);
         }
 	      toggleApply();
-	      reBoot();
       })
   };
   

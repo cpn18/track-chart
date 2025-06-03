@@ -191,9 +191,14 @@ class MyHandler(BaseHTTPRequestHandler):
             data = self.rfile.read(int(self.headers['content-length']))
             CONFIG.update(json.loads(data))
             util.write_config(CONFIG)
+            output_dict = {"message": "Stored. Rebooting..."}
+            os.system(f"shutdown --reboot {SHUTDOWN_DELAY}")
+            output = json.dumps(output_dict).encode('utf-8')
             self.send_response(http.client.OK)
-            self.send_header("Content-Length", "0")
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(output)))
             self.end_headers()
+            self.wfile.write(output)
         else:
             self.send_error(http.client.NOT_FOUND, "Not Found")
         return

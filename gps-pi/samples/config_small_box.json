@@ -1,0 +1,53 @@
+{
+  "udp": {
+    "ip": "127.0.0.1",
+    "port": 5005
+  },
+  "web": {
+    "cmd": [
+      "web_server.sh",
+      "%PORT%",
+      "%OUTPUT_DIR%"
+    ],
+    "host": "localhost",
+    "port": 80
+  },
+  "sim": {
+    "enable": false,
+    "logging": false,
+    "data": "",
+    "speedup": 1,
+    "cmd": [
+      "simulator.sh",
+      "%PORT%",
+      "%OUTPUT_DIR%"
+    ],
+    "host": "localhost",
+    "port": 8084
+  },
+  "gps": {
+    "enable": true,
+    "logging": false,
+    "cmd": [
+      "gps_logger.sh",
+      "%PORT%",
+      "%OUTPUT_DIR%"
+    ],
+    "host": "localhost",
+    "port": 8080
+  },
+  "imu": {
+    "x": "x",
+    "y": "y",
+    "z": "z",
+    "enable": true,
+    "cmd": [
+      "imu_logger.sh",
+      "%PORT%",
+      "%OUTPUT_DIR%"
+    ],
+    "host": "localhost",
+    "port": 8081,
+    "logging": false
+  }
+}
