@@ -19,7 +19,7 @@ TILEMAP = {
         "output": "public/tiles/osm/{style}"
     },
     "dark": {
-        "source": "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        "source": "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
         "output": "public/tiles/osm/{style}"
     },
     "standard": {
@@ -82,20 +82,35 @@ def download_tile(style, x, y, z):
         except Exception as e:
             print(f"❌ Error {z}/{x}/{y}: {e}")
 
+def download_known(style, filename):
+    with open(filename) as infile:
+        for line in infile:
+            line = line.strip().split()
+            if line[1] == "K":
+                try:
+                    download_point(style, float(line[2]), float(line[3]))
+                except ValueError:
+                    pass
+
 if __name__ == "__main__":
-    if len(sys.argv) == 5:
+    if len(sys.argv) == 6:
         download_box(
-            "light",
-            float(sys.argv[1]),
+            sys.argv[1],
             float(sys.argv[2]),
             float(sys.argv[3]),
             float(sys.argv[4]),
+            float(sys.argv[5]),
         )
-    elif len(sys.argv) == 3:
+    elif len(sys.argv) == 4:
         download_point(
-            "light",
-            float(sys.argv[1]),
+            sys.argv[1],
             float(sys.argv[2]),
+            float(sys.argv[3]),
+        )
+    elif len(sys.argv) == 3 and sys.argv[2].endswith(".csv"):
+        download_known(
+            sys.argv[1],
+            sys.argv[2]
         )
     else:
         print("USAGE: error")
