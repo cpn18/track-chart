@@ -20,7 +20,7 @@ fi
 if [ -d ${pirail_data} ]; then
   output=${pirail_data}
 else
-  output=/root/gps-data
+  output=${HOME}/gps-data
 fi
 
 # Add a date stamp

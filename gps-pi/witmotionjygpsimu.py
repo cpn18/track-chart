@@ -121,9 +121,9 @@ class WitMotionJyGpsImu():
             yaw = 180.0*float(int.from_bytes(d[4:6],"little", signed=True))/32768.0
             version = int.from_bytes(d[6:8],"little", signed=True)
             #print("Angle",roll,pitch,yaw,version)
-            self.wit['ANGx'] = pitch + self.config['imu']['pitch_adj']
-            self.wit['ANGy'] = roll + self.config['imu']['roll_adj']
-            self.wit['ANGz'] = yaw + self.config['imu']['yaw_adj']
+            self.wit['ANGx'] = pitch + self.config['imu'].get('pitch_adj', 0)
+            self.wit['ANGy'] = roll + self.config['imu'].get('roll_adj', 0)
+            self.wit['ANGz'] = yaw + self.config['imu'].get('yaw_adj', 0)
             #outfile.write("Angle %f %f %f\n" % (pitch,roll,yaw))
         elif t == b'\x54':
             hx = int.from_bytes(d[0:2],"little", signed=True)
@@ -189,7 +189,7 @@ class WitMotionJyGpsImu():
     def read(self, event):
         """ Read from the serial port """
         ser = serial.Serial(self.ttyname)
-        self.gps['device'] = ser.name
+        self.wit['device'] = ser.name
         #ser.write(RETURN_CONTEXT)
         #ser.flush()
         #ser.write(SAVE)

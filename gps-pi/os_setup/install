@@ -11,6 +11,7 @@ apt-get install python3-smbus i2c-tools git
 ${cmd} timezone /etc/timezone
 
 # WiFi Hotspot
+# or dhcpcd5
 apt-get install dhcpcd hostapd dnsmasq iptables-persistent
 ${cmd} hostapd.conf /etc/hostapd
 ${cmd} hostapd /etc/default
@@ -41,5 +42,5 @@ systemctl enable rc-local
 syttemctl start rc-local
 
 # React
-apt-get install npm python3-tqdm
-npm install typescript
+apt-get install npm python3-tqdm node-typescript
+npm install typescript node

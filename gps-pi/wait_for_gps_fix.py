@@ -13,9 +13,10 @@ import util
 
 # PyLint doesn't like this
 config = util.read_config()
-if config['gps']['enable']:
+TYPE = config['gps']['type']
+if TYPE == 'gpsd':
     import gps
-elif config['gpsimu']['enable']:
+elif TYPE == 'witmotion':
     import witmotionjygpsimu as gps
 else:
     sys.exit(0)
@@ -66,16 +67,16 @@ def wait_for_timesync():
     """ Wait for Time Sync """
     global REPORT
 
-    if config['gps']['enable']:
+    if TYPE == "gpsd":
         # Listen on port 2947 (gpsd) of localhost
         session = gps.gps(mode=gps.WATCH_ENABLE)
     else:
-        session = gps.WitMotionJyGpsImu(config['gpsimu']['serial'], None, None, config)
+        session = gps.WitMotionJyGpsImu(config['gps']['serial'], None, None, config)
 
     try:
         while True:
             report = session.next()
-            if config['gps']['enable']:
+            if TYPE == "gpsd":
                 REPORT = str(report)
 
                 if report['class'] != 'TPV':

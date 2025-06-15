@@ -18,6 +18,7 @@
         "port": 8084 
     },
     "gps": {
+        "type": "gpsd",
 	"enable": true,
         "logging": true,
 	"cmd": ["gps_logger.sh", "%PORT%", "%OUTPUT_DIR%"],

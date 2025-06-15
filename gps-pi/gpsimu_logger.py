@@ -270,12 +270,12 @@ def gpsimu_logger(output_directory):
     if 'logging' not in CONFIG['imu']:
         CONFIG['imu']['logging'] = True
 
-    if 'pitch_adj' not in COMFIG['imu']:
-        COMFIG['imu']['pitch_adj'] = 0
-    if 'roll_adj' not in COMFIG['imu']:
-        config['imu']['roll_adj'] = 0
-    if 'yaw_adj' not in COMFIG['imu']:
-        COMFIG['imu']['yaw_adj'] = 0
+    if 'pitch_adj' not in CONFIG['imu']:
+        CONFIG['imu']['pitch_adj'] = 0
+    if 'roll_adj' not in CONFIG['imu']:
+        CONFIG['imu']['roll_adj'] = 0
+    if 'yaw_adj' not in CONFIG['imu']:
+        CONFIG['imu']['yaw_adj'] = 0
 
     # Create the output directory
     if not os.path.isdir(output_directory):

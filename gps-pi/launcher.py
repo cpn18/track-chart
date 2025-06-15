@@ -30,16 +30,17 @@ def launcher():
     config = util.read_config()
 
     for task in config:
-        if 'cmd' in config[task]:
-            if not 'enable' in config[task]:
-                config[task]['enable'] = True
-            if config[task]['enable']:
+        if isinstance(config[task], str):
+            continue
+        if config[task].get('cmd', None) is not None:
+            if config[task].get('enable', True):
                 launch(config[task])
 
 if __name__ == "__main__":
     try:
         OUTPUT = sys.argv[1]
     except IndexError:
-        OUTPUT = "/root/gps-data"
+        OUTPUT = os.path.join(os.getenv("HOME"), "gps-data")
+    os.makedirs(OUTPUT, exist_ok=True)
 
     launcher()
