@@ -463,8 +463,8 @@ if __name__ == "__main__":
     CONFIG = util.read_config()
 
     # Start the UDP Listener
-    ip = CONFIG['udp']['ip']
-    port = CONFIG['udp']['port']
+    ip = CONFIG['web']['udp']['ip']
+    port = CONFIG['web']['udp']['port']
     Tudp = threading.Thread(target=udp_receiver, args=(ip,port), daemon=True)
     Tudp.start()
 

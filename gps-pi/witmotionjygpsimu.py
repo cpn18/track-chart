@@ -80,17 +80,17 @@ class WitMotionJyGpsImu():
             self.wit['time'] = "%4d-%02d-%02dT%02d:%02d:%02d.%03dZ" % (year+2000, month, day, hh, mm, ss, ms)
             #outfile.write("Time %s\n" % self.wit['time'])
             obj = self.get_sky()
-            send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], obj)
+            send_udp(self.sock, self.config['analyzer']['udp']['ip'], self.config['analyzer']['udp']['port'], obj)
             if self.config['gps']['logging']:
                 do_output(self.gpsout,obj)
 
             obj = self.get_tpv()
-            send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], obj)
+            send_udp(self.sock, self.config['analyzer']['udp']['ip'], self.config['analyzer']['udp']['port'], obj)
             if self.config['gps']['logging']:
                 do_output(self.gpsout,obj)
 
             obj = self.get_att()
-            send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], obj)
+            send_udp(self.sock, self.config['analyzer']['udp']['ip'], self.config['analyzer']['udp']['port'], obj)
             if self.config['imu']['logging']:
                 do_output(self.imuout,obj)
         elif t == b'\x51':

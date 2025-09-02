@@ -334,7 +334,7 @@ class Hps3DLidar():
                 'time': datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             })
             if self.outputfile is not None:
-                send_udp(self.sock, self.config['udp']['ip'], self.config['udp']['port'], retval)
+                send_udp(self.sock, self.config['analyzer']['udp']['ip'], self.config['analyzer']['udp']['port'], retval)
                 self.outputfile.write("%s %s %s *\n" % (retval['time'], retval['class'], json.dumps(retval)))
                 self.outputfile.flush()
                 self.data = retval
