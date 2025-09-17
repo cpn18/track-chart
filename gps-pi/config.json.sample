@@ -9,6 +9,7 @@
         }
     },
     "analyzer": {
+        "cmd": ["analyzer.sh", "%PORT%", "%OUTPUT_DIR%"],
         "udp": {
             "ip": "127.0.0.1",
             "port": 5005
