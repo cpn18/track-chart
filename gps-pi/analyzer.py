@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Sample In-Line PiRail Packet Analzyer
+Sample In-Line PiRail Packet Analyzer
 """
 
 import socket
@@ -28,7 +28,7 @@ def udp_receiver(src_ip, src_port, dest_ip, dest_port):
 
         # ---------VVV----------------VVV-------
         #
-        # TODO: Add code here to analyse the packet
+        # TODO: Add code here to analyze the packet
         #       For example, when you receive a TPV packet, record the GPS location
         #                    then when an IMU packet arrives, determine if it's a
         #                    bump or not, and use the stored GPS location to
@@ -49,4 +49,3 @@ if __name__ == "__main__":
         CONFIG['web']['udp']['ip'],
         CONFIG['web']['udp']['port'],
     )
-
