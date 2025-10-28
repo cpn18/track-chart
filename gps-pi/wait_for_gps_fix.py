@@ -13,6 +13,11 @@ import util
 
 # PyLint doesn't like this
 config = util.read_config()
+
+# If the simulator is enabled, just exit
+if config['sim']['enable']:
+    sys.exit(0)
+
 TYPE = config['gps']['type']
 if TYPE == 'gpsd':
     import gps
