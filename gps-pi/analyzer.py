@@ -4,8 +4,10 @@ Sample In-Line PiRail Packet Analyzer
 """
 
 import socket
+import json
 
 import util
+
 
 def send_udp(sock, ip_addr, port, obj):
     """ Send Packet """
@@ -44,8 +46,8 @@ if __name__ == "__main__":
     CONFIG = util.read_config()
 
     udp_receiver(
-        CONFIG['analyzer']['udp']['ip'],
+        CONFIG['analyzer']['udp']['host'],
         CONFIG['analyzer']['udp']['port'],
-        CONFIG['web']['udp']['ip'],
+        CONFIG['web']['udp']['host'],
         CONFIG['web']['udp']['port'],
     )

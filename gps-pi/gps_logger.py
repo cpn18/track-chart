@@ -273,7 +273,7 @@ def gps_logger(output_directory):
 
             # Log the Data
             if 'time' in obj:
-                send_udp(sock, CONFIG['analyzer']['udp']['ip'], CONFIG['analyzer']['udp']['port'], obj)
+                send_udp(sock, CONFIG['analyzer']['udp']['host'], CONFIG['analyzer']['udp']['port'], obj)
                 if CONFIG['gps']['logging']:
                     gps_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
                     gps_output.flush()

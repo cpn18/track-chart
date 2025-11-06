@@ -115,7 +115,7 @@ def lpcm_logger(output_directory):
                             LPCM_DATA[channel] = capture_file
 
                     # Log the output
-                    send_udp(sock, config['analyzer']['udp']['ip'], config['analyzer']['udp']['port'], LPCM_DATA)
+                    send_udp(sock, config['analyzer']['udp']['host'], config['analyzer']['udp']['port'], LPCM_DATA)
                     lpcm_output.write(
                         "%s %s %s *\n" % (
                             LPCM_DATA['time'],

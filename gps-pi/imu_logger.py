@@ -253,7 +253,7 @@ def imu_logger(output_directory):
                 os._exit(0)
 
             # Log the output
-            send_udp(sock, CONFIG['analyzer']['udp']['ip'], CONFIG['analyzer']['udp']['port'], obj)
+            send_udp(sock, CONFIG['analyzer']['udp']['host'], CONFIG['analyzer']['udp']['port'], obj)
             if CONFIG['imu']['logging']:
                 imu_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
                 imu_output.flush()

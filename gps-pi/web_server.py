@@ -41,6 +41,7 @@ def udp_receiver(ip, port):
         data, addr = sock.recvfrom(65535) # UDP buffer size
         payload = json.loads(data.decode())
         PACKETS[payload['class']] = payload
+        #print(payload)
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """Threaded HTTP Server."""
@@ -445,8 +446,8 @@ def get_sys_data():
 def check_enabled(configs):
     """Check if any of these config items are enabled."""
     for config in configs:
-        if config['enable'] or config['host'] not in ['localhost','127.0.0.1']:
-            return (config['host'], config['port'])
+        if config['enable'] or config['tcp']['host'] not in ['localhost','127.0.0.1']:
+            return (config['tcp']['host'], config['tcp']['port'])
     return False
 
 if __name__ == "__main__":
@@ -463,7 +464,7 @@ if __name__ == "__main__":
     CONFIG = util.read_config()
 
     # Start the UDP Listener
-    ip = CONFIG['web']['udp']['ip']
+    ip = CONFIG['web']['udp']['host']
     port = CONFIG['web']['udp']['port']
     Tudp = threading.Thread(target=udp_receiver, args=(ip,port), daemon=True)
     Tudp.start()

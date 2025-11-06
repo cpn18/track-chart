@@ -1,74 +1,114 @@
 {
     "web": {
-	"cmd": ["web_server.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 80,
+        "cmd": [
+            "web_server.sh",
+            "%PORT%",
+            "%OUTPUT_DIR%"
+        ],
+	"tcp": {
+            "host": "localhost",
+            "port": 80
+	},
         "udp": {
-            "ip": "127.0.0.1",
-            "port": 5006
+            "host": "127.0.0.1",
+            "port": 5005
         }
     },
     "analyzer": {
         "cmd": ["analyzer.sh", "%PORT%", "%OUTPUT_DIR%"],
+	"tcp": {
+	    "host": "localhost",
+	    "port": 8085
+	},
         "udp": {
-            "ip": "127.0.0.1",
-            "port": 5005
+            "host": "127.0.0.1",
+            "port": 5006
         }
     },
     "sim": {
         "enable": false,
         "logging": false,
-        "data": "Data_Wolfeboro.json",
+        "data": "/home/pirail/wrr_20251019_with_mileage_sort_by_time.json",
         "speedup": 4,
-        "cmd': ["simulator.sh", "%PORT%", "%OUTPUT_DIR%"],
-        "host": "localhost",
-        "port": 8084 
+        "cmd": [
+            "simulator.sh",
+            "%PORT%",
+            "%OUTPUT_DIR%"
+        ],
+	"tcp": {
+            "host": "localhost",
+            "port": 8084
+	}
     },
     "gps": {
-        "type": "gpsd",
-	"enable": true,
-        "logging": true,
-	"cmd": ["gps_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8080
-    },
-    "gpsimu": {
-       	"x": "x", "y": "y", "z": "z",
         "serial": "/dev/ttyUSB0",
-	"enable": false,
-        "logging": true,
-	"cmd": ["gpsimu_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8080
+        "enable": true,
+        "logging": false,
+        "cmd": [
+            "gpsimu_logger.sh",
+            "%PORT%",
+            "%OUTPUT_DIR%"
+        ],
+	"tcp": {
+            "host": "localhost",
+            "port": 8080
+	},
+        "type": "witmotion"
     },
     "imu": {
-       	"x": "x", "y": "y", "z": "z",
-	"enable": true,
-        "logging": true,
-	"cmd": ["imu_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8081
+        "x": "x",
+        "y": "y",
+        "z": "z",
+        "enable": true,
+        "logging": false,
+        "cmd": null,
+	"tcp": {
+            "host": "localhost",
+            "port": 8080
+	}
     },
     "lidar": {
-	"enable": false,
-        "logging": true,
-	"cmd": ["lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8082
+        "enable": false,
+        "logging": false,
+        "cmd": [
+            "lidar_logger.sh",
+            "%PORT%",
+            "%OUTPUT_DIR%"
+        ],
+	"tcp": {
+            "host": "localhost",
+            "port": 8082
+	}
     },
     "hpslidar": {
-	"enable": false,
-        "logging": true,
-	"cmd": ["hps_lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8082
+        "enable": false,
+        "logging": false,
+        "cmd": [
+            "hps_lidar_logger.sh",
+            "%PORT%",
+            "%OUTPUT_DIR%"
+        ],
+	"tcp": {
+            "host": "localhost",
+            "port": 8082
+	}
     },
     "lpcm": {
-	"enable": false,
-        "logging": true,
-	"cmd": ["lpcm_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
+        "enable": false,
+        "logging": false,
+        "cmd": [
+            "lpcm_logger.sh",
+            "%PORT%",
+            "%OUTPUT_DIR%"
+        ],
         "arecord": "--format S16_LE --rate=44100 --channels=1 --duration=60",
-	"host": "localhost",
-        "port": 8083
-    }
+	"tcp": {
+            "host": "localhost",
+            "port": 8083
+	}
+    },
+    "sw_version": "V3_0_0-46-g949adefe",
+    "class": "CONFIG",
+    "time": "2025-06-15T10:28:02.277335Z",
+    "timezone": "Etc/UTC"
 }

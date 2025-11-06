@@ -137,7 +137,8 @@ def simulator(output_directory):
 
                     obj['simulated'] = True
                     # Send the Data
-                    send_udp(sock, CONFIG['analyzer']['udp']['ip'], CONFIG['analyzer']['udp']['port'], obj)
+                    send_udp(sock, CONFIG['analyzer']['udp']['host'], CONFIG['analyzer']['udp']['port'], obj)
+                    #send_udp(sock, CONFIG['web']['udp']['host'], CONFIG['web']['udp']['port'], obj)
                     if CONFIG['sim']['logging']:
                         sim_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
                         sim_output.flush()

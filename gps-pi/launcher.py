@@ -15,7 +15,7 @@ def launch(task):
         if args[i] == "%OUTPUT_DIR%":
             args[i] = OUTPUT
         elif args[i] == "%PORT%":
-            args[i] = str(task['port'])
+            args[i] = str(task['tcp']['port'])
     #print(path, args)
 
     pid = os.fork()

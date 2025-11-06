@@ -1,23 +1,28 @@
 {
-    "udp": {
-        "ip": "127.0.0.1",
-        "port": 5005
-    },
     "web": {
         "cmd": [
             "web_server.sh",
             "%PORT%",
             "%OUTPUT_DIR%"
         ],
-        "host": "localhost",
-        "port": 80
+	"tcp": {
+            "host": "localhost",
+            "port": 80
+	},
+        "udp": {
+            "host": "127.0.0.1",
+            "port": 5005
+        }
     },
     "analyzer": {
         "cmd": ["analyzer.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"port": 8085,
+	"tcp": {
+	    "host": "localhost",
+	    "port": 8085
+	},
         "udp": {
-            "ip": "127.0.0.1",
-            "port": 5005
+            "host": "127.0.0.1",
+            "port": 5006
         }
     },
     "sim": {
@@ -30,8 +35,10 @@
             "%PORT%",
             "%OUTPUT_DIR%"
         ],
-        "host": "localhost",
-        "port": 8084
+	"tcp": {
+            "host": "localhost",
+            "port": 8084
+	}
     },
     "gps": {
         "serial": "/dev/ttyUSB0",
@@ -42,8 +49,10 @@
             "%PORT%",
             "%OUTPUT_DIR%"
         ],
-        "host": "localhost",
-        "port": 8080,
+	"tcp": {
+            "host": "localhost",
+            "port": 8080
+	},
         "type": "witmotion"
     },
     "imu": {
@@ -53,8 +62,10 @@
         "enable": false,
         "logging": false,
         "cmd": null,
-        "host": "localhost",
-        "port": 8080
+	"tcp": {
+            "host": "localhost",
+            "port": 8080
+	}
     },
     "lidar": {
         "enable": false,
@@ -64,8 +75,10 @@
             "%PORT%",
             "%OUTPUT_DIR%"
         ],
-        "host": "localhost",
-        "port": 8082
+	"tcp": {
+            "host": "localhost",
+            "port": 8082
+	}
     },
     "hpslidar": {
         "enable": false,
@@ -75,8 +88,10 @@
             "%PORT%",
             "%OUTPUT_DIR%"
         ],
-        "host": "localhost",
-        "port": 8082
+	"tcp": {
+            "host": "localhost",
+            "port": 8082
+	}
     },
     "lpcm": {
         "enable": false,
@@ -87,8 +102,10 @@
             "%OUTPUT_DIR%"
         ],
         "arecord": "--format S16_LE --rate=44100 --channels=1 --duration=60",
-        "host": "localhost",
-        "port": 8083
+	"tcp": {
+            "host": "localhost",
+            "port": 8083
+	}
     },
     "sw_version": "V3_0_0-46-g949adefe",
     "class": "CONFIG",

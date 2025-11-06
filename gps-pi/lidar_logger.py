@@ -120,7 +120,7 @@ def lidar_logger(output_directory):
                         'time': lidartime,
                         'scan': data,
                     }
-                    send_udp(sock, config['analyzer']['udp']['ip'], config['analyzer']['udp']['port'], obj)
+                    send_udp(sock, config['analyzer']['udp']['host'], config['analyzer']['udp']['port'], obj)
                     lidar_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
                     lidar_output.flush()
                     LIDAR_DATA = obj
