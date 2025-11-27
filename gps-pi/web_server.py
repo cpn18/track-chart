@@ -258,6 +258,9 @@ class MyHandler(BaseHTTPRequestHandler):
                         if 'SYS' in filtered:
                             msg = f"event: pirail_SYS\ndata: {json.dumps(filtered['SYS'])}\n\n"
                             self.wfile.write(msg.encode('utf-8'))
+                        if 'POI' in filtered:
+                            msg = f"event: pirail_POI\ndata: {json.dumps(filtered['POI'])}\n\n"
+                            self.wfile.write(msg.encode('utf-8'))
                         self.wfile.flush()
                         time.sleep(param_delay)
                 except BrokenPipeError:

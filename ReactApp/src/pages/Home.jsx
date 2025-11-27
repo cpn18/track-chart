@@ -203,6 +203,7 @@ const Home = () => {
       const gpsStream = new EventSource("/packets?count=1000");
         gpsStream.addEventListener("pirail_TPV", handleDataUpdate);
         gpsStream.addEventListener("pirail_SYS", handleSysUpdate);
+        gpsStream.addEventListener("pirail_POI", handlePoiUpdate);
       
         gpsStream.onopen = function() {
           console.log("gps connection opened");
@@ -221,11 +222,37 @@ const Home = () => {
   const handleSysUpdate = (event) => {
     //console.log(event);
     var sys = JSON.parse(event.data);
-    console.log(sys)
+    //console.log(sys)
     if (sys.online) {
 	    setIsOnline(true)
     } else {
 	    setIsOnline(false)
+    }
+  };
+
+var piRailPOIs = []
+
+function inArray(poi) {
+	for (const item of piRailPOIs) {
+		if (item.lat == poi.lat && item.lon == poi.lon) {
+			return true
+		}
+	}
+        piRailPOIs.push(poi);
+	return false
+}
+
+  const handlePoiUpdate = (event) => {
+    //console.log(event);
+    var poi = JSON.parse(event.data);
+    if (! inArray(poi)) {
+	    console.log(poi)
+
+          // adding new POI
+          setPois((prevPois) => [
+            ...prevPois,
+            { lat: poi.lat, lng: poi.lon, description: poi.description },
+	  ]);
     }
   };
 
@@ -304,6 +331,8 @@ const Home = () => {
     setEditingIndex(index);
     setPoiDescription(pois[index].description);
     setShowModal(true);
+	 console.log(index)
+	  console.log(pois)
   };
 
   /* delete a POI - activate modal */

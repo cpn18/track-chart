@@ -21,6 +21,8 @@ def udp_receiver(src_ip, src_port, dest_ip, dest_port):
                      socket.SOCK_DGRAM) # UDP
     sock.bind((src_ip, src_port))
 
+    saved_tpv = {}
+
     # Loop Forever
     while True:
 
@@ -35,6 +37,16 @@ def udp_receiver(src_ip, src_port, dest_ip, dest_port):
         #                    then when an IMU packet arrives, determine if it's a
         #                    bump or not, and use the stored GPS location to
         #                    mark it.
+
+        if payload['class'] == 'TPV':
+            saved_tpv.update(payload)
+        elif payload['class'] == 'POI':
+            payload['time'] = saved_tpv['time']
+            payload['lat'] = saved_tpv['lat']
+            payload['lon'] = saved_tpv['lon']
+            payload['alt'] = saved_tpv['alt']
+            payload['mileage'] = saved_tpv['mileage']
+
         #
         # ---------^^^----------------^^^-------
 
