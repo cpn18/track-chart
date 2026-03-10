@@ -1,0 +1,19 @@
+Review of investigation (Sprint 1: 09/22/25 - 10/12/25)
+
+Faux_Data_Generator
+ - Converts Json data into csv so it is easier for processing.
+
+ML_Model
+ - Implementations of all models. Options are:
+    * K nearest neighbors
+    * Support vector machine
+    * Logistic regression
+    * Multilayer perceptron
+    * Decision tree classifier
+
+ML_Runner
+ - Test runner. Tests all models.
+
+Visualize_Data
+ - Methods for plotting recorded data. Options for single or double axis.
+ - Correlation matrix with heatmap

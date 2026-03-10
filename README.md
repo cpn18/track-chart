@@ -5,6 +5,9 @@ Libraries to create railroad track charts
 
 # UNH Capstone Project Teams
 
+## 2026
+Bohdan Barnett, Joshua Beaton, Quinton Center, Zachary Dubuc, Raven Hodgdon, Aidan McErlain 
+
 ## 2025
 Logan White, Adam Elsner, Dartagnan Birnie, David Scarborough, Genesis Soebagyo
 

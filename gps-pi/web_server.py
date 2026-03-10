@@ -15,11 +15,12 @@ import util
 import socket
 import threading
 import datetime
+import platform
 
 PACKETS = {}
 SHUTDOWN_DELAY = "now"
 
-REACT_BUILD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ReactApp/dist")
+REACT_BUILD_DIR = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."), "ReactApp/dist")
 
 MIME = {
     ".css": "text/css",
@@ -41,7 +42,6 @@ def udp_receiver(ip, port):
         data, addr = sock.recvfrom(65535) # UDP buffer size
         payload = json.loads(data.decode())
         PACKETS[payload['class']] = payload
-        #print(payload)
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """Threaded HTTP Server."""
@@ -383,6 +383,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
         # No endpoints match, serve index.html, let client side routing take care of the rest
         else:
+            print("React Build Dir: " + REACT_BUILD_DIR)
             filepath = os.path.join(REACT_BUILD_DIR, path.lstrip('/'))
             if os.path.isfile(filepath):
                 _, ext = os.path.splitext(filepath)
@@ -422,12 +423,20 @@ def get_sys_data():
     stat = os.statvfs(OUTPUT)
 
     os_version = ""
-    with open("/etc/os-release") as infile:
-        for line in infile:
-            line = line.strip().split('=')
-            if line[0] == "PRETTY_NAME":
-                os_version = line[1].replace('"', '')
-                break
+    if platform.system() == 'Linux':
+        with open("/etc/os-release") as infile:
+            for line in infile:
+                line = line.strip().split('=')
+                if line[0] == "PRETTY_NAME":
+                    os_version = line[1].replace('"', '')
+                    break
+    else:
+        os_info = platform.system_alias(
+            platform.system(),
+            platform.release(),
+            platform.version()
+        )
+        os_version = os_info[0] + " " + os_info[1] + " " + os_info[2]
 
     firmware_name = "/sys/firmware/devicetree/base/model"
     if os.path.exists(firmware_name):
@@ -449,8 +458,8 @@ def get_sys_data():
 def check_enabled(configs):
     """Check if any of these config items are enabled."""
     for config in configs:
-        if config['enable'] or config['tcp']['host'] not in ['localhost','127.0.0.1']:
-            return (config['tcp']['host'], config['tcp']['port'])
+        if config['enable'] or config['host'] not in ['localhost','127.0.0.1']:
+            return (config['host'], config['port'])
     return False
 
 if __name__ == "__main__":

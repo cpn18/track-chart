@@ -1,4 +1,9 @@
 
+/* container (IMU Line Graph) */
+.chart-container {
+  height: 75vh;
+}
+
 /* container (IMU) */
 .imu-container {
   display: flex;

@@ -1,0 +1,147 @@
+import React, { useState, useEffect } from 'react';
+import './IMU.css';
+import '../App.css';
+import Footer from '../components/Footer';
+import AxesChart from '../components/IMU/AxesChart'
+
+const Axes = () => {
+  const [enabled, setEnabled] = useState(true);
+  const [config, setConfig] = useState(null);
+  const [pitch, setPitch] = useState([]);
+  const [roll, setRoll] = useState([]);
+  const [yaw, setYaw] = useState([]);
+  const [temp, setTemp] = useState(null);
+  const [time, setTime] = useState([]);
+  const [showZero, setShowZero] = useState(false); 
+  
+
+
+  useEffect(() => {
+    fetch('/config')
+      .then((res) => res.json())
+      .then((data) => {
+        setConfig(data);
+        setEnabled(Boolean(data.imu?.enable) || Boolean(data.sim?.enable));
+        console.log('Config fetched');
+      })
+      .catch((err) => {
+        console.error('Error fetching config:', err);
+    });
+
+    if (enabled) {
+      // Initialize SSE connection to gps_stream
+      const imuStream = new EventSource("/packets?count=1000");
+      imuStream.addEventListener("pirail_ATT", handleDataUpdate);
+      
+        imuStream.onopen = function() {
+          console.log("imu connection opened");
+        };
+  
+        imuStream.onerror = function() {
+          console.log("imu connection error");
+        };
+  
+        return () => {
+          imuStream.close();
+        };
+      }
+    
+    }, []);
+  
+  const handleDataUpdate = (event) => {
+    // console.log(event)
+    var att = JSON.parse(event.data);
+    // console.log(att);
+
+    // Pitch
+    if (att.pitch != undefined) {
+      if (pitch.length >= 100) {
+        pitch.shift()
+      }
+      pitch.push(att.pitch.toFixed(3))
+    }
+    // Roll
+    if (att.roll != undefined) {
+      if (roll.length >= 100) {
+        roll.shift()
+      }
+      roll.push(att.roll.toFixed(3));
+    }
+    // Yaw
+    if (att.yaw != undefined) {
+      if (yaw.length >= 100) {
+        yaw.shift()
+      }
+      yaw.push(att.yaw.toFixed(3));
+    }
+    // CPU Temp
+    if (att.temp != undefined) {
+      att.temp.toFixed(0);
+    }
+    // Time
+    if (att.time != undefined) {
+      if (time.length >= 100) {
+        time.shift()
+      }
+      time.push(att.time.split('T')[1].split('.')[0])
+    }
+  }
+
+  const handleZero = () => {
+    fetch("/imu/zero", {
+	    "method": "PUT"
+    })
+    .then(response => response.json())
+    .then((data) => {
+	    console.log(data)
+	    toggleZero()
+    })
+  };
+
+  const toggleZero = () => {
+    setShowZero(!showZero);
+  };
+
+  return (
+    <div className="imu-container">
+      <div className="nav-container"></div>
+      {enabled ?
+      <div>
+        <AxesChart att={ {pitch, roll, yaw, time } } />
+      </div>
+      : <div>IMU disabled - turn on in settings</div>}
+
+      <div className="info-box-container">
+        <div className="info-box-grid">
+          <div className="info-box-item">CPU Temp: {temp ? `${temp}°` : 'Loading...'}</div>
+          <button className="imu-zero-button" onClick={toggleZero} >
+            ZERO
+          </button>
+        </div>
+      </div>
+
+      {showZero && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h1>Zero IMU:</h1>
+              <p>
+                Are you sure you'd like to zero the IMU?
+              </p>
+              <div className="modal-buttons">
+                <button className="modal-button" onClick={handleZero}>
+                  ZERO
+                </button>
+                <button className="modal-button cancel" onClick={toggleZero}>
+                  CANCEL
+                </button>
+              </div>
+          </div>
+        </div>
+      )}
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Axes;

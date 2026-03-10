@@ -50,7 +50,7 @@ const RecenterMap = ({ center }) => {
       clearTimeout(interactionTimeout.current); // clear previous timeouts
       interactionTimeout.current = setTimeout(() => {
         setIsInteracting(false);
-      }, 3000); // start 3-second timer *after* user stops interacting
+      }, 7000); // start 3-second timer *after* user stops interacting
     };
 
     // detect interactions
@@ -222,37 +222,11 @@ const Home = () => {
   const handleSysUpdate = (event) => {
     //console.log(event);
     var sys = JSON.parse(event.data);
-    //console.log(sys)
+    console.log(sys)
     if (sys.online) {
 	    setIsOnline(true)
     } else {
 	    setIsOnline(false)
-    }
-  };
-
-var piRailPOIs = []
-
-function inArray(poi) {
-	for (const item of piRailPOIs) {
-		if (item.lat == poi.lat && item.lon == poi.lon) {
-			return true
-		}
-	}
-        piRailPOIs.push(poi);
-	return false
-}
-
-  const handlePoiUpdate = (event) => {
-    //console.log(event);
-    var poi = JSON.parse(event.data);
-    if (! inArray(poi)) {
-	    console.log(poi)
-
-          // adding new POI
-          setPois((prevPois) => [
-            ...prevPois,
-            { lat: poi.lat, lng: poi.lon, description: poi.description },
-	  ]);
     }
   };
 
@@ -294,6 +268,25 @@ function inArray(poi) {
     }
   };
 
+  const handlePoiUpdate = (event) => {
+    //console.log(event);
+    var poi = JSON.parse(event.data);
+    //console.log(tpv)
+
+    // Location
+    if (poi.lat !== undefined && poi.lon !== undefined) {
+      // setUserLocation({ lat: tpv.lat, lng: tpv.lon });
+      pois.push({
+        lat: poi.lat,
+        lng: poi.lon,
+        description: "Automated POI @" + poi.time.replace('T', ' ').split('.')[0] + " (" + poi.mileage + " mi) " + " alt: " + poi.alt,
+        time: poi.time.replace('T', ' ').split('.')[0],
+        alt: poi.alt.toLocaleString('en-US',{minimumFractionDigits:1, maximumFractionDigits: 1}),
+        mileage: poi.mileage,
+      });
+    }
+  };
+
   const handleAddPoi = () => {
     if (!userLocation) {
       alert('Location not available. Please wait...');
@@ -331,8 +324,6 @@ function inArray(poi) {
     setEditingIndex(index);
     setPoiDescription(pois[index].description);
     setShowModal(true);
-	 console.log(index)
-	  console.log(pois)
   };
 
   /* delete a POI - activate modal */

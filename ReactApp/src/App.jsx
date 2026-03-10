@@ -10,6 +10,8 @@ import LPCM from './pages/LPCM';
 import Settings from './pages/Settings';
 import Simulator from './pages/Simulator';
 import './App.css'; // global styles
+import Axes from './pages/Axes';
+import Speed from './pages/Speed';
 
 /**
  * AppContent comp.
@@ -26,6 +28,8 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/imu" element={<IMU />} />
+        <Route path="/imu-axes" element={<Axes />} />
+        <Route path="/imu-speed" element={<Speed />} />
         <Route path="/lidar" element={<LIDAR />} />
         <Route path="/lpcm" element={<LPCM />} />
         <Route path="/settings" element={<Settings />} />

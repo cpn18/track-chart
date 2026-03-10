@@ -32,7 +32,23 @@ const Navbar = () => {
             alt="IMU"
             className="nav-icon"
           />
-          <span>IMU</span>
+          <span>IMU Gauge</span>
+        </NavLink>
+        <NavLink to="/imu-axes" className={({ isActive }) => (isActive ? 'nav-button active' : 'nav-button')}>
+          <img
+            src={`/${isDarkMode ? 'imuDARK.png' : 'imu.png'}`}
+            alt="IMU"
+            className="nav-icon"
+          />
+          <span>IMU Axes</span>
+        </NavLink>
+        <NavLink to="/imu-speed" className={({ isActive }) => (isActive ? 'nav-button active' : 'nav-button')}>
+          <img
+            src={`/${isDarkMode ? 'imuDARK.png' : 'imu.png'}`}
+            alt="IMU"
+            className="nav-icon"
+          />
+          <span>IMU Speed</span>
         </NavLink>
         <NavLink to="/lidar" className={({ isActive }) => (isActive ? 'nav-button active' : 'nav-button')}>
           <img
