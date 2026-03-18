@@ -43,4 +43,4 @@ syttemctl start rc-local
 
 # React
 apt-get install npm python3-tqdm node-typescript
-npm install typescript node
+npm install typescript node chart.js react-chartjs-2
