@@ -38,4 +38,4 @@ fi
 ./wait_for_gps_fix.py
 
 # Launch everything else
-./launcher.py ${output}
+./launcher.py $1 ${output}

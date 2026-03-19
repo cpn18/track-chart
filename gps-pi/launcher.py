@@ -58,7 +58,7 @@ def launch(task):
         if args[i] == "%OUTPUT_DIR%":
             args[i] = OUTPUT
         elif args[i] == "%PORT%":
-            args[i] = str(task['port'])
+            args[i] = str(task['tcp']['port'])
     #print(path, args)
 
     pid = os.fork()
@@ -86,6 +86,11 @@ def launcher():
         if config[task].get('cmd', None) is not None:
             if config[task].get('enable', True):
                 launch(config[task])
+
+    print(sys.argv)
+    if len(sys.argv) > 1 and sys.argv[1] == "--background":
+        sys.exit(0)
+
     time.sleep(1)
     with ptg.WindowManager() as manager:
         window = (
@@ -104,7 +109,7 @@ def launcher():
 
 if __name__ == "__main__":
     try:
-        OUTPUT = sys.argv[1]
+        OUTPUT = sys.argv[-1]
     except IndexError:
         OUTPUT = os.path.join(os.getenv("HOME"), "gps-data")
     os.makedirs(OUTPUT, exist_ok=True)
