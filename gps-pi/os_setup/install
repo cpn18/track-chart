@@ -7,6 +7,10 @@ apt-get upgrade
 apt-get install vim
 apt-get install python3-smbus i2c-tools git
 
+# Python
+pip install PyTermGUI typeguard psutil
+
+
 # Timezone
 ${cmd} timezone /etc/timezone
 
