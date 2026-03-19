@@ -20,7 +20,8 @@ import platform
 PACKETS = {}
 SHUTDOWN_DELAY = "now"
 
-REACT_BUILD_DIR = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."), "ReactApp/dist")
+#REACT_BUILD_DIR = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."), "ReactApp/dist")
+REACT_BUILD_DIR = "ReactApp/dist"
 
 MIME = {
     ".css": "text/css",
@@ -383,7 +384,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
         # No endpoints match, serve index.html, let client side routing take care of the rest
         else:
-            print("React Build Dir: " + REACT_BUILD_DIR)
+            #print("React Build Dir: " + REACT_BUILD_DIR)
             filepath = os.path.join(REACT_BUILD_DIR, path.lstrip('/'))
             if os.path.isfile(filepath):
                 _, ext = os.path.splitext(filepath)
