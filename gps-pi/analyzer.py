@@ -41,6 +41,8 @@ def udp_receiver(src_ip, src_port, dest_ip, dest_port):
         #
 
         if payload['class'] == 'ATT': # imu_logger.py outputs ATT (vehicle-attitude) entries
+            payload['speed'] = saved_tpv.get('speed', 0)
+
             if is_point_of_interest(payload):
                 payload['class'] = 'POI'
 

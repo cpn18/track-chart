@@ -61,15 +61,15 @@ const Speed = () => {
       speed.push(att.speed.toFixed(3))
     }
     // Gyroscopic Y angle
-    if (att.gyroYangle != undefined) {
+    if (att.gyro_y_angle != undefined) {
       if (gyroYangle.length >= 100) {
         gyroYangle.shift()
       }
-      gyroYangle.push(att.gyroYangle.toFixed(3));
+      gyroYangle.push(att.gyro_y_angle.toFixed(3));
     }
     // Acc z
     if (att.acc_z != undefined) {
-      if (acc_z.length <= 100) {
+      if (acc_z.length >= 100) {
         acc_z.shift()
       }
       acc_z.push(att.acc_z.toFixed(3));
