@@ -41,13 +41,13 @@ function AxesChart({ att }) {
     },
     };
 
-    const yaw_options = {
+    const speed_options = {
     responsive: true,
     plugins: {
         
         title: {
             display: true,
-            text: 'Yaw',
+            text: 'Speed',
         },
     },
     };
@@ -78,12 +78,12 @@ function AxesChart({ att }) {
     ],
     };
 
-    const yaw = {
+    const speed = {
     labels: Array.from(labels),
     datasets: [
         {
-        label: 'Yaw',
-        data: Array.from(att.yaw),
+        label: 'Speed',
+        data: Array.from(att.speed),
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(99, 132, 255, 0.5)',
         },
@@ -95,7 +95,7 @@ function AxesChart({ att }) {
         <div>
             <Line options={pitch_options} data={pitch} height={"100%"} />
             <Line options={roll_options} data={roll} height={"100%"} />
-            <Line options={yaw_options} data={yaw} height={"100%"} />
+            <Line options={speed_options} data={speed} height={"100%"} />
         </div>
     )
 }

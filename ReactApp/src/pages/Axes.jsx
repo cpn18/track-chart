@@ -9,7 +9,7 @@ const Axes = () => {
   const [config, setConfig] = useState(null);
   const [pitch, setPitch] = useState([]);
   const [roll, setRoll] = useState([]);
-  const [yaw, setYaw] = useState([]);
+  const [speed, setSpeed] = useState([]);
   const [temp, setTemp] = useState(null);
   const [time, setTime] = useState([]);
   const [showZero, setShowZero] = useState(false); 
@@ -51,7 +51,7 @@ const Axes = () => {
   const handleDataUpdate = (event) => {
     // console.log(event)
     var att = JSON.parse(event.data);
-    // console.log(att);
+    //console.log(att);
 
     // Pitch
     if (att.pitch != undefined) {
@@ -67,16 +67,16 @@ const Axes = () => {
       }
       roll.push(att.roll.toFixed(3));
     }
-    // Yaw
-    if (att.yaw != undefined) {
-      if (yaw.length >= 100) {
-        yaw.shift()
+    // Speed
+    if (att.speed != undefined) {
+      if (speed.length >= 100) {
+        speed.shift()
       }
-      yaw.push(att.yaw.toFixed(3));
+      speed.push(att.speed.toFixed(3));
     }
     // CPU Temp
     if (att.temp != undefined) {
-      att.temp.toFixed(0);
+      setTemp(att.temp.toFixed(0));
     }
     // Time
     if (att.time != undefined) {
@@ -107,7 +107,7 @@ const Axes = () => {
       <div className="nav-container"></div>
       {enabled ?
       <div>
-        <AxesChart att={ {pitch, roll, yaw, time } } />
+        <AxesChart att={ {pitch, roll, speed, time } } />
       </div>
       : <div>IMU disabled - turn on in settings</div>}
 
