@@ -1,8 +1,10 @@
+#!/usr/bin/env python
 import os
 import sys
 import math
 import requests
 import time
+import json
 from tqdm import tqdm
 
 # NH bounding box
@@ -23,7 +25,7 @@ TILEMAP = {
         "output": "public/tiles/osm/{style}"
     },
     "standard": {
-        "source": "http://tiles.openrailwaymap.org/{style}/{z}/{x}/{y}.png",
+        "source": "https://tiles.openrailwaymap.org/{style}/{z}/{x}/{y}.png",
         "output": "public/tiles/orm/{style}"
     }
 }
@@ -59,6 +61,25 @@ def download_point(style, lat, lon):
         x, y = latlon_to_tile(lat, lon, z)
         download_tile(style, x, y, z)
 
+def download_from_file(style, filename):
+    if filename.endswith(".json"):
+        with open(filename) as infile:
+            for line in infile:
+                obj = json.loads(line)
+                if 'lat' in obj:
+                   download_point(style, obj['lat'], obj['lon'])
+    elif filename.endswith(".csv"):
+        with open(filename) as infile:
+            for line in infile:
+                line = line.strip().split()
+                if line[1] == "K":
+                    try:
+                        download_point(style, float(line[2]), float(line[3]))
+                    except ValueError:
+                        pass
+    else:
+        print("ERROR: unknown file")
+
 def download_tile(style, x, y, z):
 
 
@@ -67,6 +88,7 @@ def download_tile(style, x, y, z):
     filename = os.path.join(path, f"{y}.png")
 
     if not os.path.exists(filename):
+        time.sleep(0.01)  # delay to avoid rate limiting
         try:
             url = TILEMAP[style]["source"].format(style=style, z=z, x=x, y=y)
             response = requests.get(url, headers=headers, timeout=10)
@@ -75,22 +97,11 @@ def download_tile(style, x, y, z):
                 with open(filename, "wb") as f:
                     f.write(response.content)
                 print(f"✅ Saved: {filename}")
-                time.sleep(0.01)  # delay to avoid rate limiting
             else:
                 # user-agent isn't working, so we get a 403 forbidden error - OSM is mad at us
                 print(f"❌ Failed {z}/{x}/{y}: HTTP {response.status_code}")
         except Exception as e:
-            print(f"❌ Error {z}/{x}/{y}: {e}")
-
-def download_known(style, filename):
-    with open(filename) as infile:
-        for line in infile:
-            line = line.strip().split()
-            if line[1] == "K":
-                try:
-                    download_point(style, float(line[2]), float(line[3]))
-                except ValueError:
-                    pass
+            print(f"❌ Error {z}/{x}/{y}: {repr(e)}")
 
 if __name__ == "__main__":
     if len(sys.argv) == 6:
@@ -107,10 +118,13 @@ if __name__ == "__main__":
             float(sys.argv[2]),
             float(sys.argv[3]),
         )
-    elif len(sys.argv) == 3 and sys.argv[2].endswith(".csv"):
-        download_known(
+    elif len(sys.argv) == 3:
+        download_from_file(
             sys.argv[1],
-            sys.argv[2]
+            sys.argv[2],
         )
     else:
-        print("USAGE: error")
+        print("USAGE: One of")
+        print(" [light|dark|standard] min_lat min_long max_lat max_long")
+        print(" [light|dark|standard] lat long")
+        print(" [light|dark|standard] filename")
