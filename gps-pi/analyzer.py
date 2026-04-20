@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Sample In-Line PiRail Packet Analzyer
+UNH Capstone 2026 In-Line PiRail Packet Analzyer
 """
 
 import socket
@@ -8,8 +8,25 @@ import socket
 import util
 import json
 
-# 40 is an estimation based on bump tests conducted in the fall of 2025
+# an estimation based on bump tests conducted in the fall of 2025
 ACC_Z_THRESHOLD = 68
+
+ROLLING_RANGE = 25
+rolling_acc_x = []
+rolling_acc_z = []
+
+ACC_X_OFFSET = -0.7152996666441955 # Used to account for apparent sensor offset. Is mean of measurement during fall 2025 test run.
+ACC_Z_OFFSET = 9.8 # To account for gravity
+
+# MLR coefficients
+MODEL_CONSTANT = 0.3761
+MODEL_SPEED_COEF = 0.4139
+MODEL_ACC_X_COEF = 1.1229
+
+ERROR_THRESHOLD = 4.653
+
+REPEATED_POI_PREVENTION_THRESHOLD = 40
+entries_since_poi = 0
 
 def send_udp(sock, ip_addr, port, obj):
     """ Send Packet """
@@ -43,7 +60,7 @@ def udp_receiver(src_ip, src_port, dest_ip, dest_port):
         if payload['class'] == 'ATT': # imu_logger.py outputs ATT (vehicle-attitude) entries
             payload['speed'] = saved_tpv.get('speed', 0)
 
-            if is_point_of_interest(payload):
+            if is_point_of_interest_mlr(payload):
                 payload['class'] = 'POI'
 
                 payload['time'] = saved_tpv['time']
@@ -61,11 +78,11 @@ def udp_receiver(src_ip, src_port, dest_ip, dest_port):
             payload['lon'] = saved_tpv['lon']
             payload['alt'] = saved_tpv['alt']
             payload['mileage'] = saved_tpv['mileage']
-            
+
         # Forward the Packet
         send_udp(sock, dest_ip, dest_port, payload)
 
-def is_point_of_interest(imu_point) -> bool: 
+def is_point_of_interest_acc_z_threshold(imu_point) -> bool:
     # 9.81 is acceleration due to gravity
     normalized_acc_z = abs(imu_point['acc_z'] - 9.81)
 
@@ -73,6 +90,35 @@ def is_point_of_interest(imu_point) -> bool:
         return True
 
     return False
+
+def is_point_of_interest_mlr(imu_point) -> bool:
+    rolling_acc_z.append(abs(imu_point['acc_z']  - ACC_Z_OFFSET))
+    if len(rolling_acc_z) > ROLLING_RANGE:
+        del rolling_acc_z[0]
+
+    rolling_acc_x.append(abs(imu_point['acc_x']  - ACC_X_OFFSET))
+    if (len(rolling_acc_x) > ROLLING_RANGE):
+        del rolling_acc_x[0]
+
+    acc_z_normalized_rolling_magnitude = sum(rolling_acc_z) / len(rolling_acc_z)
+    acc_x_normalized_rolling_magnitude = sum(rolling_acc_x) / len(rolling_acc_x)
+
+    acc_z_pred = MODEL_CONSTANT + (acc_x_normalized_rolling_magnitude * MODEL_ACC_X_COEF) + (imu_point['speed'] * MODEL_SPEED_COEF)
+
+    absolute_error = abs(acc_z_normalized_rolling_magnitude - acc_z_pred)
+
+    is_potential_POI = absolute_error > ERROR_THRESHOLD
+
+    if (is_potential_POI):
+        if entries_since_POI < REPEATED_POI_PREVENTION_THRESHOLD:
+            is_potential_POI = False
+        entries_since_POI = 0
+    else:
+        entries_since_POI += 1
+
+    return is_potential_POI
+
+
 
 if __name__ == "__main__":
     # read your config
@@ -84,4 +130,3 @@ if __name__ == "__main__":
         CONFIG['web']['udp']['host'],
         CONFIG['web']['udp']['port'],
     )
-
