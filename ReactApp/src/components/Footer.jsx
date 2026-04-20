@@ -5,12 +5,11 @@ import './Footer.css';
 /**
  * Footer
  * footer at bottom of the page
- * for Jon Miner and the 2025 UNH Team
  */
 const Footer = () => {
   return (
     <footer className="footer">
-      PiRail by Jonathan Miner and UNH 2025 Capstone Group
+      PiRail by Jonathan Miner and UNH 2026 Capstone Group
     </footer>
   );
 };
