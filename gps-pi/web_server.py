@@ -383,10 +383,19 @@ class MyHandler(BaseHTTPRequestHandler):
                     pass
             return
 
-        # No endpoints match, serve index.html, let client side routing take care of the rest
-        else:
+        elif path.startswith("/tiles/"):
             #print("Map Cache: " + MAP_CACHE)
             filepath = os.path.join(MAP_CACHE, path.lstrip('/'))
+            if os.path.isfile(filepath):
+                _, ext = os.path.splitext(filepath)
+                mime = MIME.get(ext, 'text/html')
+                self.send_file(filepath, content_type=mime)
+                return
+
+        # No endpoints match, serve index.html, let client side routing take care of the rest
+        else:
+            print("React Build Dir: " + REACT_BUILD_DIR)
+            filepath = os.path.join(REACT_BUILD_DIR, path.lstrip('/'))
             if os.path.isfile(filepath):
                 _, ext = os.path.splitext(filepath)
                 mime = MIME.get(ext, 'text/html')

@@ -26,7 +26,7 @@ MODEL_ACC_X_COEF = 1.1229
 ERROR_THRESHOLD = 4.653
 
 REPEATED_POI_PREVENTION_THRESHOLD = 40
-entries_since_poi = 0
+entries_since_POI = 0
 
 def send_udp(sock, ip_addr, port, obj):
     """ Send Packet """
@@ -92,6 +92,8 @@ def is_point_of_interest_acc_z_threshold(imu_point) -> bool:
     return False
 
 def is_point_of_interest_mlr(imu_point) -> bool:
+    global entries_since_POI
+
     rolling_acc_z.append(abs(imu_point['acc_z']  - ACC_Z_OFFSET))
     if len(rolling_acc_z) > ROLLING_RANGE:
         del rolling_acc_z[0]
