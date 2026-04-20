@@ -22,6 +22,7 @@ SHUTDOWN_DELAY = "now"
 
 #REACT_BUILD_DIR = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."), "ReactApp/dist")
 REACT_BUILD_DIR = "ReactApp/dist"
+MAP_CACHE = "ReactApp/public"
 
 MIME = {
     ".css": "text/css",
@@ -384,13 +385,15 @@ class MyHandler(BaseHTTPRequestHandler):
 
         # No endpoints match, serve index.html, let client side routing take care of the rest
         else:
-            #print("React Build Dir: " + REACT_BUILD_DIR)
-            filepath = os.path.join(REACT_BUILD_DIR, path.lstrip('/'))
+            #print("Map Cache: " + MAP_CACHE)
+            filepath = os.path.join(MAP_CACHE, path.lstrip('/'))
             if os.path.isfile(filepath):
                 _, ext = os.path.splitext(filepath)
                 mime = MIME.get(ext, 'text/html')
                 self.send_file(filepath, content_type=mime)
             else:
+                #TODO:  maybe need to serve a 404 instead of just defaulting to the index?
+                #print("React Build Dir: " + REACT_BUILD_DIR)
                 index_path = os.path.join(REACT_BUILD_DIR, "index.html")
                 self.send_file(index_path, content_type="text/html")
 
