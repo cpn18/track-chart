@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
 Web Server
 """
@@ -20,9 +20,14 @@ import platform
 PACKETS = {}
 SHUTDOWN_DELAY = "now"
 
-#REACT_BUILD_DIR = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."), "ReactApp/dist")
-REACT_BUILD_DIR = "ReactApp/dist"
-MAP_CACHE = "ReactApp/public"
+# Try to find ReactApp directory
+if os.path.isdir("ReactApp"):
+    REACT = "ReactApp"
+else:
+    REACT = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."), "ReactApp")
+
+REACT_BUILD_DIR = os.path.join(REACT, "dist")
+MAP_CACHE = os.path.join(REACT, "public")
 
 MIME = {
     ".css": "text/css",

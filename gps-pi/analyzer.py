@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
 UNH Capstone 2026 In-Line PiRail Packet Analzyer
 """
@@ -18,15 +18,15 @@ rolling_acc_z = []
 ACC_X_OFFSET = -0.7152996666441955 # Used to account for apparent sensor offset. Is mean of measurement during fall 2025 test run.
 ACC_Z_OFFSET = 9.8 # To account for gravity
 
-# MLR coefficients
+# speed coefficients
 MODEL_CONSTANT = 3.7115
 MODEL_SPEED_COEF = 0.9729
 MODEL_ACC_X_COEF = 0
 
 ERROR_THRESHOLD = 11
 
-REPEATED_POI_PREVENTION_THRESHOLD = 40
-entries_since_POI = 0
+REPEATED_POI_PREVENTION_THRESHOLD = 100 # Seconds before another POI can be marked
+
 
 def send_udp(sock, ip_addr, port, obj):
     """ Send Packet """
@@ -78,11 +78,11 @@ def udp_receiver(src_ip, src_port, dest_ip, dest_port):
             payload['lon'] = saved_tpv['lon']
             payload['alt'] = saved_tpv['alt']
             payload['mileage'] = saved_tpv['mileage']
-
+            
         # Forward the Packet
         send_udp(sock, dest_ip, dest_port, payload)
 
-def is_point_of_interest_acc_z_threshold(imu_point) -> bool:
+def is_point_of_interest_acc_z_threshold(imu_point) -> bool: 
     # 9.81 is acceleration due to gravity
     normalized_acc_z = abs(imu_point['acc_z'] - 9.81)
 
@@ -92,7 +92,7 @@ def is_point_of_interest_acc_z_threshold(imu_point) -> bool:
     return False
 
 def is_point_of_interest_mlr(imu_point) -> bool:
-    global entries_since_POI
+    global entries_since_poi
 
     rolling_acc_z.append(abs(imu_point['acc_z']  - ACC_Z_OFFSET))
     if len(rolling_acc_z) > ROLLING_RANGE:
@@ -112,17 +112,19 @@ def is_point_of_interest_mlr(imu_point) -> bool:
     is_potential_POI = absolute_error > ERROR_THRESHOLD
 
     if (is_potential_POI):
-        if entries_since_POI < REPEATED_POI_PREVENTION_THRESHOLD:
+        if entries_since_poi < REPEATED_POI_PREVENTION_THRESHOLD:
             is_potential_POI = False
-        entries_since_POI = 0
+        entries_since_poi = 0
     else:
-        entries_since_POI += 1
+        entries_since_poi += 1
 
     return is_potential_POI
-
+    
 
 
 if __name__ == "__main__":
+    global entries_since_poi
+    entries_since_poi = 0
     # read your config
     CONFIG = util.read_config()
 
@@ -132,3 +134,4 @@ if __name__ == "__main__":
         CONFIG['web']['udp']['host'],
         CONFIG['web']['udp']['port'],
     )
+

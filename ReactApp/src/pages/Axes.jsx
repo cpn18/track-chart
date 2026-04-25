@@ -51,11 +51,11 @@ const Axes = () => {
   const handleDataUpdate = (event) => {
     // console.log(event)
     var att = JSON.parse(event.data);
-    //console.log(att);
+    // console.log(att);
 
     // Pitch
     if (att.pitch != undefined) {
-      if (pitch.length >= 100) {
+      if (pitch.length >= 100) { // Ensure that the graph only has a maximum of 100 points for readability
         pitch.shift()
       }
       pitch.push(att.pitch.toFixed(3))

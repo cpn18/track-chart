@@ -7,7 +7,7 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
+} from 'chart.js'; // you can find the chart.js documentation here https://www.chartjs.org/
 import { Line } from 'react-chartjs-2';
 
 function AxesChart({ att }) {

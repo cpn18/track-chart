@@ -50,7 +50,7 @@ const RecenterMap = ({ center }) => {
       clearTimeout(interactionTimeout.current); // clear previous timeouts
       interactionTimeout.current = setTimeout(() => {
         setIsInteracting(false);
-      }, 7000); // start 3-second timer *after* user stops interacting
+      }, 7000); // start 7-second timer *after* user stops interacting
     };
 
     // detect interactions

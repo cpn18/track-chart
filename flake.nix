@@ -27,7 +27,9 @@
           python312Packages.multiprocess
           python312Packages.pip
           python312Packages.psutil
+	        python312Packages.typing-extensions
           nodejs_24
+	  typescript
         ] ++ (with pkgs; pkgs.lib.optionals isLinux) [
           gnumake 
           libgcc

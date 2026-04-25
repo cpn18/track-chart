@@ -55,7 +55,7 @@ const Speed = () => {
 
     // Speed
     if (att.speed != undefined) {
-      if (speed.length >= 100) {
+      if (speed.length >= 100) { // Ensure that the graph only has a maximum of 100 points for readability
         speed.shift()
       }
       speed.push(att.speed.toFixed(3))
