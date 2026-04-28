@@ -17,7 +17,7 @@ export function draw_point(canvas, imagedata, x, y, color) {
   const iy = Math.round(y);
 
   // filter based on canvas size
-  if (ix < 0 || ix >= canvas.width || iy < 0 || iy >= canvas.height) {
+  if (ix < 0 || ix >= canvas.width || iy < 0 || iy >= canvas.height || color == undefined) {
     return;
   }
 
