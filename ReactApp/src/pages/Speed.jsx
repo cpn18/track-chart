@@ -11,7 +11,7 @@ const Speed = () => {
   const [time, setTime] = useState([]);
   const [showZero, setShowZero] = useState(false);
   const [speed, setSpeed] = useState([]);
-  const [gyroYangle, setgyroYangle] = useState([]);
+  const [acc_x, setAcc_x] = useState([]);
   const [acc_z, setAcc_z] = useState([]);
 
 
@@ -60,12 +60,12 @@ const Speed = () => {
       }
       speed.push(att.speed.toFixed(3))
     }
-    // Gyroscopic Y angle
-    if (att.gyro_y_angle != undefined) {
-      if (gyroYangle.length >= 100) {
-        gyroYangle.shift()
+    // Acc X
+    if (att.acc_x != undefined) {
+      if (acc_x.length >= 100) {
+        acc_x.shift()
       }
-      gyroYangle.push(att.gyro_y_angle.toFixed(3));
+      acc_x.push(att.acc_x.toFixed(3));
     }
     // Acc z
     if (att.acc_z != undefined) {
@@ -107,7 +107,7 @@ const Speed = () => {
       <div className="nav-container"></div>
       {enabled ?
       <div>
-        <SpeedChart att={ {speed, gyroYangle, acc_z, time } } />
+        <SpeedChart att={ {speed, acc_x, acc_z, time } } />
       </div>
       : <div>IMU disabled - turn on in settings</div>}
 

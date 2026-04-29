@@ -42,7 +42,7 @@ files="adxl345.py \
     htdocs \
     css \
     js \
-    ReactApp/* \
+    ReactApp/public ReactApp/src ReactApp/README.md ReactApp/downloadOSM.py \
     os_setup"
 
 echo $hash > version.txt

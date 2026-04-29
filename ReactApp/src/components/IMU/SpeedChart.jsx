@@ -30,13 +30,13 @@ function SpeedChart({ att }) {
     },
     };
 
-    const gyroYangle_options = {
+    const acc_x_options = {
     responsive: true,
     plugins: {
 
         title: {
             display: true,
-            text: 'Gyroscopic Y angle',
+            text: 'X Axis Acceleration',
         },
     },
     };
@@ -66,12 +66,12 @@ function SpeedChart({ att }) {
     ],
     };
 
-    const gyroYangle = {
+    const acc_x = {
     labels: Array.from(labels),
     datasets: [
         {
-        label: 'Gyroscopic Y angle',
-        data: Array.from(att.gyroYangle),
+        label: 'X Axis Accel',
+        data: Array.from(att.acc_x),
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(99, 255, 132, 0.5)',
         },
@@ -94,7 +94,7 @@ function SpeedChart({ att }) {
     return(
         <div>
             <Line options={speed_options} data={speed} height={"100%"} />
-            <Line options={gyroYangle_options} data={gyroYangle} height={"100%"} />
+            <Line options={acc_x_options} data={acc_x} height={"100%"} />
             <Line options={acc_z_options} data={acc_z} height={"100%"} />
         </div>
     )
