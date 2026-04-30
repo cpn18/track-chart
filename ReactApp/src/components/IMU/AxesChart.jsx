@@ -28,6 +28,7 @@ function AxesChart({ att }) {
             text: 'Pitch',
         },
     },
+    animation: false,
     };
 
     const roll_options = {
@@ -39,6 +40,7 @@ function AxesChart({ att }) {
             text: 'Roll',
         },
     },
+    animation: false,
     };
 
     const speed_options = {
@@ -50,6 +52,7 @@ function AxesChart({ att }) {
             text: 'Speed',
         },
     },
+    animation: false,
     };
 
     const labels = att.time;

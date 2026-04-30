@@ -28,6 +28,7 @@ function SpeedChart({ att }) {
             text: 'Speed',
         },
     },
+    animation: false,
     };
 
     const acc_x_options = {
@@ -39,6 +40,7 @@ function SpeedChart({ att }) {
             text: 'X Axis Acceleration',
         },
     },
+    animation: false,
     };
 
     const acc_z_options = {
@@ -50,6 +52,7 @@ function SpeedChart({ att }) {
             text: 'Z Axis Acceleration',
         },
     },
+    animation: false,
     };
 
     const labels = att.time;
