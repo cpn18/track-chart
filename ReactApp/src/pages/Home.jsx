@@ -13,7 +13,7 @@ const logoDark = `/pirailWhite.png`;
 
 // Metric to imperial conversions
 var m_to_ft = 3.28084;
-var ms_to_mph = 2.23694;
+export var ms_to_mph = 2.23694;
 var deg_to_rad = 0.0174533;
 
 // icons for POI and user location
@@ -50,7 +50,7 @@ const RecenterMap = ({ center }) => {
       clearTimeout(interactionTimeout.current); // clear previous timeouts
       interactionTimeout.current = setTimeout(() => {
         setIsInteracting(false);
-      }, 7000); // start 7-second timer *after* user stops interacting
+      }, 7000); // start 3-second timer *after* user stops interacting
     };
 
     // detect interactions

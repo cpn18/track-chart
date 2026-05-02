@@ -4,6 +4,10 @@ import '../App.css';
 import Footer from '../components/Footer';
 import SpeedChart from '../components/IMU/SpeedChart'
 
+import {ms_to_mph} from './Home';
+
+var speed_mph = 0;
+
 const Speed = () => {
   const [enabled, setEnabled] = useState(true);
   const [config, setConfig] = useState(null);
@@ -11,10 +15,8 @@ const Speed = () => {
   const [time, setTime] = useState([]);
   const [showZero, setShowZero] = useState(false);
   const [speed, setSpeed] = useState([]);
-  const [acc_x, setAcc_x] = useState([]);
+  const [gyroYangle, setgyroYangle] = useState([]);
   const [acc_z, setAcc_z] = useState([]);
-
-
 
   useEffect(() => {
     fetch('/config')
@@ -30,7 +32,7 @@ const Speed = () => {
 
     if (enabled) {
       // Initialize SSE connection to gps_stream
-      const imuStream = new EventSource("/packets?count=1000");
+      const imuStream = new EventSource("/packets?count=1000&class=ATT");
       imuStream.addEventListener("pirail_ATT", handleDataUpdate);
 
         imuStream.onopen = function() {
@@ -55,17 +57,18 @@ const Speed = () => {
 
     // Speed
     if (att.speed != undefined) {
-      if (speed.length >= 100) { // Ensure that the graph only has a maximum of 100 points for readability
+      if (speed.length >= 100) {
         speed.shift()
       }
-      speed.push(att.speed.toFixed(3))
+      speed_mph = att.speed * ms_to_mph
+      speed.push(speed_mph.toFixed(0))
     }
-    // Acc X
+    // Gyroscopic Y angle
     if (att.acc_x != undefined) {
-      if (acc_x.length >= 100) {
-        acc_x.shift()
+      if (gyroYangle.length >= 100) {
+        gyroYangle.shift()
       }
-      acc_x.push(att.acc_x.toFixed(3));
+      gyroYangle.push(att.acc_x.toFixed(3));
     }
     // Acc z
     if (att.acc_z != undefined) {
@@ -107,7 +110,7 @@ const Speed = () => {
       <div className="nav-container"></div>
       {enabled ?
       <div>
-        <SpeedChart att={ {speed, acc_x, acc_z, time } } />
+        <SpeedChart att={ {gyroYangle, acc_z, speed, time } } />
       </div>
       : <div>IMU disabled - turn on in settings</div>}
 

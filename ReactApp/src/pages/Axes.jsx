@@ -4,6 +4,10 @@ import '../App.css';
 import Footer from '../components/Footer';
 import AxesChart from '../components/IMU/AxesChart'
 
+import {ms_to_mph} from './Home';
+
+var speed_mph;
+
 const Axes = () => {
   const [enabled, setEnabled] = useState(true);
   const [config, setConfig] = useState(null);
@@ -51,11 +55,11 @@ const Axes = () => {
   const handleDataUpdate = (event) => {
     // console.log(event)
     var att = JSON.parse(event.data);
-    // console.log(att);
+    //console.log(att);
 
     // Pitch
     if (att.pitch != undefined) {
-      if (pitch.length >= 100) { // Ensure that the graph only has a maximum of 100 points for readability
+      if (pitch.length >= 100) {
         pitch.shift()
       }
       pitch.push(att.pitch.toFixed(3))
@@ -72,7 +76,8 @@ const Axes = () => {
       if (speed.length >= 100) {
         speed.shift()
       }
-      speed.push(att.speed.toFixed(3));
+      speed_mph = att.speed * ms_to_mph
+      speed.push(speed_mph.toFixed(0));
     }
     // CPU Temp
     if (att.temp != undefined) {
