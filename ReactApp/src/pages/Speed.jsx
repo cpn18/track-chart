@@ -6,17 +6,19 @@ import SpeedChart from '../components/IMU/SpeedChart'
 
 import {ms_to_mph} from './Home';
 
-var speed_mph = 0;
+var speed_mph;
 
 const Speed = () => {
   const [enabled, setEnabled] = useState(true);
   const [config, setConfig] = useState(null);
+  const [acc_x, setAccX] = useState([]);
+  const [acc_z, setAccZ] = useState([]);
+  const [speed, setSpeed] = useState([]);
   const [temp, setTemp] = useState(null);
   const [time, setTime] = useState([]);
-  const [showZero, setShowZero] = useState(false);
-  const [speed, setSpeed] = useState([]);
-  const [gyroYangle, setgyroYangle] = useState([]);
-  const [acc_z, setAcc_z] = useState([]);
+  const [showZero, setShowZero] = useState(false); 
+  
+
 
   useEffect(() => {
     fetch('/config')
@@ -32,50 +34,50 @@ const Speed = () => {
 
     if (enabled) {
       // Initialize SSE connection to gps_stream
-      const imuStream = new EventSource("/packets?count=1000&class=ATT");
+      const imuStream = new EventSource("/packets?count=1000");
       imuStream.addEventListener("pirail_ATT", handleDataUpdate);
-
+      
         imuStream.onopen = function() {
           console.log("imu connection opened");
         };
-
+  
         imuStream.onerror = function() {
           console.log("imu connection error");
         };
-
+  
         return () => {
           imuStream.close();
         };
       }
-
+    
     }, []);
-
+  
   const handleDataUpdate = (event) => {
     // console.log(event)
     var att = JSON.parse(event.data);
-    // console.log(att);
+    //console.log(att);
 
+    // AccX
+    if (att.acc_x != undefined) {
+      if (acc_x.length >= 100) {
+        acc_x.shift()
+      }
+      acc_x.push(att.acc_x.toFixed(3))
+    }
+    // AccZ
+    if (att.acc_z != undefined) {
+      if (acc_z.length >= 100) {
+        acc_z.shift()
+      }
+      acc_z.push(att.acc_z.toFixed(3));
+    }
     // Speed
     if (att.speed != undefined) {
       if (speed.length >= 100) {
         speed.shift()
       }
       speed_mph = att.speed * ms_to_mph
-      speed.push(speed_mph.toFixed(0))
-    }
-    // Gyroscopic Y angle
-    if (att.acc_x != undefined) {
-      if (gyroYangle.length >= 100) {
-        gyroYangle.shift()
-      }
-      gyroYangle.push(att.acc_x.toFixed(3));
-    }
-    // Acc z
-    if (att.acc_z != undefined) {
-      if (acc_z.length >= 100) {
-        acc_z.shift()
-      }
-      acc_z.push(att.acc_z.toFixed(3));
+      speed.push(speed_mph.toFixed(0));
     }
     // CPU Temp
     if (att.temp != undefined) {
@@ -110,7 +112,7 @@ const Speed = () => {
       <div className="nav-container"></div>
       {enabled ?
       <div>
-        <SpeedChart att={ {gyroYangle, acc_z, speed, time } } />
+        <SpeedChart att={ {acc_x, acc_z, speed, time } } />
       </div>
       : <div>IMU disabled - turn on in settings</div>}
 
