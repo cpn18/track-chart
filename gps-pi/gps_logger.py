@@ -244,6 +244,9 @@ def gps_logger(output_directory):
 
             if report['class'] == 'TPV':
                 obj = nmea.tpv_to_json(report)
+                # Add Time
+                obj['tpvtime'] = obj['time']
+                obj['time'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
                 # Update Odometer
                 ODOMETER, last_pos = update_odometer(
