@@ -49,6 +49,13 @@ def udp_receiver(src_ip, src_port, dest_ip, dest_port):
         data, addr = sock.recvfrom(65535) # UDP buffer size
         payload = json.loads(data.decode())
 
+        # TODO: UNH 2027 Capstone
+        #
+        # if current timestamp is older than last timestamp
+        #     and we're in simulated data moded, then
+        #         simulator has restarted,
+        #         analyzer should re-initialize
+
         # ---------VVV----------------VVV-------
         #
         #        When you receive a TPV packet, record the GPS location

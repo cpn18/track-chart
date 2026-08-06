@@ -146,6 +146,12 @@ class MyHandler(BaseHTTPRequestHandler):
         else:
             self.send_error(http.client.NOT_FOUND, self.path)
 
+    # TODO: UNH 2027 Capstone
+    #
+    # Need to add a do_DELETE handler 
+    #
+    # Very similar to do_PUT, but can strip out the /config handling
+
     def do_PUT(self):
         def mini_proxy(self, url):
             """ Mini Web Proxy """

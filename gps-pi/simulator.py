@@ -24,6 +24,10 @@ def send_udp(sock, ip_addr, port, obj):
     """ Send Packet """
     sock.sendto(json.dumps(obj).encode(), (ip_addr, port))
 
+# TODO: UNH 2027 Capstone
+#
+# Need to add handlers for new API endpoints
+
 def handle_get(self, _groups, _qsdict):
     """ Get Module Status """
     output = json.dumps({"sim": CONFIG['sim']}).encode()
@@ -41,6 +45,10 @@ def handle_put(self, _groups, _qsdict):
     self.send_response(http.client.OK)
     self.send_header("Content-Length", "0")
     self.end_headers()
+
+# TODO: UNH 2027 Capstone
+#
+# Need to add regex for all the new API endpoints
 
 MATCHES = [
     {
