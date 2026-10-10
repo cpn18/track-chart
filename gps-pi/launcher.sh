@@ -23,12 +23,6 @@ else
   output=${HOME}/gps-data
 fi
 
-# Add a date stamp
-output=${output}/`date +%Y%m%d`
-
-# Create the directory if needed
-mkdir -p ${output}
-
 # If the configuration file doesn't exist, copy the sample
 if [ ! -f ${config} ]; then
   cp ${config}.sample ${config}
@@ -36,6 +30,12 @@ fi
 
 # Wait for a GPS fix... this can be troublesome with poor GPS coverage
 ./wait_for_gps_fix.py
+
+# Add a date stamp
+output=${output}/`date +%Y%m%d`
+
+# Create the directory if needed
+mkdir -p ${output}
 
 # Launch everything else
 ./launcher.py $1 ${output}
