@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import os
 import sys
 import math
 import json
+from datetime import datetime
 import base64
 from PIL import Image, ImageDraw, ImageOps
 
@@ -42,7 +44,9 @@ def minmax(data):
 
     return (mind, maxd)
 
-def plot(data, slice_count, mask=None):
+def plot(timestamp, data, slice_count, mask=None):
+
+    timestamp = int(datetime.fromisoformat(timestamp[:-1]+"+00:00").timestamp())
 
     WIDTH = len(data[0])
     HEIGHT = len(data)
@@ -125,6 +129,9 @@ def plot(data, slice_count, mask=None):
 
     image.save("slices/slice_%s.png" % title)
 
+    # Set atime and mtime to when it was captured
+    os.utime("slices/slice_%s.png" % title, (timestamp, timestamp))
+
 def main(filename):
     last_lat = last_lon = speed = 0
     slice_count = 0
@@ -137,7 +144,9 @@ def main(filename):
             if 'depth' not in obj:
                 continue
 
-            report = plot(obj['depth'], obj['data_frame_counter'])
+            # Frame counter will reset if software restarts
+            #report = plot(obj['time'], obj['depth'], obj['data_frame_counter'])
+            report = plot(obj['time'], obj['depth'], slice_count)
 
             slice_count += 1
 
