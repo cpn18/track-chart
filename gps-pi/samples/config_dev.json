@@ -2,7 +2,6 @@
   "web": {
     "cmd": [
       "web_server.sh",
-      "%PORT%",
       "%OUTPUT_DIR%"
     ],
     "tcp": {
@@ -19,7 +18,6 @@
   "analyzer": {
     "cmd": [
       "analyzer.sh",
-      "%PORT%",
       "%OUTPUT_DIR%"
     ],
     "tcp": {
@@ -28,10 +26,8 @@
     },
     "udp": {
       "host": "127.0.0.1",
-      "ip": "127.0.0.1",
       "port": 5006
-    },
-    "port": 8085
+    }
   },
   "sim": {
     "enable": true,
@@ -40,14 +36,12 @@
     "speedup": 4,
     "cmd": [
       "simulator.sh",
-      "%PORT%",
       "%OUTPUT_DIR%"
     ],
     "tcp": {
       "host": "localhost",
       "port": 8084
-    },
-    "port": 8084
+    }
   },
   "gps": {
     "serial": "/dev/ttyUSB0",
@@ -55,14 +49,12 @@
     "logging": false,
     "cmd": [
       "gpsimu_logger.sh",
-      "%PORT%",
       "%OUTPUT_DIR%"
     ],
     "tcp": {
       "host": "localhost",
       "port": 8080
     },
-    "port": 8080,
     "type": "witmotion"
   },
   "imu": {
@@ -75,51 +67,44 @@
     "tcp": {
       "host": "localhost",
       "port": 8080
-    },
-    "port": 8080
+    }
   },
   "lidar": {
     "enable": false,
     "logging": false,
     "cmd": [
       "lidar_logger.sh",
-      "%PORT%",
       "%OUTPUT_DIR%"
     ],
     "tcp": {
       "host": "localhost",
       "port": 8082
-    },
-    "port": 8082
+    }
   },
   "hpslidar": {
     "enable": false,
     "logging": false,
     "cmd": [
       "hps_lidar_logger.sh",
-      "%PORT%",
       "%OUTPUT_DIR%"
     ],
     "tcp": {
       "host": "localhost",
       "port": 8082
-    },
-    "port": 8082
+    }
   },
   "lpcm": {
     "enable": false,
     "logging": false,
     "cmd": [
       "lpcm_logger.sh",
-      "%PORT%",
       "%OUTPUT_DIR%"
     ],
     "arecord": "--format S16_LE --rate=44100 --channels=1 --duration=60",
     "tcp": {
       "host": "localhost",
       "port": 8083
-    },
-    "port": 8083
+    }
   },
   "sw_version": "V3_0_0-46-g949adefe",
   "class": "CONFIG",

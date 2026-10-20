@@ -23,6 +23,8 @@ import util
 LIDAR_STATUS = False
 LIDAR_DATA = {}
 
+CONFIG = {}
+
 def send_udp(sock, ip, port, obj):
     """ Send Packet """
     sock.sendto(json.dumps(obj).encode(), (ip, port))
@@ -93,8 +95,8 @@ def lidar_logger(output_directory):
     lidar = None
 
     # Configure
-    config = util.read_config()
-    port_name = config['lidar'].get('serial', '/dev/lidar')
+    CONFIG.update(util.read_config())
+    port_name = CONFIG['lidar'].get('serial', '/dev/lidar')
 
     # UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -107,7 +109,7 @@ def lidar_logger(output_directory):
             # Open the output file
             timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
             with open(os.path.join(output_directory,timestamp+"_lidar.csv"), "w") as lidar_output:
-                util.write_header(lidar_output, config)
+                util.write_header(lidar_output, CONFIG)
                 for _, scan in enumerate(lidar.iter_scans(max_buf_meas=1500)):
                     lidartime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                     data = []
@@ -120,7 +122,7 @@ def lidar_logger(output_directory):
                         'time': lidartime,
                         'scan': data,
                     }
-                    send_udp(sock, config['analyzer']['udp']['host'], config['analyzer']['udp']['port'], obj)
+                    send_udp(sock, CONFIG['analyzer']['udp']['host'], CONFIG['analyzer']['udp']['port'], obj)
                     lidar_output.write("%s %s %s *\n" % (obj['time'], obj['class'], json.dumps(obj)))
                     lidar_output.flush()
                     LIDAR_DATA = obj
@@ -156,14 +158,15 @@ def lidar_logger_wrapper(output_directory):
 if __name__ == "__main__":
     # Output Directory
     try:
-        HOST_NAME = ''
-        PORT_NUMBER = int(sys.argv[1])
-        OUTPUT = sys.argv[2]
+        OUTPUT = sys.argv[1]
     except IndexError:
-        PORT_NUMBER = 8082
         OUTPUT = "/root/gps-data"
 
-    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
+    CONFIG.update(util.read_config())
+
+    web_ip = CONFIG['lidar']['tcp']['host']
+    web_port = CONFIG['lidar']['tcp']['port']
+    Twww = threading.Thread(name="W", target=util.web_server, args=(web_ip, web_post, ThreadedHTTPServer, MyHandler))
     Twww.start()
 
     try:

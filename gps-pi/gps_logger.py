@@ -328,15 +328,16 @@ def gps_logger_wrapper(output_directory):
 if __name__ == "__main__":
     # Command Line Configuration
     try:
-        HOST_NAME = ''
-        PORT_NUMBER = int(sys.argv[1])
-        OUTPUT = sys.argv[2]
+        OUTPUT = sys.argv[1]
     except IndexError:
-        PORT_NUMBER = 8080
         OUTPUT = "/root/gps-data"
 
+    CONFIG.update(util.read_config())
+
     # Web Server
-    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
+    web_ip = CONFIG['gps']['tcp']['host']
+    web_port = CONFIG['gps']['tcp']['port']
+    Twww = threading.Thread(name="W", target=util.web_server, args=(web_ip, web_port, ThreadedHTTPServer, MyHandler))
     Twww.start()
 
     try:

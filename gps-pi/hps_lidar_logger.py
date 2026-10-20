@@ -22,6 +22,8 @@ import util
 LIDAR_STATUS = False
 LIDAR_DATA = {}
 
+CONFIG = {}
+
 def do_json_output(self, output_dict):
     """ send back json text """
     output = json.dumps(output_dict).encode('utf-8')
@@ -88,23 +90,23 @@ def lidar_logger(output_directory):
     lidar = None
 
     # Configure
-    config = util.read_config()
+    CONFIG.update(util.read_config())
 
-    port_name = config['hpslidar'].get('serial', '/dev/ttyACM0')
+    port_name = CONFIG['hpslidar'].get('serial', '/dev/ttyACM0')
 
     while not util.DONE:
         try:
             # Open the output file
             timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
             with open(os.path.join(output_directory,timestamp+"_lidar.csv"), "w") as lidar_output:
-                util.write_header(lidar_output, config)
+                util.write_header(lidar_output, CONFIG)
 
                 # Make sure the port exists
                 if not os.path.exists(port_name):
                     time.sleep(util.ERROR_DELAY)
                     continue
 
-                lidar = hps.Hps3DLidar(config, port_name, 0, lidar_output)
+                lidar = hps.Hps3DLidar(CONFIG, port_name, 0, lidar_output)
                 #print(lidar.read_version())
                 #print(lidar.read_serial())
 
@@ -142,14 +144,15 @@ def lidar_logger_wrapper(output_directory):
 if __name__ == "__main__":
     # Output Directory
     try:
-        HOST_NAME = ''
-        PORT_NUMBER = int(sys.argv[1])
-        OUTPUT = sys.argv[2]
+        OUTPUT = sys.argv[1]
     except IndexError:
-        PORT_NUMBER = 8082
         OUTPUT = "/root/gps-data"
 
-    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
+    CONFIG.update(util.read_config())
+
+    web_ip = CONFIG['hpslidar']['tcp']['host']
+    web_port = CONFIG['hpslidar']['tcp']['host']
+    Twww = threading.Thread(name="W", target=util.web_server, args=(web_ip, web_port, ThreadedHTTPServer, MyHandler))
     Twww.start()
 
     try:

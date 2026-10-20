@@ -483,11 +483,8 @@ def check_enabled(configs):
 if __name__ == "__main__":
     # MAIN
     try:
-        HOST_NAME = ''
-        PORT_NUMBER = int(sys.argv[1])
-        OUTPUT = sys.argv[2]
+        OUTPUT = sys.argv[1]
     except IndexError:
-        PORT_NUMBER = 80
         OUTPUT = "/root/gps-data"
 
     # read your config
@@ -500,11 +497,13 @@ if __name__ == "__main__":
     Tudp.start()
 
     # Launch HTTP server
-    server = ThreadedHTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
-    print(f"Serving on port {PORT_NUMBER}, build dir={REACT_BUILD_DIR}")
+    web_ip = CONFIG['web']['tcp']['host']
+    web_port = CONFIG['web']['tcp']['port']
+    server = ThreadedHTTPServer((web_ip, web_port), MyHandler)
+    print(f"Serving on port {web_port}, build dir={REACT_BUILD_DIR}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     server.server_close()
-    print("Server stopped.")
+    prinon  ("Server stopped.")

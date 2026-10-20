@@ -1,7 +1,6 @@
 #!/bin/bash
 
-port="$1"
-output="$2"
+output="$1"
 
 function clean_children() {
     jobs=$(jobs -pr)
@@ -21,7 +20,6 @@ trap clean_children SIGINT
 while true; do
     timestamp=`date +%Y%m%d%H`
     ./simulator.py \
-        ${port} \
 	${output} \
 	1>> ${output}/sim_stdout_${timestamp}.log \
        	2>> ${output}/sim_stderr_${timestamp}.log

@@ -323,14 +323,14 @@ def gpsimu_logger(output_directory):
                 saved_yaw.append(ATT['yaw'])
                 SAMPLES -= 1
             elif len(saved_pitch) > 0:
-                COMFIG['imu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
-                COMFIG['imu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
-                COMFIG['imu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
+                CONFIG['imu']['pitch_adj'] = -sum(saved_pitch)/len(saved_pitch)
+                CONFIG['imu']['roll_adj'] = -sum(saved_roll)/len(saved_roll)
+                CONFIG['imu']['yaw_adj'] = -sum(saved_yaw)/len(saved_yaw)
                 SAMPLES = 0
                 saved_pitch = saved_roll = saved_yaw = []
-                util.write_config(COMFIG)
-                util.write_header(imu_output, COMFIG)
-                session.update_config(COMFIG)
+                util.write_config(CONFIG)
+                util.write_header(imu_output, CONFIG)
+                session.update_config(CONFIG)
                 os._exit(0)
 
             # Short Circuit the rest of the checks
@@ -380,15 +380,16 @@ def gpsimu_logger_wrapper(output_directory):
 if __name__ == "__main__":
     # Command Line Configuration
     try:
-        HOST_NAME = ''
-        PORT_NUMBER = int(sys.argv[1])
-        OUTPUT = sys.argv[2]
+        OUTPUT = sys.argv[1]
     except IndexError:
-        PORT_NUMBER = 8080
         OUTPUT = "/root/gps-data"
 
+    CONFIG.update(util.read_config())
+
     # Web Server
-    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME, PORT_NUMBER, ThreadedHTTPServer, MyHandler))
+    web_ip = CONFIG['gps']['tcp']['host']
+    web_port = CONFIG['gps']['tcp']['port']
+    Twww = threading.Thread(name="W", target=util.web_server, args=(web_ip, web_port, ThreadedHTTPServer, MyHandler))
     Twww.start()
 
     try:

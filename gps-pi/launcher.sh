@@ -30,8 +30,10 @@ output=${output}/`date +%Y%m%d`
 mkdir -p ${output}
 
 # If the configuration file doesn't exist, copy the sample
-if [ ! -f ${config} ]; then
-  cp ${config}.sample ${config}
+if [ -f ${pirail_data}/$config ]; then
+	cp ${pirail_data}/${config} ${config}
+elif [ ! -f ${config} ]; then
+	cp ${config}.sample ${config}
 fi
 
 # Wait for a GPS fix... this can be troublesome with poor GPS coverage

@@ -1,8 +1,10 @@
 {
     "web": {
-	"cmd": ["web_server.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 80,
+	"cmd": ["web_server.sh", "%OUTPUT_DIR%"],
+        "tcp": {
+            "host": "",
+            "port": 80
+        },
         "udp": {
             "host": "127.0.0.1",
             "port": 5006
@@ -19,55 +21,69 @@
         "logging": false,
         "data": "Data_Wolfeboro.json",
         "speedup": 4,
-        "cmd': ["simulator.sh", "%PORT%", "%OUTPUT_DIR%"],
-        "host": "localhost",
-        "port": 8084 
+        "cmd': ["simulator.sh", "%OUTPUT_DIR%"],
+	"tcp": {
+            "host": "localhost",
+            "port": 8084
+        }
     },
     "gps": {
         "type": "gpsd",
 	"enable": true,
         "logging": true,
-	"cmd": ["gps_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8080
+	"cmd": ["gps_logger.sh", "%OUTPUT_DIR%"],
+        "tcp": {
+	    "host": "localhost",
+            "port": 8080
+        }
     },
     "gpsimu": {
        	"x": "x", "y": "y", "z": "z",
         "serial": "/dev/ttyUSB0",
 	"enable": false,
         "logging": true,
-	"cmd": ["gpsimu_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8080
+	"cmd": ["gpsimu_logger.sh", "%OUTPUT_DIR%"],
+        "tcp": {
+	    "host": "localhost",
+            "port": 8080
+        }
     },
     "imu": {
        	"x": "x", "y": "y", "z": "z",
 	"enable": true,
         "logging": true,
-	"cmd": ["imu_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8081
+	"cmd": ["imu_logger.sh", "%OUTPUT_DIR%"],
+        "tcp": {
+	    "host": "localhost",
+            "port": 8081
+        }
     },
     "lidar": {
 	"enable": false,
         "logging": true,
-	"cmd": ["lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8082
+	"cmd": ["lidar_logger.sh", "%OUTPUT_DIR%"],
+        "tcp": {
+	    "host": "localhost",
+            "port": 8082
+        }
     },
     "hpslidar": {
 	"enable": false,
         "logging": true,
-	"cmd": ["hps_lidar_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
-	"host": "localhost",
-        "port": 8082
+	"cmd": ["hps_lidar_logger.sh", "%OUTPUT_DIR%"],
+        "tcp": {
+	    "host": "localhost",
+            "port": 8082
+        }
     },
     "lpcm": {
 	"enable": false,
         "logging": true,
-	"cmd": ["lpcm_logger.sh", "%PORT%", "%OUTPUT_DIR%"],
+	"cmd": ["lpcm_logger.sh", "%OUTPUT_DIR%"],
         "arecord": "--format S16_LE --rate=44100 --channels=1 --duration=60",
-	"host": "localhost",
-        "port": 8083
+        "tcp": {
+	    "host": "localhost",
+            "port": 8083
+        }
     }
 }

@@ -2,7 +2,6 @@
     "web": {
         "cmd": [
             "web_server.sh",
-            "%PORT%",
             "%OUTPUT_DIR%"
         ],
 	"tcp": {
@@ -15,7 +14,7 @@
         }
     },
     "analyzer": {
-        "cmd": ["analyzer.sh", "%PORT%", "%OUTPUT_DIR%"],
+        "cmd": ["analyzer.sh", "%OUTPUT_DIR%"],
 	"tcp": {
 	    "host": "localhost",
 	    "port": 8085
@@ -32,7 +31,6 @@
         "speedup": 4,
         "cmd": [
             "simulator.sh",
-            "%PORT%",
             "%OUTPUT_DIR%"
         ],
 	"tcp": {
@@ -46,7 +44,6 @@
         "logging": false,
         "cmd": [
             "gpsimu_logger.sh",
-            "%PORT%",
             "%OUTPUT_DIR%"
         ],
 	"tcp": {
@@ -72,7 +69,6 @@
         "logging": false,
         "cmd": [
             "lidar_logger.sh",
-            "%PORT%",
             "%OUTPUT_DIR%"
         ],
 	"tcp": {
@@ -85,7 +81,6 @@
         "logging": false,
         "cmd": [
             "hps_lidar_logger.sh",
-            "%PORT%",
             "%OUTPUT_DIR%"
         ],
 	"tcp": {
@@ -98,7 +93,6 @@
         "logging": false,
         "cmd": [
             "lpcm_logger.sh",
-            "%PORT%",
             "%OUTPUT_DIR%"
         ],
         "arecord": "--format S16_LE --rate=44100 --channels=1 --duration=60",

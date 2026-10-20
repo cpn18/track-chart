@@ -20,6 +20,8 @@ import util
 
 LPCM_DATA = {}
 
+CONFIG = {}
+
 def send_udp(sock, ip, port, obj):
     """ Send Packet """
     sock.sendto(json.dumps(obj).encode(), (ip, port))
@@ -88,14 +90,14 @@ def lpcm_logger(output_directory):
     global LPCM_DATA
 
     # Configure
-    config = util.read_config()
+    CONFIG.update(util.read_config())
 
     # UDP Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
     with open(os.path.join(output_directory,timestamp+"_lpcm.csv"), "w") as lpcm_output:
-        util.write_header(lpcm_output, config)
+        util.write_header(lpcm_output, CONFIG)
         while not util.DONE:
             try:
                 timestamp = datetime.datetime.now()
@@ -105,7 +107,7 @@ def lpcm_logger(output_directory):
                     "time": timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 }
 
-                if os.system("./lpcm_collect.sh %s %s \"%s\"" % (output_directory, filename, config['lpcm']['arecord'])) != 0:
+                if os.system("./lpcm_collect.sh %s %s \"%s\"" % (output_directory, filename, CONFIG['lpcm']['arecord'])) != 0:
                     time.sleep(util.ERROR_DELAY)
                 else:
                     # Check if output files exist
@@ -115,7 +117,7 @@ def lpcm_logger(output_directory):
                             LPCM_DATA[channel] = capture_file
 
                     # Log the output
-                    send_udp(sock, config['analyzer']['udp']['host'], config['analyzer']['udp']['port'], LPCM_DATA)
+                    send_udp(sock, CONFIG['analyzer']['udp']['host'], CONFIG['analyzer']['udp']['port'], LPCM_DATA)
                     lpcm_output.write(
                         "%s %s %s *\n" % (
                             LPCM_DATA['time'],
@@ -143,15 +145,16 @@ def lpcm_logger_wrapper(output_directory):
 if __name__ == "__main__":
     # Output Directory
     try:
-        HOST_NAME = ''
-        PORT_NUMBER = int(sys.argv[1])
-        OUTPUT = sys.argv[2]
+        OUTPUT = sys.argv[1]
     except IndexError:
-        PORT_NUMBER = 8083
         OUTPUT = "/root/gps-data"
 
+    CONFIG.update(util.read_config())
+
     # Web Server
-    Twww = threading.Thread(name="W", target=util.web_server, args=(HOST_NAME,PORT_NUMBER, ThreadedHTTPServer, MyHandler))
+    web_ip = CONFIG['lpcm']['tcp']['host']
+    web_port = CONFIG['lpcm']['tcp']['port']
+    Twww = threading.Thread(name="W", target=util.web_server, args=(web_ip, web_port, ThreadedHTTPServer, MyHandler))
     Twww.start()
 
     try:
